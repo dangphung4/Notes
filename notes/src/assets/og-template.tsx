@@ -27,7 +27,7 @@ export default function handler() {
           }}
         >
           <img
-            src="/notes/src/assets/note.svg"
+            src="/src/assets/note.svg"
             alt="Logo"
             width="120"
             height="120"
