@@ -1,17 +1,14 @@
 import { Button } from "../../components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/card";
 import { useAuth } from "../Auth/AuthContext";
-import { DesktopNav, MobileNav } from "../Components/navbar";
 import { useNavigate } from "react-router-dom";
 import { 
   MoonIcon, 
-  SunIcon,
   LightningBoltIcon,
   MixIcon,
   CodeIcon,
   DrawingPinIcon,
   ClockIcon,
-  LockClosedIcon,
   RocketIcon,
   UpdateIcon,
   GitHubLogoIcon,

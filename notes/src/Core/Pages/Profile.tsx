@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "../Auth/AuthContext";
-import { auth } from "../Auth/firebase";
 import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +72,7 @@ export default function Profile() {
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -109,6 +109,7 @@ export default function Profile() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -163,7 +164,7 @@ export default function Profile() {
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center space-y-4">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={photoURL || user?.photoURL} alt={displayName || user?.email || 'Profile'} />
+                  <AvatarImage src={photoURL ?? user?.photoURL} alt={displayName || user?.email || 'Profile'} />
                   <AvatarFallback className="text-lg">{getInitials()}</AvatarFallback>
                 </Avatar>
                 <div className="text-sm text-muted-foreground text-center">
