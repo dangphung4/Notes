@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 252 62% 99%;
+        --foreground: 252 67% 2%;
+        --muted: 72 22% 94%;
+        --muted-foreground: 72 1% 39%;
+        --popover: 252 62% 98%;
+        --popover-foreground: 252 67% 1%;
+        --card: 252 62% 98%;
+        --card-foreground: 252 67% 1%;
+        --border: 252 3% 94%;
+        --input: 252 3% 94%;
+        --primary: 252 11% 35%;
+        --primary-foreground: 252 11% 95%;
+        --secondary: 72 11% 35%;
+        --secondary-foreground: 0 0% 100%;
+        --accent: 72 11% 35%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 15 99% 31%;
+        --destructive-foreground: 15 99% 91%;
+        --ring: 252 11% 35%;
+        --chart-1: 252 11% 35%;
+        --chart-2: 72 11% 35%;
+        --chart-3: 72 11% 35%;
+        --chart-4: 72 11% 38%;
+        --chart-5: 252 14% 35%;
+        --radius: 0.5rem;
+      }
+  
+    .dark {
+      --background: 240 13.73% 10%;
+      --foreground: 229.76 31.78% 74.71%;
+      --muted: 232.5 15.44% 18.32%;
+      --muted-foreground: 233.79 11.37% 50%;
+      --popover: 234.55 17.46% 12.35%;
+      --popover-foreground: 234 12.4% 52.55%;
+      --card: 234.55 17.46% 12.35%;
+      --card-foreground: 229.76 31.78% 74.71%;
+      --border: 232.5 15.38% 30.59%;
+      --input: 232 20% 14.71%;
+      --primary: 0 0% 82.75%;
+      --primary-foreground: 0 0% 20%;
+      --secondary: 225.45 71.22% 72.75%;
+      --secondary-foreground: 234.55 17.46% 12.35%;
+      --accent: 234.55 17.83% 9.47%;
+      --accent-foreground: 0 0% 82.75%;
+      --destructive: 1.58 47.5% 52.94%;
+      --destructive-foreground: 210 40% 98.04%;
+      --ring: 225.45 71.22% 72.75%;
+      --chart-1: 0 0% 82.75%;
+      --chart-2: 225.45 71.22% 72.75%;
+      --chart-3: 234.55 17.83% 9.47%;
+      --chart-4: 225.45 71.22% 75.75%;
+      --chart-5: 0 3% 82.75%;
+    }
+  }
+  
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Add this to ensure dark mode is applied to the root element */
+:root.dark {
+  color-scheme: dark;
+}
