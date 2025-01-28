@@ -6,58 +6,51 @@ import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), VitePWA({
-    registerType: 'prompt',
-    injectRegister: 'auto',
-    includeAssets: ['assets/*.png'],
-    manifest: {
-      name: 'Notes ig',
-      short_name: 'Notes ig',
-      description: 'A minimalist note-taking app with cloud sync',
-      theme_color: 'transparent',
-      background_color: 'transparent',
-      display: 'standalone',
-      icons: [
-        {
-          src: '/assets/note-maskable.png',
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'maskable'
-        },
-        {
-          src: '/assets/note.png',
-          sizes: '512x512',
-          type: 'image/png',
-          purpose: 'any'
-        },
-        {
-          src: '/assets/note192.png',
-          sizes: '192x192',
-          type: 'image/png',
-          purpose: 'any'
-        }
-      ]
-    },
-    workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'google-fonts-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
-            },
-            cacheableResponse: {
-              statuses: [0, 200]
-            }
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['assets/*.svg'],
+      manifest: {
+        name: 'Notes ig',
+        short_name: 'Notes ig',
+        description: 'A minimalist note-taking app with cloud sync, dark mode, and offline support.',
+        theme_color: '#000000',
+        background_color: '#000000',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/assets/note.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/assets/note-maskable.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'maskable'
+          },
+          {
+            src: '/assets/note192.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml'
+          },
+          {
+            src: '/assets/note512.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml'
+          },
+          {
+            src: '/assets/note180.svg',
+            sizes: '180x180',
+            type: 'image/svg+xml',
+            purpose: 'apple-touch-icon'
           }
-        }
-      ]
-    }
-  })],
+        ]
+      }
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
