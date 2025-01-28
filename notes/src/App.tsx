@@ -17,6 +17,9 @@ import Signup from "./Core/Auth/Signup";
 import Footer from "./Core/Components/footer";
 import Profile from "./Core/Pages/Profile";
 import Layout from "./Core/Components/layout";
+import Notes from './Core/Pages/Notes';
+import NewNote from './Core/Pages/NewNote';
+import EditNote from './Core/Pages/EditNote';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -81,7 +84,23 @@ function App() {
                   path="/notes"
                   element={
                     <PrivateRoute>
-                      <div>Notes Page (Protected)</div>
+                      <Notes />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/notes/new"
+                  element={
+                    <PrivateRoute>
+                      <NewNote />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/notes/:id"
+                  element={
+                    <PrivateRoute>
+                      <EditNote />
                     </PrivateRoute>
                   }
                 />

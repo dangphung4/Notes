@@ -2,3 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  .prose {
+    max-width: none;
+  }
+
+  .prose p {
+    margin: 1em 0;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: 1.5em;
+    margin: 1em 0;
+  }
+
+  .prose ul li,
+  .prose ol li {
+    margin: 0.5em 0;
+  }
+
+  .prose blockquote {
+    border-left: 3px solid hsl(var(--primary));
+    margin: 1em 0;
+    padding: 0.5em 0 0.5em 1em;
+    font-style: italic;
+  }
+
+  .prose pre {
+    background-color: hsl(var(--muted));
+    padding: 1em;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1em 0;
+  }
+
+  .prose code {
+    background-color: hsl(var(--muted));
+    padding: 0.2em 0.4em;
+    border-radius: 0.25em;
+    font-size: 0.875em;
+  }
+
+  /* Fix list appearance in editor */
+  .ProseMirror ul,
+  .ProseMirror ol {
+    padding-left: 1.5em;
+  }
+
+  .ProseMirror ul li {
+    list-style-type: disc;
+  }
+
+  .ProseMirror ol li {
+    list-style-type: decimal;
+  }
+
+  /* Placeholder styling */
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: hsl(var(--muted-foreground));
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .prose a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+

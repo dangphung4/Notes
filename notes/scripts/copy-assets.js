@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const assets = [
+  'demo.png',
   'note.svg',
   'note32.svg',
   'note144.svg',

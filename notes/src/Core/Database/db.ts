@@ -3,19 +3,19 @@ import Dexie from 'dexie';
 interface Note {
   id?: number;
   title: string;
-  content: string;
+  content: string; // Will store JSON string of BlockNote content
   updatedAt: Date;
 }
 
-class FocusFlowDB extends Dexie {
+class NotesDB extends Dexie {
   notes!: Dexie.Table<Note, number>;
 
   constructor() {
-    super('FocusFlowDB');
+    super('NotesDB');
     this.version(1).stores({
-      notes: '++id, title, content, updatedAt'
+      notes: '++id, title, updatedAt'
     });
   }
 }
 
-export const db = new FocusFlowDB();
+export const db = new NotesDB();

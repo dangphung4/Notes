@@ -56,6 +56,11 @@ export default defineConfig({
           sizes: '32x32',
           type: 'image/svg+xml',
         },
+        {
+          src: '/assets/demo.png',
+          sizes: '600x400',
+          type: 'image/png',
+        },
 
       ],
     },
