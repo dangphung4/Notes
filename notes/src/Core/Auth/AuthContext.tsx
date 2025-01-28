@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from './firebase';
+import { auth, db as firestore } from './firebase';
 import { User, onAuthStateChanged } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 type AuthContextType = {
   user: User | null;
@@ -26,13 +27,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-      // Disable guest mode when user logs in
-      if (user) {
-        setIsGuest(false);
-        localStorage.removeItem('guestMode');
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
+      try {
+        if (user) {
+          const userRef = doc(firestore, 'users', user.uid);
+          
+          const userData = {
+            userId: user.uid,
+            email: user.email?.toLowerCase() || '',
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            lastLoginAt: new Date(),
+            // Only include these fields on first creation
+            ...(!user.metadata.lastSignInTime && {
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })
+          };
+
+          // Create/update user document
+          await setDoc(userRef, userData, { 
+            merge: true,
+            mergeFields: ['userId', 'email', 'displayName', 'photoURL', 'lastLoginAt']
+          });
+          
+          setIsGuest(false);
+          localStorage.removeItem('guestMode');
+        }
+        setUser(user);
+      } catch (error) {
+        console.error('Error updating user document:', error);
+        // Still set the user even if Firestore update fails
+        setUser(user);
+      } finally {
+        setLoading(false);
       }
     });
 

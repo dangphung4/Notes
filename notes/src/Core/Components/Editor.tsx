@@ -7,8 +7,8 @@ import { useEffect, useState, useCallback } from "react";
 import debounce from "lodash/debounce";
 
 interface EditorProps {
-  content: string;
-  onChange: (content: string) => void;
+  content: string;  // Change to expect string since that's how it's stored
+  onChange: (content: any[]) => void;
   onSave?: () => void;
 }
 
@@ -17,9 +17,12 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
     document.documentElement.classList.contains('dark')
   );
 
-  // Create editor instance
+  // Parse the content string to object for BlockNote
   const editor = useCreateBlockNote({
-    initialContent: content ? JSON.parse(content) : undefined,
+    initialContent: content ? JSON.parse(content) : [{
+      type: 'paragraph',
+      content: []
+    }],
   });
 
   // Debounced save function
@@ -27,7 +30,7 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
     debounce((editor: BlockNoteEditor) => {
       try {
         const blocks = editor.document;
-        onChange(JSON.stringify(blocks));
+        onChange(blocks);
         onSave?.();
       } catch (error) {
         console.error('Error saving editor content:', error);
