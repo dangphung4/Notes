@@ -3,8 +3,10 @@ import Editor from '../Components/Editor';
 import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
 import debounce from 'lodash/debounce';
+import { useAuth } from '../Auth/AuthContext';
 
 export default function NewNote() {
+  const { user } = useAuth();
   const [title, setTitle] = useState('Untitled');
   const [noteId, setNoteId] = useState<number | undefined>();
 
@@ -12,23 +14,39 @@ export default function NewNote() {
   const saveNote = useCallback(async (newTitle: string, content: string) => {
     try {
       if (noteId) {
+        // Update existing note
         await db.notes.update(noteId, {
           title: newTitle,
           content,
           updatedAt: new Date(),
+          userId: user?.uid
         });
+        
+        // Get the updated note and sync with Firebase
+        const note = await db.notes.get(noteId);
+        if (note && user) {
+          await db.syncNote(note);
+        }
       } else {
+        // Create new note
         const id = await db.notes.add({
           title: newTitle,
           content,
           updatedAt: new Date(),
+          userId: user?.uid
         });
         setNoteId(id);
+        
+        // Get the new note and sync with Firebase
+        const note = await db.notes.get(id);
+        if (note && user) {
+          await db.syncNote(note);
+        }
       }
     } catch (error) {
       console.error('Error saving note:', error);
     }
-  }, [noteId]);
+  }, [noteId, user]);
 
   // Debounced save for title changes
   const debouncedSaveTitle = useCallback(

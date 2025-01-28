@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlusIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../Auth/AuthContext';
+import { onSnapshot, collection, query, where } from 'firebase/firestore';
+import { db as firestore } from '../Auth/firebase';
 
 interface Note {
   id?: number;
@@ -15,17 +18,58 @@ interface Note {
 
 export default function Notes() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadNotes();
-  }, []);
+    if (user) {
+      // Load notes from Firebase when user logs in
+      db.loadFromFirebase().then(loadNotes);
+    }
+  }, [user]);
+
+  // Add real-time listener for Firebase updates
+  useEffect(() => {
+    if (!user) return;
+
+    // Set up real-time listener
+    const q = query(
+      collection(firestore, 'notes'),
+      where('userId', '==', user.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach(async (change) => {
+        if (change.type === 'modified' || change.type === 'added') {
+          // Update local DB with Firebase changes
+          const data = change.doc.data();
+          await db.notes.where('firebaseId').equals(change.doc.id).modify(note => {
+            note.title = data.title;
+            note.content = data.content;
+            note.updatedAt = data.updatedAt.toDate();
+          });
+        }
+        if (change.type === 'removed') {
+          await db.notes.where('firebaseId').equals(change.doc.id).delete();
+        }
+      });
+      
+      // Reload notes after changes
+      loadNotes();
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const loadNotes = async () => {
     try {
-      const allNotes = await db.notes.orderBy('updatedAt').reverse().toArray();
+      const allNotes = await db.notes
+        .where('userId').equals(user?.uid || '')
+        .or('userId').equals('') // Include local notes
+        .reverse()
+        .sortBy('updatedAt');
       setNotes(allNotes);
     } catch (error) {
       console.error('Error loading notes:', error);
