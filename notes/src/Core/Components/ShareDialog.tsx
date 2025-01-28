@@ -18,7 +18,7 @@ export default function ShareDialog({ note, onShare, onError }: ShareDialogProps
   const [email, setEmail] = useState('');
   const [access, setAccess] = useState<'view' | 'edit'>('view');
   const [isSharing, setIsSharing] = useState(false);
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
   const handleShare = async (email: string, access: 'view' | 'edit') => {

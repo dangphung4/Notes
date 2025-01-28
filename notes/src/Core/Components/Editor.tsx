@@ -8,6 +8,7 @@ import debounce from "lodash/debounce";
 
 interface EditorProps {
   content: string;  // Change to expect string since that's how it's stored
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onChange: (content: any[]) => void;
   onSave?: () => void;
 }

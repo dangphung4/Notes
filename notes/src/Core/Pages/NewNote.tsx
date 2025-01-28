@@ -4,17 +4,10 @@ import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
 import debounce from 'lodash/debounce';
 import { useAuth } from '../Auth/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { Note } from '../Database/db';
-import type { BlockNoteEditor } from "@blocknote/core";
 
-interface NoteContent {
-  type: string;
-  content: unknown[];
-}
 
 export default function NewNote() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   
   const [note, setNote] = useState<Note>({
@@ -25,12 +18,10 @@ export default function NewNote() {
     }]),
     updatedAt: new Date(),
     createdAt: new Date(),
-    owner: {
-      userId: user?.uid || '',
-      email: user?.email || '',
-      displayName: user?.displayName || 'Unknown',
-      photoURL: user?.photoURL || undefined
-    },
+    ownerUserId: user?.uid || '',
+    ownerEmail: user?.email || '',
+    ownerDisplayName: user?.displayName || 'Unknown',
+    ownerPhotoURL: user?.photoURL || undefined,
     tags: []
   });
 
@@ -56,12 +47,10 @@ export default function NewNote() {
           content: contentStr,
           updatedAt: new Date(),
           createdAt: new Date(),
-          owner: {
-            userId: user?.uid || '',
-            email: user?.email || '',
-            displayName: user?.displayName || 'Unknown',
-            photoURL: user?.photoURL || undefined
-          },
+          ownerUserId: user?.uid || '',
+          ownerEmail: user?.email || '',
+          ownerDisplayName: user?.displayName || 'Unknown',
+          ownerPhotoURL: user?.photoURL || undefined,
           tags: []
         });
         

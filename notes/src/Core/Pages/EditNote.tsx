@@ -74,7 +74,7 @@ export default function EditNote() {
         lastEditedByUserId: user?.uid,
         lastEditedByEmail: user?.email || '',
         lastEditedByDisplayName: user?.displayName || 'Unknown',
-        lastEditedByPhotoURL: user?.photoURL,
+        lastEditedByPhotoURL: user?.photoURL || undefined,
         lastEditedAt: new Date()
       };
 
@@ -185,7 +185,7 @@ export default function EditNote() {
               <ShareDialog 
                 note={note} 
                 onShare={handleShare}
-                onError={(error) => setSaveStatus('error')} 
+                onError={() => setSaveStatus('error')} 
               />
             )}
             <Button

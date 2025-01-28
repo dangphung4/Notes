@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Note } from '../Database/db';
 
 export function getPreviewText(content: string, maxLength = 300): string {
   try {
     const blocks = JSON.parse(content);
     const text = blocks
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((block: any) => {
         // BlockNote structure has content array with text property
         if (block.content) {
@@ -51,11 +53,11 @@ export function formatDate(date: Date) {
 }
 
 export function formatLastEdited(note: Note): string {
-  const date = note.lastEditedBy?.timestamp || note.updatedAt;
+  const date = note.lastEditedAt || note.updatedAt;
   const timeAgo = formatTimeAgo(date);
   
-  if (note.lastEditedBy) {
-    const editor = note.lastEditedBy.displayName || note.lastEditedBy.email.split('@')[0];
+  if (note.lastEditedByUserId) {
+    const editor = note.lastEditedByDisplayName || note?.lastEditedByEmail?.split('@')[0];
     return `Edited by ${editor} • ${timeAgo}`;
   }
   

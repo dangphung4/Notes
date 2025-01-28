@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db, SharePermission } from '../Database/db';
+import { SharePermission } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,8 +10,7 @@ import { useAuth } from '../Auth/AuthContext';
 import { onSnapshot, collection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DebugInfo } from '../Components/DebugInfo';
-import { getPreviewText, formatLastEdited, formatTimeAgo } from '../utils/noteUtils';
+import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
 import type { Note } from '../Database/db';
 
 export default function Notes() {
@@ -48,11 +47,11 @@ export default function Notes() {
         const sharesSnapshot = await getDocs(sharesQuery);
         
         const sharesData = sharesSnapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id,
-          createdAt: doc.data().createdAt?.toDate(),
-          updatedAt: doc.data().updatedAt?.toDate()
-        })) as SharePermission[];
+            ...doc.data(),
+            id: doc.id,
+            createdAt: doc.data().createdAt?.toDate(),
+            updatedAt: doc.data().updatedAt?.toDate()
+        })) as unknown as SharePermission[];
         
         setShares(sharesData);
 
@@ -104,11 +103,11 @@ export default function Notes() {
     // First subscription: Listen for shares
     const unsubscribeShares = onSnapshot(sharesQuery, async (snapshot) => {
       const sharesData = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id,
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate()
-      })) as SharePermission[];
+          ...doc.data(),
+          id: doc.id,
+          createdAt: doc.data().createdAt?.toDate(),
+          updatedAt: doc.data().updatedAt?.toDate()
+      })) as unknown as SharePermission[];
       setShares(sharesData);
 
       // After getting shares, fetch the shared notes
@@ -192,7 +191,11 @@ export default function Notes() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value: 'my-notes' | 'shared') => setActiveTab(value)} className="mb-6">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
+        className="mb-6"
+      >
         <TabsList>
           <TabsTrigger value="my-notes">My Notes ({myNotes.length})</TabsTrigger>
           <TabsTrigger value="shared">Shared with Me ({sharedWithMe.length})</TabsTrigger>
