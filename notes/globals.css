@@ -181,25 +181,7 @@
   }
 }
 
-/* Update toolbar to be more stable */
-.bn-toolbar {
-  flex: 0 0 auto;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background-color: hsl(var(--background));
-  border-bottom: 1px solid hsl(var(--border));
-  backdrop-filter: blur(8px);
-}
 
-/* Improve toolbar appearance */
-.bn-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background-color: var(--bn-toolbar-background, hsl(var(--background)));
-  backdrop-filter: blur(8px);
-}
 
 /* Update the suggestion menu styles */
 .bn-suggestion-menu {
@@ -237,16 +219,7 @@
 
 /* Keep mobile-specific styles but update for better desktop compatibility */
 @media (min-width: 769px) {
-  .bn-suggestion-menu {
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-    right: auto !important;
-    bottom: auto !important;
-    max-height: 500px !important;
-    min-width: 350px !important;
-    width: auto !important;
-  }
+  
 }
 
 /* Improve menu item styles */
@@ -274,21 +247,10 @@
 /* Adjust mobile styles */
 @media (max-width: 768px) {
   .bn-suggestion-menu {
-    position: fixed !important; /* Change to fixed for mobile */
-    bottom: 0 !important; /* Stick to bottom */
-    top: auto !important;
-    left: 0 !important;
-    right: 0 !important;
-    max-height: 70vh !important; /* Increase height */
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 1rem !important;
     border-radius: 1rem 1rem 0 0 !important; /* Round top corners */
     border-bottom: none !important;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
     
-    /* Add safe area padding for notched devices */
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 1rem)) !important;
   }
 }
 
@@ -370,12 +332,6 @@
 
   /* Improve slash menu on mobile */
   .bn-suggestion-menu {
-    position: fixed !important;
-    bottom: 0 !important;
-    top: auto !important;
-    left: 0 !important;
-    right: 0 !important;
-    max-height: 50vh !important;
     border-radius: 1rem 1rem 0 0;
     border-bottom: none;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
@@ -426,8 +382,5 @@
 
 /* Hide some toolbar items on mobile to prevent overflow */
 @media (max-width: 480px) {
-  .bn-toolbar [data-tool-type="color"],
-  .bn-toolbar [data-tool-type="highlight"] {
-    display: none !important;
-  }
+
 }
