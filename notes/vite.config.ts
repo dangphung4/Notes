@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['assets/*.svg'],
+      includeAssets: ['assets/*'],
       manifest: {
         name: 'Notes ig',
         short_name: 'Notes ig',
@@ -23,31 +23,31 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: 'src/assets/note.svg',
+            src: '/assets/note.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any'
           },
           {
-            src: 'src/assets/note-maskable.svg',
+            src: '/assets/note-maskable.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'maskable'
           },
           {
-            src: 'src/assets/note192.svg',
+            src: '/assets/note192.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
             purpose: 'any'
           },
           {
-            src: 'src/assets/note512.svg',
+            src: '/assets/note512.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any'
           },
           {
-            src: 'src/assets/note180.svg',
+            src: '/assets/note180.svg',
             sizes: '180x180',
             type: 'image/svg+xml',
             purpose: 'apple-touch-icon'
@@ -55,23 +55,9 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,txt}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        skipWaiting: true,
+        clientsClaim: true
       }
     })
   ],

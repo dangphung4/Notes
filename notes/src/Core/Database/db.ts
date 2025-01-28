@@ -152,61 +152,29 @@ class NotesDB extends Dexie {
     if (!user) return;
 
     try {
-      // For new notes, set current user as owner
-      if (!note.ownerUserId) {
-        note.ownerUserId = user.uid;
-        note.ownerEmail = user.email || '';
-        note.ownerDisplayName = user.displayName || 'Unknown';
-        note.ownerPhotoURL = user.photoURL || undefined;
-      }
-
-      // Check permissions
-      const isOwner = note.ownerUserId === user.uid;
-      
-      // Check for edit access in shares collection
-      const sharesRef = collection(firestore, 'shares');
-      const shareQuery = query(
-        sharesRef, 
-        where('noteId', '==', note.firebaseId),
-        where('email', '==', user.email),
-        where('access', '==', 'edit')
-      );
-      const shareSnapshot = await getDocs(shareQuery);
-      const hasEditAccess = !shareSnapshot.empty;
-
-      if (!isOwner && !hasEditAccess) {
-        throw new Error('No permission to edit this note');
-      }
+      // Ensure required fields are present
+      const noteData = {
+        title: note.title || 'Untitled',
+        content: note.content || '',
+        updatedAt: new Date(),
+        ownerUserId: user.uid,
+        ownerEmail: user.email || '',
+        ownerDisplayName: user.displayName || 'Unknown',
+        ownerPhotoURL: user.photoURL || null, // Use null instead of undefined
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email || '',
+        lastEditedByDisplayName: user.displayName || 'Unknown',
+        lastEditedByPhotoURL: user.photoURL || null, // Use null instead of undefined
+        lastEditedAt: new Date(),
+        tags: note.tags || []
+      };
 
       if (note.firebaseId) {
-        await updateDoc(doc(firestore, 'notes', note.firebaseId), {
-          title: note.title,
-          content: note.content || '',
-          updatedAt: new Date(),
-          lastEditedByUserId: user.uid,
-          lastEditedByEmail: user.email,
-          lastEditedByDisplayName: user.displayName || 'Unknown',
-          lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date()
-        });
+        await updateDoc(doc(firestore, 'notes', note.firebaseId), noteData);
       } else {
         const docRef = await addDoc(collection(firestore, 'notes'), {
-          title: note.title,
-          content: note.content || '',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          ownerUserId: user.uid,
-          ownerEmail: user.email,
-          ownerDisplayName: user.displayName || 'Unknown',
-          ownerPhotoURL: user.photoURL,
-          lastEditedByUserId: user.uid,
-          lastEditedByEmail: user.email,
-          lastEditedByDisplayName: user.displayName || 'Unknown',
-          lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date(),
-          tags: [],
-          isPinned: false,
-          isArchived: false
+          ...noteData,
+          createdAt: new Date()
         });
         await this.notes.update(note.id!, { firebaseId: docRef.id });
       }
