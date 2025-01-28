@@ -3,39 +3,74 @@ import Editor from '../Components/Editor';
 import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
 import debounce from 'lodash/debounce';
+import { useAuth } from '../Auth/AuthContext';
+import { Note } from '../Database/db';
+
 
 export default function NewNote() {
-  const [title, setTitle] = useState('Untitled');
-  const [noteId, setNoteId] = useState<number | undefined>();
+  const { user } = useAuth();
+  
+  const [note, setNote] = useState<Note>({
+    title: 'Untitled',
+    content: JSON.stringify([{  // Store as string to match database
+      type: 'paragraph',
+      content: []
+    }]),
+    updatedAt: new Date(),
+    createdAt: new Date(),
+    ownerUserId: user?.uid || '',
+    ownerEmail: user?.email || '',
+    ownerDisplayName: user?.displayName || 'Unknown',
+    ownerPhotoURL: user?.photoURL || undefined,
+    tags: []
+  });
 
   // Save note to database
-  const saveNote = useCallback(async (newTitle: string, content: string) => {
+  const saveNote = useCallback(async (newTitle: string, content: any[]) => {
     try {
-      if (noteId) {
-        await db.notes.update(noteId, {
+      const contentStr = JSON.stringify(content);
+      
+      if (note.id) {
+        await db.notes.update(note.id, {
           title: newTitle,
-          content,
-          updatedAt: new Date(),
+          content: contentStr,
+          updatedAt: new Date()
         });
+        
+        const updatedNote = await db.notes.get(note.id);
+        if (updatedNote && user) {
+          await db.syncNote(updatedNote);
+        }
       } else {
         const id = await db.notes.add({
           title: newTitle,
-          content,
+          content: contentStr,
           updatedAt: new Date(),
+          createdAt: new Date(),
+          ownerUserId: user?.uid || '',
+          ownerEmail: user?.email || '',
+          ownerDisplayName: user?.displayName || 'Unknown',
+          ownerPhotoURL: user?.photoURL || undefined,
+          tags: []
         });
-        setNoteId(id);
+        
+        const newNote = await db.notes.get(id);
+        if (newNote && user) {
+          await db.syncNote(newNote);
+          setNote(newNote);  // No need to parse, keeping as string
+        }
       }
     } catch (error) {
       console.error('Error saving note:', error);
     }
-  }, [noteId]);
+  }, [note.id, user]);
 
   // Debounced save for title changes
   const debouncedSaveTitle = useCallback(
-    debounce((newTitle: string, content: string) => {
-      saveNote(newTitle, content);
+    debounce((newTitle: string) => {
+      saveNote(newTitle, JSON.parse(note.content));  // Parse when needed
     }, 500),
-    [saveNote]
+    [saveNote, note.content]
   );
 
   return (
@@ -43,18 +78,22 @@ export default function NewNote() {
       <div className="flex items-center p-4 border-b">
         <Input
           type="text"
-          value={title}
+          value={note.title}
           onChange={(e) => {
-            setTitle(e.target.value);
-            debouncedSaveTitle(e.target.value, '');
+            setNote({ ...note, title: e.target.value });
+            debouncedSaveTitle(e.target.value);
           }}
           className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none"
         />
       </div>
       <div className="flex-1 overflow-hidden">
         <Editor
-          content=""
-          onChange={(content) => saveNote(title, content)}
+          content={note.content}  // Pass string content
+          onChange={(content) => {
+            const contentStr = JSON.stringify(content);
+            setNote({ ...note, content: contentStr });
+            saveNote(note.title, content);
+          }}
         />
       </div>
     </div>
