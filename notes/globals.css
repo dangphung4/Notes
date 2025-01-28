@@ -193,7 +193,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
   overflow-y: auto !important;
   max-height: 400px !important;
-  min-width: 300px !important;
+  min-width: 400px !important;
   padding: 0.75rem !important;
   
   /* Remove any fixed positioning that might interfere */
