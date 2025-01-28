@@ -1,11 +1,12 @@
 {
   "name": "Notes ig",
   "short_name": "Notes ig",
-  "description": "A minimalist note-taking app with cloud sync, dark mode, and offline support. Built because I dont like apple notes.",
+  "description": "A minimalist note-taking app with cloud sync, dark mode, and offline support.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/assets/note.svg",
@@ -46,5 +47,7 @@
       "url": "/notes/new",
       "icons": [{ "src": "/assets/note192.svg", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false
 } 
