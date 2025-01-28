@@ -20,6 +20,7 @@ import Layout from "./Core/Components/layout";
 import Notes from './Core/Pages/Notes';
 import NewNote from './Core/Pages/NewNote';
 import EditNote from './Core/Pages/EditNote';
+import Install from './Core/Pages/Install';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -113,6 +114,7 @@ function App() {
                   }
                 />
                 <Route path="/logout" element={<LogoutHandler />} />
+                <Route path="/install" element={<Install />} />
               </Routes>
             </main>
           </Layout>

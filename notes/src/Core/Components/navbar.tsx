@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/Core/Auth/AuthContext";
 import {
   HamburgerMenuIcon,
@@ -11,6 +11,7 @@ import {
   EnterIcon,
   MoonIcon,
   SunIcon,
+  GlobeIcon,
 } from "@radix-ui/react-icons";
 import {
   Avatar,
@@ -69,6 +70,14 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
               <Button variant="ghost" onClick={() => navigate('/notes')}>
                 <FileTextIcon className="h-5 w-5" />
                 <span className="ml-2">Notes</span>
+              </Button>
+            )}
+            {!user && (
+              <Button variant="ghost" asChild>
+                <Link to="/install">
+                  <GlobeIcon className="h-4 w-4 mr-2" />
+                  Install App
+                </Link>
               </Button>
             )}
           </div>

@@ -23,7 +23,7 @@ import {
 } from "@radix-ui/react-icons";
 import demoImage from "../../assets/demo.png";
 import logo from "../../assets/note.svg";
-import { CpuIcon, Smartphone } from "lucide-react";
+import { CpuIcon, Smartphone, SmartphoneIcon } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
@@ -36,12 +36,10 @@ export default function Home() {
         <div className="flex justify-center mb-4">
           <img src={logo} alt="Notes Logo" className="h-24 w-24" />
         </div>
-        <h1 className="text-5xl font-bold tracking-tight mb-6">
-          Notes app ig
-        </h1>
+        <h1 className="text-5xl font-bold tracking-tight mb-6">Notes app ig</h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          A minimalist note-taking app because screw apple notes. Clean, fast, and
-          focused on what matters most - your thoughts.
+          A minimalist note-taking app because screw apple notes. Clean, fast,
+          and focused on what matters most - your thoughts.
         </p>
         <div className="flex justify-center gap-4">
           {user ? (
@@ -59,16 +57,24 @@ export default function Home() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex gap-4">
-                <Button onClick={() => navigate("/auth")} size="lg">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button onClick={() => navigate("/auth")} size="lg" className="w-full sm:w-auto">
                   <EnterIcon className="mr-2 h-5 w-5" /> Sign In
                 </Button>
                 <Button
                   onClick={() => navigate("/signup")}
                   size="lg"
                   variant="outline"
+                  className="w-full sm:w-auto"
                 >
                   Get Started
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate("/install")}
+                  className="w-full sm:w-auto"
+                >
+                  <SmartphoneIcon className="mr-2 h-4 w-4" /> Install App
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -120,7 +126,8 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                PWA ready, so you can install it on your phone and desktop with a single click.
+                PWA ready, so you can install it on your phone and desktop with
+                a single click.
               </CardDescription>
             </CardContent>
           </Card>
@@ -133,7 +140,8 @@ export default function Home() {
           <div className="bg-primary/10 rounded-lg p-8 max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Join up if you feel like dealing with bugs for now. It'll get better as long as I remember to work on it.
+              Join up if you feel like dealing with bugs for now. It'll get
+              better as long as I remember to work on it.
             </p>
             <Button onClick={() => navigate("/signup")} size="lg">
               Create Free Account
@@ -267,7 +275,9 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Nested todos with collapsible subtasks, markdown support for notes (headers, lists, bold/italic), voice-to-text input (Web Speech API), and more.
+                Nested todos with collapsible subtasks, markdown support for
+                notes (headers, lists, bold/italic), voice-to-text input (Web
+                Speech API), and more.
               </CardDescription>
             </CardContent>
           </Card>
@@ -280,8 +290,9 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Plug in your own AI models or use what I pick for you.
-                Enjoy suggestions and autocompletion, along with summarization and more.
+                Plug in your own AI models or use what I pick for you. Enjoy
+                suggestions and autocompletion, along with summarization and
+                more.
               </CardDescription>
             </CardContent>
           </Card>
@@ -318,7 +329,8 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <h2 className="text-3xl font-bold mb-6">About This Project</h2>
           <p className="text-muted-foreground mb-4">
-            I built this app because I'm tired of apple notes, so im gonna make it better for what i want.
+            I built this app because I'm tired of apple notes, so im gonna make
+            it better for what i want.
           </p>
           <p className="bg-muted/30 rounded-lg p-4 mb-4">
             When its done, i will make it open source and free to use.
