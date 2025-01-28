@@ -219,23 +219,28 @@ class NotesDB extends Dexie {
   }
 
   // Share note with another user
-  async shareNote(noteId: number, recipientEmail: string, access: 'view' | 'edit' = 'view') {
-    const note = await this.notes.get(noteId);
-    if (!note?.firebaseId) return;
-
+  async shareNote(noteId: string, recipientEmail: string, access: 'view' | 'edit' = 'view') {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Only owner can share
-    if (note.ownerUserId !== user.uid) {
-      throw new Error('Only the owner can share this note');
-    }
-
     try {
+      // Get note from Firebase to check ownership
+      const noteRef = doc(firestore, 'notes', noteId);
+      const noteDoc = await getDoc(noteRef);
+      
+      if (!noteDoc.exists()) {
+        throw new Error('Note not found');
+      }
+      
+      const noteData = noteDoc.data();
+      if (noteData.ownerUserId !== user.uid) {
+        throw new Error('Only the owner can share this note');
+      }
+
       const sharesRef = collection(firestore, 'shares');
       const existingShares = await getDocs(
         query(sharesRef, 
-          where('noteId', '==', note.firebaseId),
+          where('noteId', '==', noteId),
           where('email', '==', recipientEmail)
         )
       );
@@ -248,7 +253,7 @@ class NotesDB extends Dexie {
         });
       } else {
         await addDoc(sharesRef, {
-          noteId: note.firebaseId,
+          noteId: noteId,
           userId: recipientEmail, // This will be replaced when we implement user lookup
           email: recipientEmail,
           displayName: recipientEmail.split('@')[0], // This will be replaced when we implement user lookup
@@ -297,6 +302,53 @@ class NotesDB extends Dexie {
       await deleteDoc(noteRef);
     } catch (error) {
       console.error('Error deleting note:', error);
+      throw error;
+    }
+  }
+
+  // Create new note
+  async createNote(note: Note): Promise<string> {
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      // Create in Firebase first
+      const docRef = await addDoc(collection(firestore, 'notes'), {
+        title: note.title,
+        content: note.content || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ownerUserId: user.uid,
+        ownerEmail: user.email,
+        ownerDisplayName: user.displayName || 'Unknown',
+        ownerPhotoURL: user.photoURL,
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || 'Unknown',
+        lastEditedByPhotoURL: user.photoURL,
+        lastEditedAt: new Date(),
+        tags: [],
+        isPinned: false,
+        isArchived: false
+      });
+
+      // Then add to local DB
+      await this.notes.add({
+        firebaseId: docRef.id,
+        title: note.title,
+        content: note.content || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ownerUserId: user.uid,
+        ownerEmail: user.email || '',
+        ownerDisplayName: user.displayName || 'Unknown',
+        ownerPhotoURL: user.photoURL || undefined,
+        tags: []
+      });
+
+      return docRef.id;
+    } catch (error) {
+      console.error('Error creating note:', error);
       throw error;
     }
   }

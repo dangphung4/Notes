@@ -18,69 +18,83 @@ export default function ShareDialog({ note, onShare, onError }: ShareDialogProps
   const [email, setEmail] = useState('');
   const [access, setAccess] = useState<'view' | 'edit'>('view');
   const [isSharing, setIsSharing] = useState(false);
-  const [error] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const handleShare = async (email: string, access: 'view' | 'edit') => {
-    if (!note.id) return;
-    
+  const handleShare = async () => {
+    if (!email) {
+      onError?.('Please enter an email address');
+      return;
+    }
+
+    if (!note.firebaseId) {
+      onError?.('Note must be saved before sharing');
+      return;
+    }
+
     try {
       setIsSharing(true);
-      await db.shareNote(note.id, email, access);
+      await db.shareNote(note.firebaseId, email, access);
+      setEmail('');
+      setAccess('view');
+      setOpen(false);
       onShare?.();
-      setIsOpen(false);
     } catch (error) {
       console.error('Error sharing note:', error);
-      onError?.(error as string);
+      onError?.(error instanceof Error ? error.message : 'Failed to share note');
     } finally {
       setIsSharing(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Share className="mr-2 h-4 w-4" />
-          Share
+        <Button variant="outline" size="icon">
+          <Share className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Share Note</DialogTitle>
           <DialogDescription>
             Share this note with other users. They'll receive access via their email.
           </DialogDescription>
         </DialogHeader>
+
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Share with email</Label>
+            <Label htmlFor="email">Share with email</Label>
             <Input
+              id="email"
               type="email"
-              placeholder="colleague@example.com"
+              placeholder="example@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <RadioGroup value={access} onValueChange={(v) => setAccess(v as 'view' | 'edit')}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="view" id="view" />
-              <Label htmlFor="view">Can view</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="edit" id="edit" />
-              <Label htmlFor="edit">Can edit</Label>
-            </div>
-          </RadioGroup>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button 
-            className="w-full" 
-            onClick={() => handleShare(email, access)}
-            disabled={isSharing || !email}
-          >
-            {isSharing ? 'Sharing...' : 'Share'}
-          </Button>
+
+          <div className="space-y-2">
+            <Label>Access level</Label>
+            <RadioGroup value={access} onValueChange={(value) => setAccess(value as 'view' | 'edit')}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="view" id="view" />
+                <Label htmlFor="view">Can view</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="edit" id="edit" />
+                <Label htmlFor="edit">Can edit</Label>
+              </div>
+            </RadioGroup>
+          </div>
         </div>
+
+        <Button 
+          onClick={handleShare} 
+          disabled={isSharing || !email}
+          className="w-full"
+        >
+          {isSharing ? 'Sharing...' : 'Share'}
+        </Button>
       </DialogContent>
     </Dialog>
   );
