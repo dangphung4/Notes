@@ -10,23 +10,25 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { noteTemplates, NoteTemplate } from "./NoteTemplates";
 import { useState } from "react";
+import { ReactNode } from "react";
 
 interface TemplateDialogProps {
   onSelectTemplate: (template: NoteTemplate) => void;
+  children: ReactNode;
 }
 
-export default function TemplateDialog({ onSelectTemplate }: TemplateDialogProps) {
+export default function TemplateDialog({ onSelectTemplate, children }: TemplateDialogProps) {
   const [open, setOpen] = useState(false);
 
   const handleTemplateSelect = (template: NoteTemplate) => {
     onSelectTemplate(template);
-    setOpen(false); // Close dialog after selection
+    setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Choose Template</Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

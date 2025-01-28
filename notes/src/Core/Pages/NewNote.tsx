@@ -8,6 +8,7 @@ import { useAuth } from '../Auth/AuthContext';
 import type { Note } from '../Database/db';
 import { NoteTemplate, noteTemplates } from '../Components/NoteTemplates';
 import TemplateDialog from '../Components/TemplateDialog';
+import { SaveIcon, LayoutTemplateIcon } from 'lucide-react';
 
 export default function NewNote() {
   const { user } = useAuth();
@@ -65,22 +66,44 @@ export default function NewNote() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <Input
             type="text"
             value={note.title}
             onChange={(e) => setNote({ ...note, title: e.target.value })}
-            className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none"
+            className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none min-w-0 flex-1"
             placeholder="Untitled"
           />
-          <TemplateDialog onSelectTemplate={handleTemplateSelect} />
+          {/* Desktop buttons */}
+          <div className="hidden md:flex items-center gap-2">
+            <TemplateDialog onSelectTemplate={handleTemplateSelect}>
+              <Button variant="outline">Choose Template</Button>
+            </TemplateDialog>
+            <Button 
+              onClick={saveNote}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving...' : 'Save Note'}
+            </Button>
+          </div>
+          {/* Mobile buttons */}
+          <div className="flex md:hidden items-center gap-2">
+            <TemplateDialog onSelectTemplate={handleTemplateSelect}>
+              <Button variant="default" size="icon" className="h-9 w-9">
+                <LayoutTemplateIcon className="h-5 w-5" />
+              </Button>
+            </TemplateDialog>
+            <Button 
+              variant="secondary"
+              size="icon"
+              onClick={saveNote}
+              disabled={isSaving}
+              className="h-9 w-9"
+            >
+              <SaveIcon className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
-        <Button 
-          onClick={saveNote}
-          disabled={isSaving}
-        >
-          {isSaving ? 'Saving...' : 'Save Note'}
-        </Button>
       </div>
       <div className="flex-1 overflow-hidden">
         <Editor

@@ -42,6 +42,9 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
 
   // Watch for theme changes
   useEffect(() => {
+    // Set initial theme
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
@@ -56,6 +59,11 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
     });
 
     return () => observer.disconnect();
+  }, []); // Empty dependency array since we only want to set this up once
+
+  // Force theme update when component mounts
+  useEffect(() => {
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
   }, []);
 
   return (
