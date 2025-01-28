@@ -22,6 +22,8 @@ import {
   EnterIcon,
 } from "@radix-ui/react-icons";
 import demoImage from "../../assets/demo.png";
+import logo from "../../assets/note.svg";
+import { CpuIcon, Smartphone } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
@@ -31,14 +33,14 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
-        <div className="flex justify-center mb-6">
-          <RocketIcon className="h-12 w-12 text-primary" />
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="Notes Logo" className="h-24 w-24" />
         </div>
         <h1 className="text-5xl font-bold tracking-tight mb-6">
-          Notes, Reimagined
+          Notes app ig
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          A minimalist note-taking app built with modern tech. Clean, fast, and
+          A minimalist note-taking app because screw apple notes.Clean, fast, and
           focused on what matters most - your thoughts.
         </p>
         <div className="flex justify-center gap-4">
@@ -112,14 +114,13 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <CodeIcon className="h-6 w-6 text-primary" />
-                <CardTitle>Open Source</CardTitle>
+                <Smartphone className="h-6 w-6 text-primary" />
+                <CardTitle>PWA Ready</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Built with modern tech and available on GitHub. Feel free to
-                contribute or fork the project.
+                PWA ready, so you can install it on your phone and desktop with a single click.
               </CardDescription>
             </CardContent>
           </Card>
@@ -258,6 +259,33 @@ export default function Home() {
               </CardDescription>
             </CardContent>
           </Card>
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <CpuIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Productivity Features</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Nested todos with collapsible subtasks, markdown support for notes (headers, lists, bold/italic), voice-to-text input (Web Speech API), and more.
+              </CardDescription>
+            </CardContent>
+          </Card>
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <RocketIcon className="h-6 w-6 text-primary" />
+                <CardTitle>AI Integrations</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Plug in your own AI models or use what I pick for you.
+                Enjoy suggestions and autocompletion, along with summarization and more.
+              </CardDescription>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -291,12 +319,10 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <h2 className="text-3xl font-bold mb-6">About This Project</h2>
           <p className="text-muted-foreground mb-4">
-            I built this app because I wanted a clean, simple way to organize my
-            thoughts. It's my take on what a modern note-taking app should be -
-            no clutter, no distractions.
+            I built this app because I'm tired of apple notes, so im gonna make it better for what i want.
           </p>
-          <p className="text-muted-foreground mb-6">
-            Feel free to try it out and let me know what you think!
+          <p className="bg-muted/30 rounded-lg p-4 mb-4">
+            When its done, i will make it open source and free to use.
           </p>
           <Button
             variant="outline"
