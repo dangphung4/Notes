@@ -6,78 +6,51 @@ import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), VitePWA({
-    registerType: 'prompt',
-    injectRegister: false,
-
-    pwaAssets: {
-      disabled: false,
-      config: true,
-    },
-
-    manifest: {
-      name: 'notes',
-      short_name: 'notes',
-      description: 'A notetaking app for myself',
-      theme_color: '#000000',
-      icons: [
-        {
-          src: '/assets/note.svg',
-          sizes: '200x200',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note512.svg',
-          sizes: '512x512',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note192.svg',
-          sizes: '192x192',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note180.svg',
-          sizes: '180x180',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note167.svg',
-          sizes: '167x167',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note144.svg',
-          sizes: '144x144',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note32.svg',
-          sizes: '32x32',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/demo.png',
-          sizes: '600x400',
-          type: 'image/png',
-        },
-
-      ],
-    },
-  
-    workbox: {
-      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-      cleanupOutdatedCaches: true,
-      clientsClaim: true,
-    },
-
-    devOptions: {
-      enabled: false,
-      navigateFallback: 'index.html',
-      suppressWarnings: true,
-      type: 'module',
-    },
-  })],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['assets/*.svg'],
+      manifest: {
+        name: 'Notes ig',
+        short_name: 'Notes ig',
+        description: 'A minimalist note-taking app with cloud sync, dark mode, and offline support.',
+        theme_color: '#000000',
+        background_color: '#000000',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/assets/note.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/assets/note-maskable.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'maskable'
+          },
+          {
+            src: '/assets/note192.svg',
+            sizes: '192x192',
+            type: 'image/svg+xml'
+          },
+          {
+            src: '/assets/note512.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml'
+          },
+          {
+            src: '/assets/note180.svg',
+            sizes: '180x180',
+            type: 'image/svg+xml',
+            purpose: 'apple-touch-icon'
+          }
+        ]
+      }
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
