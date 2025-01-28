@@ -73,7 +73,13 @@ export default function Notes() {
           })) as Note[];
 
           // Combine owned and shared notes
-          setNotes([...ownedNotes, ...sharedNotes]);
+          const uniqueNotes = [...ownedNotes];
+          sharedNotes.forEach(sharedNote => {
+            if (!uniqueNotes.some(note => note.firebaseId === sharedNote.firebaseId)) {
+              uniqueNotes.push(sharedNote);
+            }
+          });
+          setNotes(uniqueNotes);
         } else {
           setNotes(ownedNotes);
         }
@@ -130,7 +136,13 @@ export default function Notes() {
 
           setNotes(prev => {
             const ownedNotes = prev.filter(note => note.ownerUserId === user.uid);
-            return [...ownedNotes, ...sharedNotes];
+            const uniqueNotes = [...ownedNotes];
+            sharedNotes.forEach(sharedNote => {
+              if (!uniqueNotes.some(note => note.firebaseId === sharedNote.firebaseId)) {
+                uniqueNotes.push(sharedNote);
+              }
+            });
+            return uniqueNotes;
           });
         } catch (error) {
           console.error('Error loading shared notes:', error);
@@ -150,7 +162,13 @@ export default function Notes() {
 
       setNotes(prev => {
         const sharedNotes = prev.filter(note => note.ownerUserId !== user.uid);
-        return [...sharedNotes, ...ownedNotes];
+        const uniqueNotes = [...sharedNotes];
+        ownedNotes.forEach(ownedNote => {
+          if (!uniqueNotes.some(note => note.firebaseId === ownedNote.firebaseId)) {
+            uniqueNotes.push(ownedNote);
+          }
+        });
+        return uniqueNotes;
       });
     });
 

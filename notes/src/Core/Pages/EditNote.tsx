@@ -11,11 +11,13 @@ import type { Note } from '../Database/db';
 import ShareDialog from '../Components/ShareDialog';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
+import { useToast } from "@/hooks/use-toast";
 
 export default function EditNote() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -131,9 +133,6 @@ export default function EditNote() {
     }
   };
 
-  const handleShare = useCallback(async () => {
-    // Implementation of handleShare function
-  }, []);
 
   if (isLoading) {
     return (
@@ -181,13 +180,22 @@ export default function EditNote() {
             {saveStatus === 'error' && 'Error saving'}
           </span>
           <div className="flex items-center gap-1">
-            {note && (
-              <ShareDialog 
-                note={note} 
-                onShare={handleShare}
-                onError={() => setSaveStatus('error')} 
-              />
-            )}
+            <ShareDialog 
+              note={note} 
+              onShare={() => {
+                toast({
+                  title: "Note shared",
+                  description: "The note has been shared successfully.",
+                });
+              }}
+              onError={(error) => {
+                toast({
+                  title: "Error sharing note",
+                  description: error,
+                  variant: "destructive",
+                });
+              }}
+            />
             <Button
               variant="ghost"
               size="icon"
