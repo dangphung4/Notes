@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Editor from '../Components/Editor';
 import { db } from '../Database/db';
@@ -14,32 +14,48 @@ export default function NewNote() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [note, setNote] = useState<Note>({
-    title: '',
-    content: JSON.stringify(noteTemplates.blank.content),
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    ownerUserId: user?.uid || '',
-    ownerEmail: user?.email || '',
-    ownerDisplayName: user?.displayName || 'Unknown',
-    ownerPhotoURL: user?.photoURL || undefined,
-    tags: []
+  // Store editor content in localStorage to prevent loss
+  const [note, setNote] = useState<Note>(() => {
+    const savedNote = localStorage.getItem('draft-note');
+    if (savedNote) {
+      return JSON.parse(savedNote);
+    }
+    return {
+      title: '',
+      content: JSON.stringify(noteTemplates.blank.content),
+      updatedAt: new Date(),
+      createdAt: new Date(),
+      ownerUserId: user?.uid || '',
+      ownerEmail: user?.email || '',
+      ownerDisplayName: user?.displayName || 'Unknown',
+      ownerPhotoURL: user?.photoURL || undefined,
+      tags: []
+    };
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Save draft to localStorage whenever note changes
+  useEffect(() => {
+    localStorage.setItem('draft-note', JSON.stringify(note));
+  }, [note]);
+
+  // Clear draft when component unmounts after successful save
+  useEffect(() => {
+    return () => {
+      if (!isSaving) {
+        localStorage.removeItem('draft-note');
+      }
+    };
+  }, [isSaving]);
 
   // Handle template selection
   const handleTemplateSelect = (template: NoteTemplate) => {
     console.log('Selected template:', template); // Debug log
-    setNote(prev => {
-      const newNote = {
-        ...prev,
-        title: template.title || 'Untitled',
-        // Convert the template content to a string since that's what Note expects
-        content: JSON.stringify(template.content)
-      };
-      console.log('New note state:', newNote); // Debug log
-      return newNote;
-    });
+    setNote(prev => ({
+      ...prev,
+      title: template.title || 'Untitled',
+      content: JSON.stringify(template.content)
+    }));
   };
 
   // Save new note to Firebase directly
@@ -54,6 +70,7 @@ export default function NewNote() {
       });
       
       if (firebaseId) {
+        localStorage.removeItem('draft-note'); // Clear draft after successful save
         navigate(`/notes/${firebaseId}`);
       }
     } catch (error) {

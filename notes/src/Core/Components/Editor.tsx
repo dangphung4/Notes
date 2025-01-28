@@ -3,7 +3,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import debounce from "lodash/debounce";
 
 interface EditorProps {
@@ -18,12 +18,14 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
     document.documentElement.classList.contains('dark')
   );
 
-  // Parse the content string to object for BlockNote
+  // Create editor instance
   const editor = useCreateBlockNote({
-    initialContent: content ? JSON.parse(content) : [{
-      type: 'paragraph',
-      content: []
-    }],
+    initialContent: useMemo(() => 
+      content ? JSON.parse(content) : [{
+        type: 'paragraph',
+        content: []
+      }]
+    , [content])
   });
 
   // Debounced save function
