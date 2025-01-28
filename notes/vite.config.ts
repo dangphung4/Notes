@@ -8,75 +8,55 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [react(), VitePWA({
     registerType: 'prompt',
-    injectRegister: false,
-
-    pwaAssets: {
-      disabled: false,
-      config: true,
-    },
-
+    injectRegister: 'auto',
+    includeAssets: ['assets/*.png'],
     manifest: {
-      name: 'notes',
-      short_name: 'notes',
-      description: 'A notetaking app for myself',
-      theme_color: '#000000',
+      name: 'Notes ig',
+      short_name: 'Notes ig',
+      description: 'A minimalist note-taking app with cloud sync',
+      theme_color: 'transparent',
+      background_color: 'transparent',
+      display: 'standalone',
       icons: [
         {
-          src: '/assets/note.svg',
-          sizes: '200x200',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note512.svg',
+          src: '/assets/note-maskable.png',
           sizes: '512x512',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note192.svg',
-          sizes: '192x192',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note180.svg',
-          sizes: '180x180',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note167.svg',
-          sizes: '167x167',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note144.svg',
-          sizes: '144x144',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/note32.svg',
-          sizes: '32x32',
-          type: 'image/svg+xml',
-        },
-        {
-          src: '/assets/demo.png',
-          sizes: '600x400',
           type: 'image/png',
+          purpose: 'maskable'
         },
-
-      ],
+        {
+          src: '/assets/note.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: '/assets/note192.png',
+          sizes: '192x192',
+          type: 'image/png',
+          purpose: 'any'
+        }
+      ]
     },
-  
     workbox: {
-      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-      cleanupOutdatedCaches: true,
-      clientsClaim: true,
-    },
-
-    devOptions: {
-      enabled: false,
-      navigateFallback: 'index.html',
-      suppressWarnings: true,
-      type: 'module',
-    },
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts-cache',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        }
+      ]
+    }
   })],
   resolve: {
     alias: {
