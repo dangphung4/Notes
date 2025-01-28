@@ -9,6 +9,8 @@ const __dirname = dirname(__filename)
 
 const assets = [
   'demo.png',
+  'note-maskable.png',
+  'note-rounded.png',
   'note.svg',
   'note32.svg',
   'note144.svg',
