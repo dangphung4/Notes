@@ -9,6 +9,8 @@ import debounce from 'lodash/debounce';
 import { useAuth } from '../Auth/AuthContext';
 import type { Note } from '../Database/db';
 import ShareDialog from '../Components/ShareDialog';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db as firestore } from '../Auth/firebase';
 
 export default function EditNote() {
   const { id } = useParams();
@@ -20,42 +22,42 @@ export default function EditNote() {
   const [note, setNote] = useState<Note | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
-  // Load note data
-  const loadNote = useCallback(async () => {
-    if (!id) return;
-    try {
-      setIsLoading(true);
-      // Try to get note from IndexedDB first
-      const notes = await db.notes.where('firebaseId').equals(id).toArray();
-      const noteData = notes[0];
+  // Set up real-time listener for the note
+  useEffect(() => {
+    if (!id || !user) return;
 
-      if (noteData) {
-        setNote(noteData);
-        setTitle(noteData.title);
-        setContent(noteData.content);
-      } else {
-        // If not in IndexedDB, try to load from Firebase and save to IndexedDB
-        await db.loadFromFirebase();
-        const updatedNotes = await db.notes.where('firebaseId').equals(id).toArray();
-        const updatedNote = updatedNotes[0];
-        
-        if (updatedNote) {
+    // Listen for real-time updates to the note
+    const unsubscribe = onSnapshot(
+      doc(firestore, 'notes', id),
+      (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          const updatedNote = {
+            ...data,
+            firebaseId: doc.id,
+            createdAt: data.createdAt?.toDate(),
+            updatedAt: data.updatedAt?.toDate(),
+            lastEditedAt: data.lastEditedAt?.toDate()
+          } as Note;
+
           setNote(updatedNote);
           setTitle(updatedNote.title);
           setContent(updatedNote.content);
+          setIsLoading(false);
+        } else {
+          console.error('Note not found');
+          setIsLoading(false);
         }
+      },
+      (error) => {
+        console.error('Error loading note:', error);
+        setIsLoading(false);
+        setSaveStatus('error');
       }
-    } catch (error) {
-      console.error('Error loading note:', error);
-      setSaveStatus('error');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
+    );
 
-  useEffect(() => {
-    loadNote();
-  }, [loadNote]);
+    return () => unsubscribe();
+  }, [id, user]);
 
   // Save note changes
   const saveNote = useCallback(async (newTitle: string, newContent: string) => {
@@ -130,8 +132,8 @@ export default function EditNote() {
   };
 
   const handleShare = useCallback(async () => {
-    await loadNote();
-  }, [loadNote]);
+    // Implementation of handleShare function
+  }, []);
 
   if (isLoading) {
     return (
@@ -158,8 +160,9 @@ export default function EditNote() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex-1 flex items-center gap-4">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex-1 flex items-center gap-4 min-w-0">
           <Input
             type="text"
             value={title}
@@ -167,32 +170,45 @@ export default function EditNote() {
               setTitle(e.target.value);
               debouncedSaveTitle(e.target.value);
             }}
-            className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none"
+            className="text-2xl md:text-3xl font-bold bg-transparent border-0 p-0 focus:outline-none focus-visible:ring-0 w-full truncate placeholder:text-muted-foreground/50 placeholder:font-normal"
+            placeholder="Untitled"
           />
-          <span className="text-sm text-muted-foreground">
+        </div>
+        <div className="flex items-center gap-2 ml-2"> {/* added ml-2 for spacing */}
+          <span className="text-sm text-muted-foreground hidden sm:inline">
             {saveStatus === 'saving' && 'Saving...'}
             {saveStatus === 'saved' && 'All changes saved'}
             {saveStatus === 'error' && 'Error saving'}
           </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {note && (
-            <ShareDialog 
-              note={note} 
-              onShare={handleShare}
-              onError={(error) => setSaveStatus('error')} 
-            />
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive hover:text-destructive"
-            onClick={handleDelete}
-          >
-            <TrashIcon className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {note && (
+              <ShareDialog 
+                note={note} 
+                onShare={handleShare}
+                onError={(error) => setSaveStatus('error')} 
+              />
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive"
+              onClick={handleDelete}
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Save Status - only shows on mobile */}
+      {saveStatus !== 'saved' && (
+        <div className="sm:hidden text-center py-1 text-xs">
+          {saveStatus === 'saving' && 'Saving...'}
+          {saveStatus === 'error' && 'Error saving'}
+        </div>
+      )}
+
+      {/* Editor */}
       <div className="flex-1 overflow-hidden">
         <Editor
           content={content}

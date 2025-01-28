@@ -180,7 +180,7 @@ class NotesDB extends Dexie {
 
       if (note.firebaseId) {
         await updateDoc(doc(firestore, 'notes', note.firebaseId), {
-          title: note.title || 'Untitled',
+          title: note.title,
           content: note.content || '',
           updatedAt: new Date(),
           lastEditedByUserId: user.uid,
@@ -191,7 +191,7 @@ class NotesDB extends Dexie {
         });
       } else {
         const docRef = await addDoc(collection(firestore, 'notes'), {
-          title: note.title || 'Untitled',
+          title: note.title,
           content: note.content || '',
           createdAt: new Date(),
           updatedAt: new Date(),

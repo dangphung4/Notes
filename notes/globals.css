@@ -57,6 +57,21 @@
       --chart-4: 225.45 71.22% 75.75%;
       --chart-5: 0 3% 82.75%;
     }
+
+    /* Better mobile input styling */
+    input[type="text"] {
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+
+    /* Remove the blue highlight on mobile tap */
+    input,
+    textarea,
+    button,
+    select,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
   }
   
 
@@ -383,4 +398,50 @@
 /* Hide some toolbar items on mobile to prevent overflow */
 @media (max-width: 480px) {
 
+}
+
+/* Improve mobile editor experience */
+.mobile-editor {
+  /* Prevent iOS zoom on input focus */
+  @media screen and (max-width: 768px) {
+    font-size: 16px !important;
+  }
+}
+
+/* Update title input styles */
+.title-input {
+  font-weight: 700; /* Make it bolder */
+  font-size: 1.5rem;
+  line-height: 2rem;
+  padding: 0.5rem 0;
+  margin: 0;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 768px) {
+  .title-input {
+    font-size: 2rem;
+    line-height: 2.5rem;
+    padding: 0.75rem 0;
+  }
+}
+
+/* Add padding to the editor container on larger screens */
+@media (min-width: 768px) {
+  .bn-editor {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Improve mobile title input */
+@media (max-width: 767px) {
+  .title-input {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    padding: 0.5rem 0;
+  }
 }
