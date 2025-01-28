@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Note } from '../Database/db';
 
@@ -5,7 +6,6 @@ export function getPreviewText(content: string, maxLength = 300): string {
   try {
     const blocks = JSON.parse(content);
     const text = blocks
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((block: any) => {
         // BlockNote structure has content array with text property
         if (block.content) {
