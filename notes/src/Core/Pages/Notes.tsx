@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../Auth/AuthContext';
 import { db } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,6 @@ interface Note {
 }
 
 export default function Notes() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

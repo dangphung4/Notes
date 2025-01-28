@@ -4,7 +4,6 @@ import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import debounce from "lodash/debounce";
 
 interface EditorProps {
@@ -17,7 +16,6 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.classList.contains('dark')
   );
-  const navigate = useNavigate();
 
   // Create editor instance
   const editor = useCreateBlockNote({

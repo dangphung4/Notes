@@ -1,12 +1,10 @@
 import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Editor from '../Components/Editor';
 import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
 import debounce from 'lodash/debounce';
 
 export default function NewNote() {
-  const navigate = useNavigate();
   const [title, setTitle] = useState('Untitled');
   const [noteId, setNoteId] = useState<number | undefined>();
 
