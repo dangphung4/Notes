@@ -632,29 +632,45 @@ class NotesDB extends Dexie {
 
   // Add tag methods
   async createTag(tag: Partial<Tags>): Promise<Tags> {
+    console.log('Creating tag with data:', tag); // Debug log
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
     try {
-      // Save to Firebase
-      const docRef = await addDoc(collection(firestore, 'tags'), {
-        ...tag,
-        createdAt: new Date(),
-        createdBy: user.email
-      });
-
-      // Save locally
-      const newTag = {
-        ...tag,
-        id: docRef.id,
+      // Prepare tag data with all required fields
+      const tagData = {
+        name: tag.name || '',
+        color: tag.color || '#3b82f6',
+        group: tag.group || 'default',
+        metadata: tag.metadata || '',
         createdAt: new Date(),
         createdBy: user.email || ''
-      } as Tags;
+      };
 
-      await this.tags.add(newTag);
+      console.log('Saving tag to Firebase:', tagData); // Debug log
+
+      // Save to Firebase
+      const docRef = await addDoc(collection(firestore, 'tags'), tagData);
+      console.log('Tag saved to Firebase with ID:', docRef.id); // Debug log
+
+      // Create complete tag object
+      const newTag: Tags = {
+        ...tagData,
+        id: docRef.id,
+      };
+
+      console.log('Saving tag locally:', newTag); // Debug log
+      
+      // Save locally - Fix potential issue with table not being ready
+      if (this.tags) {
+        await this.tags.add(newTag);
+      } else {
+        console.error('Tags table not initialized');
+      }
+
       return newTag;
     } catch (error) {
-      console.error('Error creating tag:', error);
+      console.error('Detailed error in createTag:', error);
       throw error;
     }
   }

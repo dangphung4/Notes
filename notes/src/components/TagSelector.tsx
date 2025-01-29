@@ -6,12 +6,36 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { db } from '@/Core/Database/db';
 import type { Tags } from '@/Core/Database/db';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
+import { Check, ChevronDown } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface TagSelectorProps {
   selectedTags: Tags[];
   onTagsChange: (tags: Tags[]) => void;
   onCreateTag: (tag: Partial<Tags>) => Promise<Tags>;
 }
+
+// Add more preset colors
+const presetColors = [
+  // Blues
+  '#3b82f6', '#60a5fa', '#2563eb',
+  // Reds
+  '#ef4444', '#f87171', '#dc2626',
+  // Greens
+  '#22c55e', '#4ade80', '#16a34a',
+  // Yellows/Oranges
+  '#f59e0b', '#fbbf24', '#d97706',
+  // Purples
+  '#6366f1', '#a855f7', '#7c3aed',
+  // Pinks
+  '#ec4899', '#f472b6', '#db2777',
+  // Grays
+  '#6b7280', '#4b5563', '#374151',
+  // Teals
+  '#14b8a6', '#2dd4bf', '#0d9488',
+];
 
 export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSelectorProps) {
   const [isCreating, setIsCreating] = useState(false);
@@ -22,6 +46,7 @@ export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSele
     color: '#3b82f6',
     group: 'default'
   });
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
   // Fetch existing tags on mount
   useEffect(() => {
@@ -115,48 +140,122 @@ export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSele
 
       {/* Create new tag form */}
       {isCreating && (
-        <div className="flex items-center gap-2 animate-in slide-in-from-left">
-          <div className="flex gap-1">
-            {['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#6366f1'].map(color => (
-              <button
-                key={color}
-                type="button"
-                className={cn(
-                  "w-5 h-5 rounded-full transition-all",
-                  newTag.color === color && "ring-2 ring-offset-1 ring-primary"
-                )}
-                style={{ backgroundColor: color }}
-                onClick={() => setNewTag({ ...newTag, color })}
-              />
-            ))}
+        <div className="space-y-4 animate-in slide-in-from-left">
+          <div className="space-y-2">
+            <Input
+              placeholder="Tag name"
+              value={newTag.name}
+              onChange={e => setNewTag({ ...newTag, name: e.target.value })}
+              className="h-8 text-sm"
+            />
+            
+            <div className="space-y-1.5">
+              <Label className="text-xs">Color</Label>
+              <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between h-8 text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: newTag.color }}
+                      />
+                      {newTag.color}
+                    </div>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-3" align="start">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-5 gap-2">
+                      {presetColors.map(color => (
+                        <button
+                          key={color}
+                          className={cn(
+                            "w-8 h-8 rounded-full transition-all relative",
+                            newTag.color === color && "ring-2 ring-offset-2 ring-primary"
+                          )}
+                          style={{ backgroundColor: color }}
+                          onClick={() => {
+                            setNewTag({ ...newTag, color });
+                            setIsColorPickerOpen(false);
+                          }}
+                        >
+                          {newTag.color === color && (
+                            <Check className="h-4 w-4 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <Input
+                      type="color"
+                      value={newTag.color}
+                      onChange={e => setNewTag({ ...newTag, color: e.target.value })}
+                      className="w-full h-8"
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={async () => {
-              if (!newTag.name) return;
-              const tag = await onCreateTag(newTag);
-              onTagsChange([...selectedTags, tag]);
-              setIsCreating(false);
-              setSearchTerm('');
-              setNewTag({ name: '', color: '#3b82f6', group: 'default' });
-              // Refresh existing tags
-              const tags = await db.getTags();
-              setExistingTags(tags);
-            }}
-          >
-            Create
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              setIsCreating(false);
-              setSearchTerm('');
-            }}
-          >
-            Cancel
-          </Button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="default"
+              disabled={!newTag.name}
+              onClick={async () => {
+                if (!newTag.name) return;
+                try {
+
+                  const tagToCreate: Partial<Tags> = {
+                    name: newTag.name.trim(),
+                    color: newTag.color,
+                    group: newTag.group,
+                    metadata: '',
+                  };
+
+                  const createdTag = await onCreateTag(tagToCreate);
+
+                  const updatedTags = [...selectedTags, createdTag];
+                  onTagsChange(updatedTags);
+
+                  setIsCreating(false);
+                  setSearchTerm('');
+                  setNewTag({ name: '', color: '#3b82f6', group: 'default' });
+                  
+                  const tags = await db.getTags();
+                  setExistingTags(tags);
+
+                  toast({
+                    title: "Tag created",
+                    description: `Tag "${createdTag.name}" has been created successfully.`,
+                  });
+                } catch (error) {
+                  console.error('Detailed error creating tag:', error);
+                  toast({
+                    title: "Error creating tag",
+                    description: error instanceof Error ? error.message : "There was a problem creating the tag.",
+                    variant: "destructive"
+                  });
+                }
+              }}
+            >
+              Create
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setIsCreating(false);
+                setSearchTerm('');
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
     </div>

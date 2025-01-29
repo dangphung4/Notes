@@ -211,6 +211,14 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
               <Button
                 variant="default"
                 size="icon"
+                className="rounded-full shadow-lg"
+                onClick={() => handleNavigation('/calendar')}
+              >
+                <CalendarIcon className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="default"
+                size="icon"
                 className="rounded-full shadow-lg p-0 overflow-hidden"
                 onClick={() => handleNavigation('/profile')}
               >
