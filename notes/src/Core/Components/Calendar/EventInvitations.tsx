@@ -84,8 +84,8 @@ export function EventInvitations({ initialPendingEvents, onEventsUpdate }: Event
               {event.allDay ? (
                 format(new Date(event.startDate), 'MMM d, yyyy')
               ) : (
-                `${format(new Date(event.startDate), 'MMM d, yyyy h:mm a')} - 
-                 ${format(new Date(event.endDate), 'h:mm a')}`
+                `${format(new Date(event.startDate ?? ''), 'MMM d, yyyy h:mm a')} - 
+                 ${format(new Date(event.endDate ?? ''), 'h:mm a')}`
               )}
             </span>
           </div>

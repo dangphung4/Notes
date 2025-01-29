@@ -440,35 +440,204 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
 // Update the AgendaView component
 const AgendaView = ({ 
   events, 
+  selectedDate, 
   onEventClick 
 }: { 
   events: CalendarEvent[], 
+  selectedDate: Date,
   onEventClick: (event: CalendarEvent) => void 
 }) => {
+  // Get today's date at midnight for comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Get next 30 days starting from selected date
+  const next30Days = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date(selectedDate);
+    date.setDate(date.getDate() + i);
+    return format(date, 'yyyy-MM-dd');
+  });
+
+  const groupedEvents = groupEventsByDate(events);
+  
+  // Ensure we have entries for the next 30 days even if no events
+  next30Days.forEach(date => {
+    if (!groupedEvents[date]) {
+      groupedEvents[date] = [];
+    }
+  });
+
+  // Sort dates
+  const sortedDates = Object.keys(groupedEvents).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  );
+
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
-      <div className="space-y-4 p-4">
+      <div className="divide-y divide-border">
         {events.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            <p>No events scheduled</p>
+          <div className="text-center text-muted-foreground py-12 px-4">
+            <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p className="font-medium mb-1">No upcoming events</p>
+            <p className="text-sm">Click the + button to create a new event</p>
           </div>
         ) : (
-          Object.entries(groupEventsByDate(events)).map(([date, dateEvents]) => (
-            <div key={date} className="space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground sticky top-0 bg-background py-2">
-                {format(new Date(date), 'EEEE, MMMM d, yyyy')}
-              </h3>
-              <div className="space-y-1">
-                {dateEvents.map(event => (
-                  <AgendaEventBlock 
-                    key={event.firebaseId || event.id}
-                    event={event} 
-                    onEventClick={onEventClick}
-                  />
-                ))}
+          sortedDates.map(date => {
+            const dateEvents = groupedEvents[date];
+            const dateObj = new Date(date);
+            const isToday = dateObj.toDateString() === today.toDateString();
+            const isPast = dateObj < today;
+
+            return (
+              <div key={date} className={cn(
+                "transition-colors",
+                isToday && "bg-muted/30"
+              )}>
+                {/* Date Header */}
+                <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 z-10 flex items-center px-4 py-2 gap-3">
+                  <div className="flex-shrink-0 w-12 text-center">
+                    <div className={cn(
+                      "text-xl font-semibold leading-none",
+                      isToday && "text-primary"
+                    )}>
+                      {format(dateObj, 'd')}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {format(dateObj, 'EEE')}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className={cn(
+                      "text-sm font-medium",
+                      isToday && "text-primary",
+                      isPast && "text-muted-foreground"
+                    )}>
+                      {isToday ? 'Today' : format(dateObj, 'MMMM d, yyyy')}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {dateEvents.length === 0 
+                        ? 'No events scheduled' 
+                        : `${dateEvents.length} event${dateEvents.length === 1 ? '' : 's'}`
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                {/* Events List */}
+                <div className={cn(
+                  "divide-y divide-border/50",
+                  dateEvents.length === 0 && "pb-2"
+                )}>
+                  {dateEvents.map(event => (
+                    <div 
+                      key={event.firebaseId || event.id}
+                      className={cn(
+                        "px-4 py-2 hover:bg-muted/50 cursor-pointer transition-colors",
+                        "sm:hover:scale-[1.002] sm:hover:shadow-sm",
+                      )}
+                      onClick={() => onEventClick(event)}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Time Column */}
+                        <div className="w-12 flex-shrink-0 pt-1 text-center">
+                          <span className={cn(
+                            "text-sm font-medium",
+                            isPast && "text-muted-foreground"
+                          )}>
+                            {event.allDay ? (
+                              'All day'
+                            ) : (
+                              format(new Date(event.startDate), 'h:mm')
+                            )}
+                          </span>
+                          {!event.allDay && (
+                            <div className="text-[10px] text-muted-foreground">
+                              {format(new Date(event.startDate), 'a')}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Event Details Column */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-2 h-2 rounded-full flex-shrink-0 mt-1"
+                                  style={{ backgroundColor: event.color || '#3b82f6' }}
+                                />
+                                <h4 className={cn(
+                                  "font-medium truncate",
+                                  isPast && "text-muted-foreground"
+                                )}>
+                                  {event.title}
+                                </h4>
+                              </div>
+                              
+                              {/* Duration for non-all-day events */}
+                              {!event.allDay && (
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  {format(new Date(event.endDate), 'h:mm a')}
+                                </div>
+                              )}
+
+                              {/* Location */}
+                              {event.location && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                  <MapPinIcon className="h-3 w-3 flex-shrink-0" />
+                                  <span className="truncate">{event.location}</span>
+                                </div>
+                              )}
+
+                              {/* Tags */}
+                              {event.tags && event.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                  {event.tags.map(tag => (
+                                    <div
+                                      key={tag.id}
+                                      className="px-1.5 py-0.5 rounded-full text-[10px] leading-none"
+                                      style={{
+                                        backgroundColor: tag.color + '20',
+                                        color: tag.color
+                                      }}
+                                    >
+                                      {tag.name}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Sharing Indicators */}
+                            {event.sharedWith && event.sharedWith.length > 0 && (
+                              <div className="flex -space-x-2 pt-1">
+                                {event.sharedWith.slice(0, 2).map(share => (
+                                  <div
+                                    key={share.email}
+                                    className="w-5 h-5 rounded-full bg-muted ring-2 ring-background overflow-hidden"
+                                    title={share.email}
+                                  >
+                                    <span className="w-full h-full flex items-center justify-center text-[10px]">
+                                      {share.email.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                ))}
+                                {event.sharedWith.length > 2 && (
+                                  <div className="w-5 h-5 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-[10px]">
+                                    +{event.sharedWith.length - 2}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </ScrollArea>
@@ -828,6 +997,7 @@ export default function Calendar() {
   const [shareEmails, setShareEmails] = useState<string>('');
   const [sharePermission, setSharePermission] = useState<'view' | 'edit'>('view');
   const [pendingInvitations, setPendingInvitations] = useState<CalendarEvent[]>([]);
+  const [isCreate, setIsCreate] = useState(true);
 
   const [newEvent, setNewEvent] = useState<Partial<CalendarEvent>>({
     title: '',
@@ -986,6 +1156,7 @@ export default function Calendar() {
   const renderAgendaView = () => (
     <AgendaView 
       events={events} 
+      selectedDate={selectedDate}
       onEventClick={(event) => {
         setSelectedEvent(event);
         setIsEventDetailsOpen(true);
@@ -1099,8 +1270,6 @@ export default function Calendar() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedEvent, setEditedEvent] = useState<Partial<CalendarEvent> | null>(null);
-
-  // Add isCreate state
 
   return (
     <div className="flex flex-col h-[calc(100vh)] overflow-hidden">
@@ -1381,7 +1550,14 @@ export default function Calendar() {
 
           <TabsContent value="agenda" className="absolute inset-0">
             <div className="h-full overflow-auto">
-              {renderAgendaView()}
+              <AgendaView 
+                events={events} 
+                selectedDate={selectedDate}
+                onEventClick={(event) => {
+                  setSelectedEvent(event);
+                  setIsEventDetailsOpen(true);
+                }} 
+              />
             </div>
           </TabsContent>
         </div>
