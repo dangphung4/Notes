@@ -82,9 +82,12 @@ export interface CalendarEvent {
   reminderMinutes?: number;
   sharedWith?: CalendarEventShare[];
   createdBy: string; // user email
-  photoURL?: string;
+  createdByPhotoURL?: string;
+  lastModifiedByDisplayName?: string;
   lastModifiedBy?: string;
+  lastModifiedByPhotoURL?: string;
   lastModifiedAt?: Date;
+
   tags?: Tags[];
 }
 
