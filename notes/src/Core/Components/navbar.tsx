@@ -179,7 +179,7 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
   }, [darkMode]);
 
   return (
-    <div className="md:hidden fixed bottom-4 right-4 flex flex-col items-end gap-2 z-50">
+    <div className="md:hidden fixed bottom-16 right-2 flex flex-col items-end gap-2 z-50">
       {isOpen && (
         <div className="flex flex-col items-end gap-2 mb-2">
           <Button
