@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useMemo } from 'react';
 import { SharePermission } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon } from '@radix-ui/react-icons';
-import { Share } from 'lucide-react';
+import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
 import { onSnapshot, collection, query, where, getDocs, documentId } from 'firebase/firestore';
@@ -12,6 +12,297 @@ import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
 import type { Note } from '../Database/db';
+import { LayoutGridIcon, LayoutListIcon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { CalendarIcon, XIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import { PinIcon } from 'lucide-react';
+import { InfoIcon } from 'lucide-react';
+import { db } from '../Database/db';
+
+const NoteCard = ({ note, shares, user, view, onClick }: { 
+  note: Note, 
+  shares: SharePermission[], 
+  user: any, 
+  view: 'grid' | 'list',
+  onClick: () => void 
+}) => {
+  const isOwner = note.ownerUserId === user?.uid;
+  const noteShares = shares.filter(s => s.noteId === note.firebaseId);
+  const hasShares = noteShares.length > 0;
+
+  const handlePinClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await db.toggleNotePin(note.firebaseId!, !note.isPinned);
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+    }
+  };
+
+  return (
+    <Card className={`group hover:shadow-lg transition-all relative
+      ${note.isPinned ? 'border-primary/50' : ''}`}
+    >
+      {/* Action buttons - position absolute */}
+      <div className="absolute right-2 top-2 z-10 flex gap-2">
+        {isOwner && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePinClick(e);
+            }}
+          >
+            <PinIcon 
+              className={`h-4 w-4 ${note.isPinned ? 'text-primary' : 'text-muted-foreground'}`}
+            />
+          </Button>
+        )}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <InfoIcon className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent onClick={(e) => e.stopPropagation()}>
+            <SheetHeader>
+              <SheetTitle>Note Details</SheetTitle>
+              <SheetDescription>
+                View details about this note including creation date, ownership, and sharing information.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 space-y-6">
+              {/* Basic Info */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Basic Information</h4>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>Created {formatTimeAgo(note.createdAt)}</p>
+                  <p>Last updated {formatTimeAgo(note.updatedAt)}</p>
+                  {note.isPinned && <p>📌 Pinned note</p>}
+                </div>
+              </div>
+
+              {/* Owner Info */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Owner</h4>
+                <div className="flex items-center gap-2">
+                  {note.ownerPhotoURL ? (
+                    <img 
+                      src={note.ownerPhotoURL} 
+                      alt={note.ownerDisplayName}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <AvatarIcon className="w-8 h-8" />
+                  )}
+                  <div className="text-sm">
+                    <p>{note.ownerDisplayName}</p>
+                    <p className="text-muted-foreground">{note.ownerEmail}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share Info */}
+              {hasShares && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Shared With</h4>
+                  <div className="space-y-2">
+                    {noteShares.map(share => (
+                      <div key={share.id} className="flex items-center gap-2">
+                        <div className="text-sm">
+                          <p>{share.displayName}</p>
+                          <p className="text-muted-foreground">{share.email}</p>
+                          <p className="text-xs text-muted-foreground">Can {share.access}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Edit History */}
+              {note.lastEditedByUserId && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Last Edit</h4>
+                  <div className="flex items-center gap-2">
+                    {note.lastEditedByPhotoURL && (
+                      <img 
+                        src={note.lastEditedByPhotoURL} 
+                        alt={note.lastEditedByDisplayName}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <div className="text-sm">
+                      <p>{note.lastEditedByDisplayName}</p>
+                      <p className="text-muted-foreground">
+                        {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Clickable area */}
+      <div className="cursor-pointer" onClick={onClick}>
+        <CardContent className={`p-4 ${view === 'list' ? 'flex gap-4' : 'flex flex-col'} h-full`}>
+          {/* Left Section: Title, Owner, Preview */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                {note.title || 'Untitled'}
+              </h3>
+              {hasShares && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                  <Share2Icon className="h-3 w-3" />
+                  <span>
+                    {isOwner 
+                      ? `${noteShares.length} ${noteShares.length === 1 ? 'person' : 'people'}`
+                      : 'Shared with you'
+                    }
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Owner Info - Updated layout */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                {note.ownerPhotoURL ? (
+                  <img 
+                    src={note.ownerPhotoURL} 
+                    alt={note.ownerDisplayName}
+                    className="w-6 h-6 rounded-full"
+                  />
+                ) : (
+                  <AvatarIcon className="w-5 h-5" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {isOwner ? 'You' : note.ownerDisplayName}
+                </span>
+              </div>
+            </div>
+
+            {/* Preview - Different styling for list view */}
+            {view === 'list' ? (
+              <div className="text-sm text-muted-foreground line-clamp-1">
+                {getPreviewText(note.content, 100).split('\n')[0]}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground space-y-1 line-clamp-4">
+                {getPreviewText(note.content, 150).split('\n').map((line, i) => (
+                  line && (
+                    <div 
+                      key={i} 
+                      className={`
+                        ${line.startsWith('#') ? 'font-bold text-base' : ''}
+                        ${line.startsWith('•') ? 'pl-4' : ''}
+                        ${line.startsWith('1.') ? 'pl-4' : ''}
+                        ${line.startsWith('☐') ? 'pl-4' : ''}
+                      `}
+                    >
+                      {line}
+                    </div>
+                  )
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Right Section for List View - Updated layout */}
+          {view === 'list' && (
+            <div className="flex flex-col justify-between items-end min-w-[120px] ml-4">
+              <div className="text-xs text-muted-foreground">
+                {/* commented because its overlapped with the pin and info icon */}
+                {/* Created {formatTimeAgo(note.createdAt)} */}
+              </div>
+              {note.lastEditedByUserId && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span>Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}</span>
+                  {note.lastEditedByPhotoURL && (
+                    <img 
+                      src={note.lastEditedByPhotoURL} 
+                      alt={note.lastEditedByDisplayName}
+                      className="w-4 h-4 rounded-full"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Footer for Grid View */}
+          {view === 'grid' && (
+            <div className="mt-auto pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span>Created {formatTimeAgo(note.createdAt)}</span>
+              </div>
+              {note.lastEditedByUserId && (
+                <div className="flex items-center gap-2">
+                  {note.lastEditedByPhotoURL && (
+                    <img 
+                      src={note.lastEditedByPhotoURL} 
+                      alt={note.lastEditedByDisplayName}
+                      className="w-5 h-5 rounded-full"
+                    />
+                  )}
+                  <span>
+                    Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </div>
+    </Card>
+  );
+};
+
+const groupNotesByDate = (notes: Note[]) => {
+  const groups: { [key: string]: Note[] } = {};
+  
+  notes.forEach(note => {
+    const date = new Date(note.updatedAt);
+    let groupKey: string;
+
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      groupKey = 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      groupKey = 'Yesterday';
+    } else if (date.getFullYear() === today.getFullYear()) {
+      groupKey = format(date, 'MMMM d');
+    } else {
+      groupKey = format(date, 'MMMM d, yyyy');
+    }
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+    groups[groupKey].push(note);
+  });
+
+  return groups;
+};
 
 export default function Notes() {
   const navigate = useNavigate();
@@ -21,6 +312,18 @@ export default function Notes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'my-notes' | 'shared'>('my-notes');
+  const [view, setView] = useState<'grid' | 'list'>(() => {
+    return localStorage.getItem('notes-view') as 'grid' | 'list' || 'grid';
+  });
+  const [showViewOptions, setShowViewOptions] = useState(false);
+  const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>('updated');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [dateFilter, setDateFilter] = useState<Date | undefined>();
+
+  // Persist view preference
+  useEffect(() => {
+    localStorage.setItem('notes-view', view);
+  }, [view]);
 
   useEffect(() => {
     if (!user) return;
@@ -41,23 +344,47 @@ export default function Notes() {
           lastEditedAt: doc.data().lastEditedAt?.toDate()
         })) as Note[];
 
-        // Load shares
+        // Load all shares for owned notes
         const sharesRef = collection(firestore, 'shares');
-        const sharesQuery = query(sharesRef, where('email', '==', user.email));
-        const sharesSnapshot = await getDocs(sharesQuery);
+        const ownedNotesShares = query(
+          sharesRef, 
+          where('noteId', 'in', ownedNotes.map(note => note.firebaseId))
+        );
         
-        const sharesData = sharesSnapshot.docs.map(doc => ({
-            ...doc.data(),
-            id: doc.id,
-            createdAt: doc.data().createdAt?.toDate(),
-            updatedAt: doc.data().updatedAt?.toDate()
-        })) as unknown as SharePermission[];
-        
-        setShares(sharesData);
+        // Load shares where current user is recipient
+        const sharedWithMeQuery = query(
+          sharesRef,
+          where('email', '==', user.email)
+        );
 
-        // Load shared notes if there are any shares
-        if (sharesData.length > 0) {
-          const sharedNoteIds = sharesData.map(share => share.noteId);
+        // Get both share types
+        const [ownedSharesSnapshot, sharedWithMeSnapshot] = await Promise.all([
+          getDocs(ownedNotesShares),
+          getDocs(sharedWithMeQuery)
+        ]);
+
+        // Combine all shares
+        const allShares = [
+            ...ownedSharesSnapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
+                createdAt: doc.data().createdAt?.toDate(),
+                updatedAt: doc.data().updatedAt?.toDate()
+            })),
+            ...sharedWithMeSnapshot.docs.map(doc => ({
+                ...doc.data(),
+                id: doc.id,
+                createdAt: doc.data().createdAt?.toDate(),
+                updatedAt: doc.data().updatedAt?.toDate()
+            }))
+        ] as unknown as SharePermission[];
+
+        setShares(allShares);
+
+        // Load shared notes
+        const sharedNoteIds = sharedWithMeSnapshot.docs.map(doc => doc.data().noteId);
+        
+        if (sharedNoteIds.length > 0) {
           const sharedQuery = query(
             collection(firestore, 'notes'),
             where(documentId(), 'in', sharedNoteIds)
@@ -187,25 +514,193 @@ export default function Notes() {
     );
   });
 
-  const filteredNotes = (activeTab === 'my-notes' ? myNotes : sharedWithMe)
-    .filter(note => note.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Enhanced filtering logic
+  const filteredNotes = useMemo(() => {
+    return (activeTab === 'my-notes' ? myNotes : sharedWithMe)
+      .filter(note => {
+        // Search query
+        if (!note.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+          return false;
+        }
+        
+        // Tags filter
+        if (selectedTags.length > 0) {
+          if (!selectedTags.every(tag => note.tags?.includes(tag))) {
+            return false;
+          }
+        }
+
+        // Date filter
+        if (dateFilter) {
+          const noteDate = note.updatedAt;
+          return format(noteDate, 'yyyy-MM-dd') === format(dateFilter, 'yyyy-MM-dd');
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        // First sort by pinned status
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!b.isPinned && a.isPinned) return 1;
+        
+        // Then by selected sort
+        switch (sortBy) {
+          case 'title':
+            return a.title.localeCompare(b.title);
+          case 'created':
+            return b.createdAt.getTime() - a.createdAt.getTime();
+          default:
+            return b.updatedAt.getTime() - a.updatedAt.getTime();
+        }
+      });
+  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy]);
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Search and New Note */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative flex-1 max-w-md">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search notes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+    <div className="container mx-auto px-4 py-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+          {/* Search */}
+          <div className="relative flex-1 max-w-md">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* View Toggle and New Note */}
+          <div className="flex gap-2">
+            {/* Desktop View Toggle */}
+            <div className="hidden sm:flex gap-2">
+              <Button
+                variant={view === 'grid' ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setView('grid')}
+              >
+                <LayoutGridIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={view === 'list' ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setView('list')}
+              >
+                <LayoutListIcon className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Mobile View Toggle */}
+            <div className="sm:hidden">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowViewOptions(!showViewOptions)}
+              >
+                {view === 'grid' ? <LayoutGridIcon className="h-4 w-4" /> : <LayoutListIcon className="h-4 w-4" />}
+              </Button>
+              {showViewOptions && (
+                <div className="absolute right-4 mt-2 p-2 bg-popover border rounded-md shadow-lg">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setView('grid');
+                      setShowViewOptions(false);
+                    }}
+                  >
+                    <LayoutGridIcon className="h-4 w-4 mr-2" />
+                    Grid View
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setView('list');
+                      setShowViewOptions(false);
+                    }}
+                  >
+                    <LayoutListIcon className="h-4 w-4 mr-2" />
+                    List View
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <Button onClick={() => navigate('/notes/new')} className="w-full sm:w-auto">
+              <PlusIcon className="mr-2 h-4 w-4" /> New Note
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => navigate('/notes/new')} className="ml-4">
-          <PlusIcon className="mr-2 h-4 w-4" /> New Note
-        </Button>
+
+        {/* Filters Row */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Sort dropdown */}
+          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updated">Last Updated</SelectItem>
+              <SelectItem value="created">Created Date</SelectItem>
+              <SelectItem value="title">Title</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Date Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={dateFilter ? "default" : "outline"}
+                className="gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFilter}
+                onSelect={setDateFilter}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+        </div>
+
+        {/* Active Filters Display */}
+        {(selectedTags.length > 0 || dateFilter) && (
+          <div className="flex flex-wrap gap-2">
+            {selectedTags.map(tag => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="gap-1"
+              >
+                {tag}
+                <XIcon
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
+                />
+              </Badge>
+            ))}
+            {dateFilter && (
+              <Badge
+                variant="secondary"
+                className="gap-1"
+              >
+                {format(dateFilter, 'MMM dd, yyyy')}
+                <XIcon
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setDateFilter(undefined)}
+                />
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -214,110 +709,38 @@ export default function Notes() {
         onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
         className="mb-6"
       >
-        <TabsList>
-          <TabsTrigger value="my-notes">My Notes ({myNotes.length})</TabsTrigger>
-          <TabsTrigger value="shared">Shared with Me ({sharedWithMe.length})</TabsTrigger>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="my-notes" className="flex-1 sm:flex-initial">
+            My Notes ({myNotes.length})
+          </TabsTrigger>
+          <TabsTrigger value="shared" className="flex-1 sm:flex-initial">
+            Shared with Me ({sharedWithMe.length})
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {/* Notes Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredNotes.map((note) => (
-          <Card 
-            key={note.firebaseId} 
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate(`/notes/${note.firebaseId}`)}
-          >
-            <CardContent className="p-6 flex flex-col h-[300px]">
-              {/* Title and Share Status */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold truncate">
-                    {note.title || 'Untitled'}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    {note.ownerPhotoURL && (
-                      <img 
-                        src={note.ownerPhotoURL} 
-                        alt={note.ownerDisplayName}
-                        className="w-4 h-4 rounded-full"
-                      />
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      by {note.ownerUserId === user?.uid ? 'you' : note.ownerDisplayName}
-                    </p>
-                  </div>
-                </div>
-                {shares.some(s => s.noteId === note.firebaseId) && (
-                  <div className="flex items-center ml-2">
-                    <Share className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-
-              {/* Preview */}
-              <div className="text-sm text-muted-foreground flex-grow overflow-hidden">
-                <div className="whitespace-pre-wrap break-words line-clamp-6">
-                  {getPreviewText(note.content, 300).split('\n').map((line, i) => (
-                    <div key={i} className={
-                      line.startsWith('#') ? 'font-bold text-base' :
-                      line.startsWith('•') ? 'pl-4' :
-                      line.startsWith('1.') ? 'pl-4' :
-                      ''
-                    }>
-                      {line}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tags (if any) */}
-              {note.tags && note.tags.length > 0 && (
-                <div className="flex gap-1 mt-3 flex-wrap">
-                  {note.tags.map(tag => (
-                    <span 
-                      key={tag} 
-                      className="px-2 py-0.5 bg-muted rounded-full text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Last Edited Info */}
-              <div className="text-xs text-muted-foreground mt-4 pt-3 border-t">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    {note.lastEditedByPhotoURL ? (
-                      <img 
-                        src={note.lastEditedByPhotoURL} 
-                        alt={note.lastEditedByDisplayName}
-                        className="w-4 h-4 rounded-full"
-                      />
-                    ) : (
-                      <AvatarIcon className="h-4 w-4" />
-                    )}
-                    <span>
-                      {note.lastEditedByDisplayName 
-                        ? `Edited by ${note.lastEditedByDisplayName} • ${formatTimeAgo(note.lastEditedAt!)}`
-                        : `Updated ${formatTimeAgo(note.updatedAt)}`
-                      }
-                    </span>
-                  </div>
-                  {shares.some(s => s.noteId === note.firebaseId) && (
-                    <div className="flex items-center gap-1 text-muted-foreground/80">
-                      <span>
-                        Shared
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Notes Grid/List */}
+      {Object.entries(groupNotesByDate(filteredNotes)).map(([date, dateNotes]) => (
+        <div key={date} className="mb-8">
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">{date}</h3>
+          <div className={
+            view === 'grid' 
+              ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
+              : "flex flex-col gap-4"
+          }>
+            {dateNotes.map((note) => (
+              <NoteCard 
+                key={note.firebaseId} 
+                note={note} 
+                shares={shares} 
+                user={user} 
+                view={view}
+                onClick={() => navigate(`/notes/${note.firebaseId}`)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
 
       {/* Empty State */}
       {filteredNotes.length === 0 && !isLoading && (

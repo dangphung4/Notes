@@ -1,6 +1,7 @@
 import { GitHubLogoIcon, LinkedInLogoIcon } from "@radix-ui/react-icons";
 import { Link } from "react-router-dom";
-
+import { DownloadIcon, } from "lucide-react";
+import { Button } from "@/components/ui/button";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -10,10 +11,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-3">
-            <h3 className="font-semibold text-lg">Notes</h3>
+            <div className="flex items-center space-x-2">
+                <h3 className="font-semibold text-lg">Notes</h3>
+                <Button variant="link" size="icon" asChild>
+                    <Link to="/install">
+                        <DownloadIcon/>
+                    </Link>
+                </Button>
+            </div>
+            
             <p className="text-sm text-muted-foreground">
               A minimalist note-taking app because I don't like apple notes.
             </p>
+            
           </div>
 
           {/* Quick Links
