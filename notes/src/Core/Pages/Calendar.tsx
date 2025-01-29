@@ -1028,73 +1028,77 @@ export default function Calendar() {
         className="flex flex-col h-full"
       >
         <div className="shrink-0 border-b bg-background">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center space-x-4">
+          {/* Header Section */}
+          <div className="flex flex-col gap-3 p-4">
+            {/* Top Row - Title and Primary Actions */}
+            <div className="flex items-center justify-between">
               <h1 className="text-xl font-semibold">Calendar</h1>
-              <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    className="gap-2"
-                    onClick={() => {
-                      setIsCreate(true);
-                      setNewEvent({
-                        title: '',
-                        description: '',
-                        startDate: new Date(),
-                        endDate: new Date(),
-                        allDay: false,
-                        reminderMinutes: 30,
-                        location: '',
-                        color: '#3b82f6',
-                        sharedWith: []
-                      });
-                    }}
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                    New Event
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
-                  <DialogHeader className="px-4 py-3 border-b">
-                    <DialogTitle className="text-lg">Create New Event</DialogTitle>
-                  </DialogHeader>
+              <div className="flex items-center gap-2">
+                <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => {
+                        setIsCreate(true);
+                        setNewEvent({
+                          title: '',
+                          description: '',
+                          startDate: new Date(),
+                          endDate: new Date(),
+                          allDay: false,
+                          reminderMinutes: 30,
+                          location: '',
+                          color: '#3b82f6',
+                          sharedWith: []
+                        });
+                      }}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      <span className="hidden sm:inline">New Event</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
+                    <DialogHeader className="px-4 py-3 border-b">
+                      <DialogTitle className="text-lg">Create New Event</DialogTitle>
+                    </DialogHeader>
 
-                  <EventForm
-                    isCreate={true}
-                    initialEvent={newEvent}
-                    onSubmit={handleCreateEvent}
-                    onCancel={() => setIsCreateEventOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
-              <EventInvitations 
-                initialPendingEvents={pendingInvitations}
-                onEventsUpdate={() => {
-                  loadEvents();
-                  loadPendingInvitations();
-                }}
-              />
+                    <EventForm
+                      isCreate={true}
+                      initialEvent={newEvent}
+                      onSubmit={handleCreateEvent}
+                      onCancel={() => setIsCreateEventOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+                <EventInvitations 
+                  initialPendingEvents={pendingInvitations}
+                  onEventsUpdate={() => {
+                    loadEvents();
+                    loadPendingInvitations();
+                  }}
+                />
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <div className="hidden sm:flex items-center mr-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setCurrentWeek(new Date());
-                    setSelectedDate(new Date());
-                  }}
-                >
-                  Today
-                </Button>
-              </div>
+            {/* Bottom Row - Navigation Controls */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setCurrentWeek(new Date());
+                  setSelectedDate(new Date());
+                }}
+              >
+                Today
+              </Button>
+
               <div className="flex items-center rounded-md border bg-background">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-none"
+                  className="h-8 w-8"
                   onClick={() => {
                     if (view === 'week') {
                       setCurrentWeek(subWeeks(currentWeek, 1));
@@ -1108,7 +1112,7 @@ export default function Calendar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-none"
+                  className="h-8 w-8"
                   onClick={() => {
                     if (view === 'week') {
                       setCurrentWeek(addWeeks(currentWeek, 1));
@@ -1125,16 +1129,14 @@ export default function Calendar() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={cn(
-                      "min-w-[200px] justify-start text-left font-normal sm:pr-12",
-                      !selectedDate && "text-muted-foreground"
-                    )}
+                    size="sm"
+                    className="h-8"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    <span>
+                    <span className="whitespace-nowrap">
                       {view === 'week' 
-                        ? `${format(startOfWeek(currentWeek), 'MMMM d')} - ${format(addDays(startOfWeek(currentWeek), 6), 'MMMM d, yyyy')}`
-                        : format(selectedDate, 'MMMM d, yyyy')
+                        ? `${format(startOfWeek(currentWeek), 'MMM d')} - ${format(addDays(startOfWeek(currentWeek), 6), 'MMM d')}`
+                        : format(selectedDate, 'MMM d, yyyy')
                       }
                     </span>
                   </Button>
@@ -1188,6 +1190,7 @@ export default function Calendar() {
             </div>
           </div>
 
+          {/* View Tabs */}
           <div className="px-4 pb-2">
             <TabsList className="w-full sm:w-auto justify-start">
               <TabsTrigger value="day" className="flex-1 sm:flex-none">Day</TabsTrigger>

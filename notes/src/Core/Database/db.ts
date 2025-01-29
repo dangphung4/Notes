@@ -98,7 +98,7 @@ class NotesDB extends Dexie {
 
   constructor() {
     super('NotesDB');
-    this.version(3).stores({
+    this.version(4).stores({
       notes: '++id, firebaseId, title, updatedAt',
       calendarEvents: '++id, firebaseId, startDate, endDate, ownerUserId',
       tags: '++id, name, group'
@@ -535,14 +535,14 @@ class NotesDB extends Dexie {
     const user = auth.currentUser;
     
     if (!event || !user) throw new Error('Event not found or user not authenticated');
-
+  
     try {
       const shares = shareWith.map(email => ({
         email,
         permission,
         status: 'pending'
       }));
-
+  
       // Update Firebase
       if (event.firebaseId) {
         await updateDoc(doc(firestore, 'calendarEvents', event.firebaseId), {
@@ -551,18 +551,16 @@ class NotesDB extends Dexie {
           lastModifiedAt: new Date()
         });
       }
-
-      // Update local DB
-      await this.calendarEvents.update(eventId, {
-        sharedWith: [...(event.sharedWith || []), ...shares],
-        lastModifiedBy: user.email,
-        lastModifiedAt: new Date()
+  
+      // Update local DB using modification callback
+      await this.calendarEvents.update(eventId, obj => {
+        obj.sharedWith = [...(obj.sharedWith || []), ...shares];
+        obj.lastModifiedBy = user.email;
+        obj.lastModifiedAt = new Date();
       });
-
-      // Send email notifications (you'll need to implement this on your backend)
-      // For now, we'll just console.log
+  
       console.log(`Sharing event with: ${shareWith.join(', ')}`);
-
+  
     } catch (error) {
       console.error('Error sharing calendar event:', error);
       throw error;
