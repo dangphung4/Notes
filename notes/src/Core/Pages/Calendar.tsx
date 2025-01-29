@@ -764,7 +764,7 @@ const EventSearch = ({
   });
 
   return (
-    <div className="w-full lg:w-1/2">
+    <div className="w-full max-w-3xl">
       <Button
         variant="outline"
         role="combobox"
@@ -1115,9 +1115,9 @@ export default function Calendar() {
         <div className="shrink-0 border-b bg-background">
           {/* Header Section */}
           <div className="flex flex-col gap-3 p-4">
-            {/* Top Row - Title and Primary Actions */}
+            {/* Top Row - Search and Actions */}
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+              <div className="flex-1">
                 <EventSearch 
                   events={events} 
                   onEventSelect={(event) => {
@@ -1126,7 +1126,7 @@ export default function Calendar() {
                   }} 
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
                   <DialogTrigger asChild>
                     <Button 
