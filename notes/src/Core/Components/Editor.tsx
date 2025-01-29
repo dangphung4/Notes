@@ -1,5 +1,8 @@
 import "@blocknote/core/fonts/inter.css";
+// TODO: eventually move to shadcn instead of mantime,  @blocknote/shadcn
+// TODO: although this means we will have to edit styles again of editor component
 import { BlockNoteView } from "@blocknote/mantine";
+// this will use shadcn styles ex: @blocknote/shadcn/style.css
 import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
@@ -11,9 +14,10 @@ interface EditorProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onChange: (content: any[]) => void;
   onSave?: () => void;
+  editorRef?: React.MutableRefObject<BlockNoteEditor | null>;
 }
 
-export default function Editor({ content, onChange, onSave }: EditorProps) {
+export default function Editor({ content, onChange, onSave, editorRef }: EditorProps) {
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.classList.contains('dark')
   );
@@ -27,6 +31,13 @@ export default function Editor({ content, onChange, onSave }: EditorProps) {
       }]
     , [content])
   });
+
+  // Set editor reference if provided
+  useEffect(() => {
+    if (editorRef) {
+      editorRef.current = editor;
+    }
+  }, [editor, editorRef]);
 
   // Debounced save function
   const debouncedSave = useCallback(
