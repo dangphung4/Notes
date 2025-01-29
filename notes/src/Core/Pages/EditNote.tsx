@@ -202,32 +202,40 @@ export default function EditNote() {
   // Conversion functions
   const convertToMarkdown = (blocks: any[]) => {
     let markdown = '';
+    
+    const getTextContent = (content: any[]) => {
+      if (!Array.isArray(content)) return '';
+      return content.map(c => {
+        let text = c.text || '';
+        if (c.styles?.bold) text = `**${text}**`;
+        if (c.styles?.italic) text = `*${text}*`;
+        if (c.styles?.underline) text = `_${text}_`;
+        if (c.styles?.strike) text = `~~${text}~~`;
+        return text;
+      }).join('');
+    };
+
     blocks.forEach(block => {
       switch (block.type) {
-        case 'heading':
-          { const level = '#'.repeat(block.props.level);
-          markdown += `${level} ${block.content.map((c: any) => c.text).join('')}\n\n`;
-          break; }
+        case 'heading': {
+          const level = '#'.repeat(block.props?.level || 1);
+          markdown += `${level} ${getTextContent(block.content)}\n\n`;
+          break;
+        }
         case 'paragraph':
-          markdown += `${block.content.map((c: any) => {
-            let text = c.text;
-            if (c.styles?.bold) text = `**${text}**`;
-            if (c.styles?.italic) text = `*${text}*`;
-            if (c.styles?.underline) text = `_${text}_`;
-            if (c.styles?.strike) text = `~~${text}~~`;
-            return text;
-          }).join('')}\n\n`;
+          markdown += `${getTextContent(block.content)}\n\n`;
           break;
         case 'bulletListItem':
-          markdown += `* ${block.content.map((c: any) => c.text).join('')}\n`;
+          markdown += `* ${getTextContent(block.content)}\n`;
           break;
         case 'numberedListItem':
-          markdown += `1. ${block.content.map((c: any) => c.text).join('')}\n`;
+          markdown += `1. ${getTextContent(block.content)}\n`;
           break;
-        case 'checkListItem':
-          { const checkbox = block.props.checked ? '[x]' : '[ ]';
-          markdown += `${checkbox} ${block.content.map((c: any) => c.text).join('')}\n`;
-          break; }
+        case 'checkListItem': {
+          const checkbox = block.props?.checked ? '[x]' : '[ ]';
+          markdown += `${checkbox} ${getTextContent(block.content)}\n`;
+          break;
+        }
       }
     });
     return markdown;
@@ -235,7 +243,14 @@ export default function EditNote() {
 
   const convertToPlainText = (blocks: any[]) => {
     return blocks.map(block => {
-      const text = block.content.map((c: any) => c.text).join('');
+      // Safely get text content from block
+      const getTextContent = (content: any[]) => {
+        if (!Array.isArray(content)) return '';
+        return content.map(c => c.text || '').join('');
+      };
+
+      const text = getTextContent(block.content);
+      
       switch (block.type) {
         case 'heading':
           return `${text}\n`;
@@ -244,7 +259,9 @@ export default function EditNote() {
         case 'numberedListItem':
           return `1. ${text}\n`;
         case 'checkListItem':
-          return `${block.props.checked ? '☒' : '☐'} ${text}\n`;
+          return `${block.props?.checked ? '☒' : '☐'} ${text}\n`;
+        case 'paragraph':
+          return `${text}\n`;
         default:
           return `${text}\n`;
       }
@@ -252,6 +269,18 @@ export default function EditNote() {
   };
 
   const convertToHTML = (blocks: any[]) => {
+    const getTextContent = (content: any[]) => {
+      if (!Array.isArray(content)) return '';
+      return content.map(c => {
+        let text = c.text || '';
+        if (c.styles?.bold) text = `<strong>${text}</strong>`;
+        if (c.styles?.italic) text = `<em>${text}</em>`;
+        if (c.styles?.underline) text = `<u>${text}</u>`;
+        if (c.styles?.strike) text = `<del>${text}</del>`;
+        return text;
+      }).join('');
+    };
+
     let html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>';
     html += note?.title || 'Untitled';
     html += '</title></head><body style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: system-ui, -apple-system, sans-serif;">';
@@ -259,28 +288,22 @@ export default function EditNote() {
     blocks.forEach(block => {
       switch (block.type) {
         case 'heading':
-          html += `<h${block.props.level}>${block.content.map((c: any) => c.text).join('')}</h${block.props.level}>`;
+          html += `<h${block.props?.level || 1}>${getTextContent(block.content)}</h${block.props?.level || 1}>`;
           break;
         case 'paragraph':
-          html += `<p>${block.content.map((c: any) => {
-            let text = c.text;
-            if (c.styles?.bold) text = `<strong>${text}</strong>`;
-            if (c.styles?.italic) text = `<em>${text}</em>`;
-            if (c.styles?.underline) text = `<u>${text}</u>`;
-            if (c.styles?.strike) text = `<del>${text}</del>`;
-            return text;
-          }).join('')}</p>`;
+          html += `<p>${getTextContent(block.content)}</p>`;
           break;
         case 'bulletListItem':
-          html += `<ul><li>${block.content.map((c: any) => c.text).join('')}</li></ul>`;
+          html += `<ul><li>${getTextContent(block.content)}</li></ul>`;
           break;
         case 'numberedListItem':
-          html += `<ol><li>${block.content.map((c: any) => c.text).join('')}</li></ol>`;
+          html += `<ol><li>${getTextContent(block.content)}</li></ol>`;
           break;
-        case 'checkListItem':
-          { const checked = block.props.checked ? ' checked' : '';
-          html += `<div><input type="checkbox"${checked} disabled> ${block.content.map((c: any) => c.text).join('')}</div>`;
-          break; }
+        case 'checkListItem': {
+          const checked = block.props?.checked ? ' checked' : '';
+          html += `<div><input type="checkbox"${checked} disabled> ${getTextContent(block.content)}</div>`;
+          break;
+        }
       }
     });
     
