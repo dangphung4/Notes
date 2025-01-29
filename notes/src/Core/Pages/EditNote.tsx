@@ -29,15 +29,14 @@ import {
   BoldIcon,
   ListIcon,
   CheckSquareIcon,
-  ImageIcon,
   ArrowUpIcon,
-  PlusIcon,
-  TableIcon,
   ArrowLeftIcon,
   WifiOffIcon,
   Heading1Icon,
   ItalicIcon,
-  UnderlineIcon
+  UnderlineIcon,
+  Heading2Icon,
+  Heading3Icon
 } from 'lucide-react';
 import { BlockNoteEditor } from '@blocknote/core';
 
@@ -736,35 +735,10 @@ export default function EditNote() {
         />
       </div>
 
-      {/* Add this component at the bottom of the page */}
-      <div className="sm:hidden fixed bottom-4 right-4 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="icon" className="h-12 w-12 rounded-full shadow-lg">
-              <PlusIcon className="h-6 w-6" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="end">
-            <DropdownMenuItem>
-              <ImageIcon className="h-4 w-4 mr-2" />
-              Add Image
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <TableIcon className="h-4 w-4 mr-2" />
-              Add Table
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <ListIcon className="h-4 w-4 mr-2" />
-              Add List
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       {/* Mobile bottom toolbar */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between px-4 py-2">
-          {/* Left side - Navigation */}
+          {/* Left - Back button */}
           <Button 
             variant="ghost" 
             size="sm" 
@@ -775,23 +749,89 @@ export default function EditNote() {
             <span>Back</span>
           </Button>
 
-          {/* Right side - Share */}
-          <ShareDialog 
-            note={note}
-            onShare={() => {
-              toast({
-                title: "Note shared",
-                description: "The note has been shared successfully.",
-              });
-            }}
-            onError={(error) => {
-              toast({
-                title: "Error sharing note",
-                description: error,
-                variant: "destructive",
-              });
-            }}
-          />
+          {/* Center - Formatting Options */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.focus();
+                  editor.insertBlocks(
+                    [{ type: "heading", props: { level: 1 } }],
+                    editor.getTextCursorPosition().block,
+                    'after'
+                  );
+                }
+              }}
+              className="shrink-0"
+            >
+              <Heading1Icon className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.focus();
+                  editor.insertBlocks(
+                    [{ type: "heading", props: { level: 2 } }],
+                    editor.getTextCursorPosition().block,
+                    'after'
+                  );
+                }
+              }}
+              className="shrink-0"
+            >
+              <Heading2Icon className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.focus();
+                  editor.insertBlocks(
+                    [{ type: "heading", props: { level: 3 } }],
+                    editor.getTextCursorPosition().block,
+                    'after'
+                  );
+                }
+              }}
+              className="shrink-0"
+            >
+              <Heading3Icon className="h-4 w-4" />
+            </Button>
+
+            <div className="w-px h-4 bg-border mx-1" />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const editor = editorRef.current;
+                if (editor) {
+                  editor.focus();
+                  editor.insertBlocks(
+                    [{ type: "codeBlock", props: {} }],
+                    editor.getTextCursorPosition().block,
+                    'after'
+                  );
+                }
+              }}
+              className="shrink-0"
+            >
+              <CodeIcon className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Right side - Empty div to maintain spacing */}
+          <div className="w-[72px]" /> {/* Approximate width of removed share button */}
         </div>
       </div>
 
