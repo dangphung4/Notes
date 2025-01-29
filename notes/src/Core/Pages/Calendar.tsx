@@ -24,6 +24,7 @@ import { auth } from '../Auth/firebase';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { TagSelector } from '@/components/TagSelector';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { EventInvitations } from '../Components/Calendar/EventInvitations';
 
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
@@ -585,8 +586,33 @@ export default function Calendar() {
   }, []);
 
   async function loadEvents() {
-    const allEvents = await db.calendarEvents.toArray();
-    setEvents(allEvents);
+    try {
+      // Get local events
+      const localEvents = await db.calendarEvents.toArray();
+      
+      // Get shared events that have been accepted
+      const sharedEvents = await db.getSharedEvents();
+      const acceptedSharedEvents = sharedEvents.filter(event => {
+        const userEmail = auth.currentUser?.email;
+        const userShare = event.sharedWith?.find(share => share.email === userEmail);
+        return userShare?.status === 'accepted';
+      });
+      
+      // Make sure we don't have duplicates (prefer local events)
+      const uniqueSharedEvents = acceptedSharedEvents.filter(
+        shared => !localEvents.some(local => local.firebaseId === shared.firebaseId)
+      );
+      
+      // Combine local and accepted shared events
+      setEvents([...localEvents, ...uniqueSharedEvents]);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load calendar events",
+        variant: "destructive"
+      });
+    }
   }
 
   const handleCreateEvent = async (event: Partial<CalendarEvent>) => {
@@ -834,6 +860,7 @@ export default function Calendar() {
                   />
                 </DialogContent>
               </Dialog>
+              <EventInvitations />
             </div>
 
             <div className="flex items-center space-x-2">
