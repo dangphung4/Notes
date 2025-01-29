@@ -31,6 +31,7 @@ export interface Note {
 
 // Simplified share permission
 export interface SharePermission {
+  id: string | null | undefined;
   noteId: string;
   userId: string;
   email: string;
@@ -187,7 +188,8 @@ class NotesDB extends Dexie {
           lastEditedByEmail: user.email,
           lastEditedByDisplayName: user.displayName || 'Unknown',
           lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date()
+          lastEditedAt: new Date(),
+          isPinned: note.isPinned
         });
       } else {
         const docRef = await addDoc(collection(firestore, 'notes'), {
@@ -349,6 +351,36 @@ class NotesDB extends Dexie {
       return docRef.id;
     } catch (error) {
       console.error('Error creating note:', error);
+      throw error;
+    }
+  }
+
+  // Add new method for toggling pin
+  async toggleNotePin(noteId: string, isPinned: boolean) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const noteRef = doc(firestore, 'notes', noteId);
+      const noteDoc = await getDoc(noteRef);
+      
+      if (!noteDoc.exists()) {
+        throw new Error('Note not found');
+      }
+      
+      const noteData = noteDoc.data();
+      if (noteData.ownerUserId !== user.uid) {
+        throw new Error('Only the owner can pin/unpin notes');
+      }
+
+      await updateDoc(noteRef, {
+        isPinned,
+        updatedAt: new Date()
+      });
+
+      await this.loadFromFirebase();
+    } catch (error) {
+      console.error('Error toggling pin:', error);
       throw error;
     }
   }

@@ -19,6 +19,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, XIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import { PinIcon } from 'lucide-react';
+import { InfoIcon } from 'lucide-react';
+import { db } from '../Database/db';
 
 const NoteCard = ({ note, shares, user, view, onClick }: { 
   note: Note, 
@@ -31,121 +35,273 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
   const noteShares = shares.filter(s => s.noteId === note.firebaseId);
   const hasShares = noteShares.length > 0;
 
+  const handlePinClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await db.toggleNotePin(note.firebaseId!, !note.isPinned);
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+    }
+  };
+
   return (
-    <Card 
-      className={`cursor-pointer group hover:shadow-lg transition-all`}
-      onClick={onClick}
+    <Card className={`group hover:shadow-lg transition-all relative
+      ${note.isPinned ? 'border-primary/50' : ''}`}
     >
-      <CardContent className={`p-4 ${view === 'list' ? 'flex gap-4' : 'flex flex-col'} h-full`}>
-        {/* Left Section: Title, Owner, Preview */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
-              {note.title || 'Untitled'}
-            </h3>
-            {hasShares && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                <Share2Icon className="h-3 w-3" />
-                <span>
-                  {isOwner 
-                    ? `${noteShares.length} ${noteShares.length === 1 ? 'person' : 'people'}`
-                    : 'Shared with you'
-                  }
+      {/* Action buttons - position absolute */}
+      <div className="absolute right-2 top-2 z-10 flex gap-2">
+        {isOwner && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePinClick(e);
+            }}
+          >
+            <PinIcon 
+              className={`h-4 w-4 ${note.isPinned ? 'text-primary' : 'text-muted-foreground'}`}
+            />
+          </Button>
+        )}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <InfoIcon className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent onClick={(e) => e.stopPropagation()}>
+            <SheetHeader>
+              <SheetTitle>Note Details</SheetTitle>
+              <SheetDescription>
+                View details about this note including creation date, ownership, and sharing information.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 space-y-6">
+              {/* Basic Info */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Basic Information</h4>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>Created {formatTimeAgo(note.createdAt)}</p>
+                  <p>Last updated {formatTimeAgo(note.updatedAt)}</p>
+                  {note.isPinned && <p>📌 Pinned note</p>}
+                </div>
+              </div>
+
+              {/* Owner Info */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Owner</h4>
+                <div className="flex items-center gap-2">
+                  {note.ownerPhotoURL ? (
+                    <img 
+                      src={note.ownerPhotoURL} 
+                      alt={note.ownerDisplayName}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <AvatarIcon className="w-8 h-8" />
+                  )}
+                  <div className="text-sm">
+                    <p>{note.ownerDisplayName}</p>
+                    <p className="text-muted-foreground">{note.ownerEmail}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share Info */}
+              {hasShares && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Shared With</h4>
+                  <div className="space-y-2">
+                    {noteShares.map(share => (
+                      <div key={share.id} className="flex items-center gap-2">
+                        <div className="text-sm">
+                          <p>{share.displayName}</p>
+                          <p className="text-muted-foreground">{share.email}</p>
+                          <p className="text-xs text-muted-foreground">Can {share.access}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Edit History */}
+              {note.lastEditedByUserId && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Last Edit</h4>
+                  <div className="flex items-center gap-2">
+                    {note.lastEditedByPhotoURL && (
+                      <img 
+                        src={note.lastEditedByPhotoURL} 
+                        alt={note.lastEditedByDisplayName}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <div className="text-sm">
+                      <p>{note.lastEditedByDisplayName}</p>
+                      <p className="text-muted-foreground">
+                        {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Clickable area */}
+      <div className="cursor-pointer" onClick={onClick}>
+        <CardContent className={`p-4 ${view === 'list' ? 'flex gap-4' : 'flex flex-col'} h-full`}>
+          {/* Left Section: Title, Owner, Preview */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                {note.title || 'Untitled'}
+              </h3>
+              {hasShares && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                  <Share2Icon className="h-3 w-3" />
+                  <span>
+                    {isOwner 
+                      ? `${noteShares.length} ${noteShares.length === 1 ? 'person' : 'people'}`
+                      : 'Shared with you'
+                    }
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Owner Info - Updated layout */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                {note.ownerPhotoURL ? (
+                  <img 
+                    src={note.ownerPhotoURL} 
+                    alt={note.ownerDisplayName}
+                    className="w-6 h-6 rounded-full"
+                  />
+                ) : (
+                  <AvatarIcon className="w-5 h-5" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {isOwner ? 'You' : note.ownerDisplayName}
                 </span>
+              </div>
+            </div>
+
+            {/* Preview - Different styling for list view */}
+            {view === 'list' ? (
+              <div className="text-sm text-muted-foreground line-clamp-1">
+                {getPreviewText(note.content, 100).split('\n')[0]}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground space-y-1 line-clamp-4">
+                {getPreviewText(note.content, 150).split('\n').map((line, i) => (
+                  line && (
+                    <div 
+                      key={i} 
+                      className={`
+                        ${line.startsWith('#') ? 'font-bold text-base' : ''}
+                        ${line.startsWith('•') ? 'pl-4' : ''}
+                        ${line.startsWith('1.') ? 'pl-4' : ''}
+                        ${line.startsWith('☐') ? 'pl-4' : ''}
+                      `}
+                    >
+                      {line}
+                    </div>
+                  )
+                ))}
               </div>
             )}
           </div>
 
-          {/* Owner Info */}
-          <div className="flex items-center gap-2 mb-2">
-            {note.ownerPhotoURL ? (
-              <img 
-                src={note.ownerPhotoURL} 
-                alt={note.ownerDisplayName}
-                className="w-7 h-7 rounded-full"
-              />
-            ) : (
-              <AvatarIcon className="w-6 h-6" />
-            )}
-            <span className="text-sm text-muted-foreground">
-              {isOwner ? 'You' : note.ownerDisplayName}
-            </span>
-          </div>
-
-          {/* Preview - Different styling for list view */}
-          {view === 'list' ? (
-            <div className="text-sm text-muted-foreground line-clamp-1">
-              {getPreviewText(note.content, 100).split('\n')[0]}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground space-y-1 line-clamp-4">
-              {getPreviewText(note.content, 150).split('\n').map((line, i) => (
-                line && (
-                  <div 
-                    key={i} 
-                    className={`
-                      ${line.startsWith('#') ? 'font-bold text-base' : ''}
-                      ${line.startsWith('•') ? 'pl-4' : ''}
-                      ${line.startsWith('1.') ? 'pl-4' : ''}
-                      ${line.startsWith('☐') ? 'pl-4' : ''}
-                    `}
-                  >
-                    {line}
-                  </div>
-                )
-              ))}
+          {/* Right Section for List View - Updated layout */}
+          {view === 'list' && (
+            <div className="flex flex-col justify-between items-end min-w-[120px] ml-4">
+              <div className="text-xs text-muted-foreground">
+                {/* commented because its overlapped with the pin and info icon */}
+                {/* Created {formatTimeAgo(note.createdAt)} */}
+              </div>
+              {note.lastEditedByUserId && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span>Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}</span>
+                  {note.lastEditedByPhotoURL && (
+                    <img 
+                      src={note.lastEditedByPhotoURL} 
+                      alt={note.lastEditedByDisplayName}
+                      className="w-4 h-4 rounded-full"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           )}
-        </div>
 
-        {/* Right Section: Metadata */}
-        {view === 'list' && (
-          <div className="flex flex-col justify-between items-end min-w-[150px]">
-            <div className="text-xs text-muted-foreground">
-              Created {formatTimeAgo(note.createdAt)}
-            </div>
-            {note.lastEditedByUserId && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                {note.lastEditedByPhotoURL && (
-                  <img 
-                    src={note.lastEditedByPhotoURL} 
-                    alt={note.lastEditedByDisplayName}
-                    className="w-5 h-5 rounded-full"
-                  />
-                )}
-                <span>
-                  Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Footer for Grid View */}
-        {view === 'grid' && (
-          <div className="mt-auto pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span>Created {formatTimeAgo(note.createdAt)}</span>
-            </div>
-            {note.lastEditedByUserId && (
+          {/* Footer for Grid View */}
+          {view === 'grid' && (
+            <div className="mt-auto pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
-                {note.lastEditedByPhotoURL && (
-                  <img 
-                    src={note.lastEditedByPhotoURL} 
-                    alt={note.lastEditedByDisplayName}
-                    className="w-5 h-5 rounded-full"
-                  />
-                )}
-                <span>
-                  Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
-                </span>
+                <span>Created {formatTimeAgo(note.createdAt)}</span>
               </div>
-            )}
-          </div>
-        )}
-      </CardContent>
+              {note.lastEditedByUserId && (
+                <div className="flex items-center gap-2">
+                  {note.lastEditedByPhotoURL && (
+                    <img 
+                      src={note.lastEditedByPhotoURL} 
+                      alt={note.lastEditedByDisplayName}
+                      className="w-5 h-5 rounded-full"
+                    />
+                  )}
+                  <span>
+                    Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </div>
     </Card>
   );
+};
+
+const groupNotesByDate = (notes: Note[]) => {
+  const groups: { [key: string]: Note[] } = {};
+  
+  notes.forEach(note => {
+    const date = new Date(note.updatedAt);
+    let groupKey: string;
+
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      groupKey = 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      groupKey = 'Yesterday';
+    } else if (date.getFullYear() === today.getFullYear()) {
+      groupKey = format(date, 'MMMM d');
+    } else {
+      groupKey = format(date, 'MMMM d, yyyy');
+    }
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+    groups[groupKey].push(note);
+  });
+
+  return groups;
 };
 
 export default function Notes() {
@@ -383,6 +539,11 @@ export default function Notes() {
         return true;
       })
       .sort((a, b) => {
+        // First sort by pinned status
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!b.isPinned && a.isPinned) return 1;
+        
+        // Then by selected sort
         switch (sortBy) {
           case 'title':
             return a.title.localeCompare(b.title);
@@ -559,22 +720,27 @@ export default function Notes() {
       </Tabs>
 
       {/* Notes Grid/List */}
-      <div className={
-        view === 'grid' 
-          ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
-          : "flex flex-col gap-4"
-      }>
-        {filteredNotes.map((note) => (
-          <NoteCard 
-            key={note.firebaseId} 
-            note={note} 
-            shares={shares} 
-            user={user} 
-            view={view}
-            onClick={() => navigate(`/notes/${note.firebaseId}`)}
-          />
-        ))}
-      </div>
+      {Object.entries(groupNotesByDate(filteredNotes)).map(([date, dateNotes]) => (
+        <div key={date} className="mb-8">
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">{date}</h3>
+          <div className={
+            view === 'grid' 
+              ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
+              : "flex flex-col gap-4"
+          }>
+            {dateNotes.map((note) => (
+              <NoteCard 
+                key={note.firebaseId} 
+                note={note} 
+                shares={shares} 
+                user={user} 
+                view={view}
+                onClick={() => navigate(`/notes/${note.firebaseId}`)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
 
       {/* Empty State */}
       {filteredNotes.length === 0 && !isLoading && (
