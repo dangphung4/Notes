@@ -647,11 +647,8 @@ class NotesDB extends Dexie {
         createdBy: user.email || ''
       };
 
-      console.log('Saving tag to Firebase:', tagData); // Debug log
-
       // Save to Firebase
       const docRef = await addDoc(collection(firestore, 'tags'), tagData);
-      console.log('Tag saved to Firebase with ID:', docRef.id); // Debug log
 
       // Create complete tag object
       const newTag: Tags = {
@@ -659,7 +656,6 @@ class NotesDB extends Dexie {
         id: docRef.id,
       };
 
-      console.log('Saving tag locally:', newTag); // Debug log
       
       // Save locally - Fix potential issue with table not being ready
       if (this.tags) {

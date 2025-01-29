@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '../Database/db';
 import type { CalendarEvent } from '../Types/CalendarEvent';
-import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X } from 'lucide-react';
+import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
 import { cn } from '@/lib/utils';
 import {
@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { auth } from '../Auth/firebase';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { TagSelector } from '@/components/TagSelector';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
@@ -89,10 +90,31 @@ const TimePicker = ({ value, onChange }: { value: Date, onChange: (date: Date) =
   );
 };
 
+// Add the same preset colors at the top
+const presetColors = [
+  // Blues
+  '#3b82f6', '#60a5fa', '#2563eb',
+  // Reds
+  '#ef4444', '#f87171', '#dc2626',
+  // Greens
+  '#22c55e', '#4ade80', '#16a34a',
+  // Yellows/Oranges
+  '#f59e0b', '#fbbf24', '#d97706',
+  // Purples
+  '#6366f1', '#a855f7', '#7c3aed',
+  // Pinks
+  '#ec4899', '#f472b6', '#db2777',
+  // Grays
+  '#6b7280', '#4b5563', '#374151',
+  // Teals
+  '#14b8a6', '#2dd4bf', '#0d9488',
+];
+
 // Redesigned event form
 const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
   const [event, setEvent] = useState(initialEvent);
   const [showMore, setShowMore] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
   const handleCreateTag = async (tag: Partial<Tags>) => {
     const user = auth.currentUser;
@@ -167,19 +189,57 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
           </div>
         </div>
 
-        <div className="flex gap-2 py-2">
-          {['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#6366f1'].map(color => (
-            <button
-              key={color}
-              type="button"
-              className={cn(
-                "w-6 h-6 rounded-full transition-all",
-                event.color === color && "ring-2 ring-offset-2 ring-primary"
-              )}
-              style={{ backgroundColor: color }}
-              onClick={() => setEvent({ ...event, color })}
-            />
-          ))}
+        <div className="space-y-2">
+          <Label>Color</Label>
+          <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: event.color || '#3b82f6' }}
+                  />
+                  {event.color || '#3b82f6'}
+                </div>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3" align="start">
+              <div className="space-y-3">
+                <div className="grid grid-cols-5 gap-2">
+                  {presetColors.map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={cn(
+                        "w-8 h-8 rounded-full transition-all relative",
+                        event.color === color && "ring-2 ring-offset-2 ring-primary"
+                      )}
+                      style={{ backgroundColor: color }}
+                      onClick={() => {
+                        setEvent(prev => ({ ...prev, color }));
+                        setIsColorPickerOpen(false);
+                      }}
+                    >
+                      {event.color === color && (
+                        <Check className="h-4 w-4 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <Input
+                  type="color"
+                  value={event.color || '#3b82f6'}
+                  onChange={e => setEvent(prev => ({ ...prev, color: e.target.value }))}
+                  className="w-full h-8"
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <Button
