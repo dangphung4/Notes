@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { db } from '../Database/db';
 import type { CalendarEvent } from '../Database/db';
 import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown, Calendar as CalendarIcon, Search } from 'lucide-react';
-import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks, setYear } from "date-fns";
+import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks, setYear, subDays } from "date-fns";
 import { cn } from '@/lib/utils';
 import {
   Select,
@@ -1637,106 +1637,6 @@ export default function Calendar() {
                       {format(selectedEvent?.startDate || new Date(), 'EEEE, MMMM d, yyyy')}
                     </div>
                   </div>
-                </div>
-
-                {selectedEvent?.location && (
-                  <div className="flex items-start gap-2">
-                    <MapPinIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div>{selectedEvent.location}</div>
-                  </div>
-                )}
-
-                {selectedEvent?.description && (
-                  <div className="pt-2 border-t">
-                    <div className="font-medium mb-1 text-sm">Description</div>
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {selectedEvent.description}
-                    </div>
-                  </div>
-                )}
-
-                {selectedEvent?.sharedWith && selectedEvent.sharedWith.length > 0 && (
-                  <div className="pt-4 border-t">
-                    <div className="font-medium mb-2">Shared with</div>
-                    <div className="space-y-2">
-                      {selectedEvent.sharedWith.map((share) => (
-                        <div key={share.email} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <UserPlusIcon className="h-4 w-4 text-muted-foreground" />
-                            <span>{share.email}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {share.permission} • {share.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedEvent?.tags && selectedEvent.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {selectedEvent.tags.map(tag => (
-                      <div
-                        key={tag.id}
-                        className="flex items-center px-2 py-0.5 rounded-full text-xs"
-                        style={{ 
-                          backgroundColor: tag.color + '20',
-                          color: tag.color 
-                        }}
-                      >
-                        {tag.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="pt-4 border-t">
-                  <div className="font-medium mb-2">Reminder</div>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedEvent?.reminderMinutes 
-                      ? `${selectedEvent.reminderMinutes} minutes before`
-                      : 'No reminder set'}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <span>Created by</span>
-                    <div className="flex items-center gap-1">
-                      {selectedEvent?.createdByPhotoURL ? (
-                        <img 
-                          src={selectedEvent.createdByPhotoURL}
-                          alt=""
-                          className="w-4 h-4 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
-                          {selectedEvent?.createdBy.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span>{selectedEvent?.createdBy}</span>
-                    </div>
-                  </div>
-                  {selectedEvent?.lastModifiedBy && selectedEvent.lastModifiedBy !== selectedEvent.createdBy && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <span>Last modified by</span>
-                      <div className="flex items-center gap-1">
-                        {selectedEvent.lastModifiedByPhotoURL ? (
-                          <img 
-                            src={selectedEvent.lastModifiedByPhotoURL}
-                            alt=""
-                            className="w-4 h-4 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
-                            {selectedEvent.lastModifiedBy.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <span>{selectedEvent.lastModifiedByDisplayName || selectedEvent.lastModifiedBy}</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 
