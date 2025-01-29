@@ -5,7 +5,7 @@ import Editor from '../Components/Editor';
 import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { TrashIcon } from '@radix-ui/react-icons';
+import { TrashIcon} from '@radix-ui/react-icons';
 import debounce from 'lodash/debounce';
 import { useAuth } from '../Auth/AuthContext';
 import type { Note } from '../Database/db';
@@ -13,6 +13,20 @@ import ShareDialog from '../Components/ShareDialog';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { useToast } from "@/hooks/use-toast";
+import { cn } from '@/lib/utils';
+import { CheckIcon } from '@radix-ui/react-icons';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from '@/components/ui/dropdown-menu';
+import { 
+  MoreVerticalIcon, 
+  ChevronLeftIcon, 
+  PrinterIcon, 
+  DownloadIcon,
+  Loader2Icon,
+  XIcon,
+  FileTextIcon,
+  FileIcon,
+  CodeIcon
+} from 'lucide-react';
 
 export default function EditNote() {
   const { id } = useParams();
@@ -50,6 +64,7 @@ export default function EditNote() {
         } else {
           console.error('Note not found');
           setIsLoading(false);
+          setSaveStatus('error');
         }
       },
       (error) => {
@@ -134,6 +149,144 @@ export default function EditNote() {
     }
   };
 
+  // Add the export handler function
+  const handleExport = async (format: 'markdown' | 'txt' | 'html') => {
+    if (!note) return;
+
+    try {
+      let content = '';
+      const parsedContent = JSON.parse(note.content);
+      
+      switch (format) {
+        case 'markdown':
+          content = convertToMarkdown(parsedContent);
+          downloadFile(`${note.title || 'Untitled'}.md`, content);
+          break;
+        case 'txt':
+          content = convertToPlainText(parsedContent);
+          downloadFile(`${note.title || 'Untitled'}.txt`, content);
+          break;
+        case 'html':
+          content = convertToHTML(parsedContent);
+          downloadFile(`${note.title || 'Untitled'}.html`, content);
+          break;
+      }
+
+      toast({
+        title: "Note exported",
+        description: `Successfully exported as ${format.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Error exporting note:', error);
+      toast({
+        title: "Export failed",
+        description: "Failed to export note. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Helper function to download the file
+  const downloadFile = (filename: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Conversion functions
+  const convertToMarkdown = (blocks: any[]) => {
+    let markdown = '';
+    blocks.forEach(block => {
+      switch (block.type) {
+        case 'heading':
+          { const level = '#'.repeat(block.props.level);
+          markdown += `${level} ${block.content.map((c: any) => c.text).join('')}\n\n`;
+          break; }
+        case 'paragraph':
+          markdown += `${block.content.map((c: any) => {
+            let text = c.text;
+            if (c.styles?.bold) text = `**${text}**`;
+            if (c.styles?.italic) text = `*${text}*`;
+            if (c.styles?.underline) text = `_${text}_`;
+            if (c.styles?.strike) text = `~~${text}~~`;
+            return text;
+          }).join('')}\n\n`;
+          break;
+        case 'bulletListItem':
+          markdown += `* ${block.content.map((c: any) => c.text).join('')}\n`;
+          break;
+        case 'numberedListItem':
+          markdown += `1. ${block.content.map((c: any) => c.text).join('')}\n`;
+          break;
+        case 'checkListItem':
+          { const checkbox = block.props.checked ? '[x]' : '[ ]';
+          markdown += `${checkbox} ${block.content.map((c: any) => c.text).join('')}\n`;
+          break; }
+      }
+    });
+    return markdown;
+  };
+
+  const convertToPlainText = (blocks: any[]) => {
+    return blocks.map(block => {
+      const text = block.content.map((c: any) => c.text).join('');
+      switch (block.type) {
+        case 'heading':
+          return `${text}\n`;
+        case 'bulletListItem':
+          return `• ${text}\n`;
+        case 'numberedListItem':
+          return `1. ${text}\n`;
+        case 'checkListItem':
+          return `${block.props.checked ? '☒' : '☐'} ${text}\n`;
+        default:
+          return `${text}\n`;
+      }
+    }).join('\n');
+  };
+
+  const convertToHTML = (blocks: any[]) => {
+    let html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>';
+    html += note?.title || 'Untitled';
+    html += '</title></head><body style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: system-ui, -apple-system, sans-serif;">';
+    
+    blocks.forEach(block => {
+      switch (block.type) {
+        case 'heading':
+          html += `<h${block.props.level}>${block.content.map((c: any) => c.text).join('')}</h${block.props.level}>`;
+          break;
+        case 'paragraph':
+          html += `<p>${block.content.map((c: any) => {
+            let text = c.text;
+            if (c.styles?.bold) text = `<strong>${text}</strong>`;
+            if (c.styles?.italic) text = `<em>${text}</em>`;
+            if (c.styles?.underline) text = `<u>${text}</u>`;
+            if (c.styles?.strike) text = `<del>${text}</del>`;
+            return text;
+          }).join('')}</p>`;
+          break;
+        case 'bulletListItem':
+          html += `<ul><li>${block.content.map((c: any) => c.text).join('')}</li></ul>`;
+          break;
+        case 'numberedListItem':
+          html += `<ol><li>${block.content.map((c: any) => c.text).join('')}</li></ol>`;
+          break;
+        case 'checkListItem':
+          { const checked = block.props.checked ? ' checked' : '';
+          html += `<div><input type="checkbox"${checked} disabled> ${block.content.map((c: any) => c.text).join('')}</div>`;
+          break; }
+      }
+    });
+    
+    html += '</body></html>';
+    return html;
+  };
 
   if (isLoading) {
     return (
@@ -161,61 +314,138 @@ export default function EditNote() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
       {/* Header Bar */}
-      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex-1 flex items-center gap-4 min-w-0">
-          <Input
-            type="text"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              debouncedSaveTitle(e.target.value);
-            }}
-            className="text-2xl md:text-3xl font-bold bg-transparent border-0 p-0 focus:outline-none focus-visible:ring-0 w-full truncate placeholder:text-muted-foreground/50 placeholder:font-normal"
-            placeholder="Untitled"
-          />
-        </div>
-        <div className="flex items-center gap-2 ml-2"> {/* added ml-2 for spacing */}
-          <span className="text-sm text-muted-foreground hidden sm:inline">
-            {saveStatus === 'saving' && 'Saving...'}
-            {saveStatus === 'saved' && 'All changes saved'}
-            {saveStatus === 'error' && 'Error saving'}
-          </span>
-          <div className="flex items-center gap-1">
-            <ShareDialog 
-              note={note} 
-              onShare={() => {
-                toast({
-                  title: "Note shared",
-                  description: "The note has been shared successfully.",
-                });
-              }}
-              onError={(error) => {
-                toast({
-                  title: "Error sharing note",
-                  description: error,
-                  variant: "destructive",
-                });
-              }}
-            />
+      <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        {/* Main Header */}
+        <div className="flex items-center justify-between p-4">
+          {/* Left Section: Back Button + Title */}
+          <div className="flex-1 flex items-center gap-4 min-w-0">
             <Button
               variant="ghost"
-              size="icon"
-              className="text-destructive hover:text-destructive"
-              onClick={handleDelete}
+              size="sm"
+              onClick={() => navigate('/notes')}
+              className="hidden sm:flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
-              <TrashIcon className="h-4 w-4" />
+              <ChevronLeftIcon className="h-4 w-4" />
+              <span>Back</span>
             </Button>
+            <Input
+              type="text"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                debouncedSaveTitle(e.target.value);
+              }}
+              className="text-xl sm:text-2xl font-semibold bg-transparent border-0 p-0 focus:outline-none focus-visible:ring-0 w-full truncate placeholder:text-muted-foreground/50 placeholder:font-normal"
+              placeholder="Untitled"
+            />
+          </div>
+
+          {/* Right Section: Status + Actions */}
+          <div className="flex items-center gap-3">
+            {/* Save Status */}
+            <div className={cn(
+              "hidden sm:flex items-center gap-2 text-sm",
+              saveStatus === 'saving' && "text-muted-foreground",
+              saveStatus === 'saved' && "text-green-500",
+              saveStatus === 'error' && "text-destructive"
+            )}>
+              {saveStatus === 'saving' && <Loader2Icon className="h-3 w-3 animate-spin" />}
+              {saveStatus === 'saved' && <CheckIcon className="h-3 w-3" />}
+              {saveStatus === 'error' && <XIcon className="h-3 w-3" />}
+              <span className="hidden md:inline">
+                {saveStatus === 'saving' && 'Saving...'}
+                {saveStatus === 'saved' && 'All changes saved'}
+                {saveStatus === 'error' && 'Error saving'}
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1.5">
+              {/* Mobile Save Status - Shown inline on mobile */}
+              <div className="sm:hidden">
+                {saveStatus === 'saving' && (
+                  <Button variant="ghost" size="icon" className="pointer-events-none">
+                    <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </Button>
+                )}
+                {saveStatus === 'saved' && (
+                  <Button variant="ghost" size="icon" className="pointer-events-none">
+                    <CheckIcon className="h-4 w-4 text-green-500" />
+                  </Button>
+                )}
+                {saveStatus === 'error' && (
+                  <Button variant="ghost" size="icon" className="pointer-events-none">
+                    <XIcon className="h-4 w-4 text-destructive" />
+                  </Button>
+                )}
+              </div>
+
+              <ShareDialog 
+                note={note} 
+                onShare={() => {
+                  toast({
+                    title: "Note shared",
+                    description: "The note has been shared successfully.",
+                  });
+                }}
+                onError={(error) => {
+                  toast({
+                    title: "Error sharing note",
+                    description: error,
+                    variant: "destructive",
+                  });
+                }}
+              />
+              
+              {/* More Actions Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVerticalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => window.print()}>
+                    <PrinterIcon className="h-4 w-4 mr-2" />
+                    Print
+                  </DropdownMenuItem>
+                  
+                  {/* Export Sub-menu */}
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <DownloadIcon className="h-4 w-4 mr-2" />
+                      Export as...
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem onClick={() => handleExport('markdown')}>
+                        <FileTextIcon className="h-4 w-4 mr-2" />
+                        Markdown (.md)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('txt')}>
+                        <FileIcon className="h-4 w-4 mr-2" />
+                        Plain Text (.txt)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('html')}>
+                        <CodeIcon className="h-4 w-4 mr-2" />
+                        HTML
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <TrashIcon className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Mobile Save Status - only shows on mobile */}
-      {saveStatus !== 'saved' && (
-        <div className="sm:hidden text-center py-1 text-xs">
-          {saveStatus === 'saving' && 'Saving...'}
-          {saveStatus === 'error' && 'Error saving'}
-        </div>
-      )}
 
       {/* Editor */}
       <div className="flex-1 overflow-hidden">
