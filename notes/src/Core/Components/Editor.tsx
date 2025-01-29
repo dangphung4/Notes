@@ -4,10 +4,15 @@ import "@blocknote/core/fonts/inter.css";
 import { BlockNoteView } from "@blocknote/mantine";
 // this will use shadcn styles ex: @blocknote/shadcn/style.css
 import "@blocknote/mantine/style.css";
+import "@blocknote/core/fonts/inter.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import debounce from "lodash/debounce";
+
+import "@fontsource/monaspace-neon/400.css";
+import "@fontsource/monaspace-neon/500.css";
+import "@fontsource/monaspace-neon/700.css";
 
 interface EditorProps {
   content: string;  // Change to expect string since that's how it's stored
@@ -22,6 +27,8 @@ export default function Editor({ content, onChange, onSave, editorRef }: EditorP
     document.documentElement.classList.contains('dark')
   );
 
+
+
   // Create editor instance
   const editor = useCreateBlockNote({
     initialContent: useMemo(() => 
@@ -29,9 +36,8 @@ export default function Editor({ content, onChange, onSave, editorRef }: EditorP
         type: 'paragraph',
         content: []
       }]
-    , [content])
+    , [content]),
   });
-
   // Set editor reference if provided
   useEffect(() => {
     if (editorRef) {
@@ -85,7 +91,24 @@ export default function Editor({ content, onChange, onSave, editorRef }: EditorP
         editor={editor} 
         theme={isDarkMode ? "dark" : "light"}
         onChange={() => debouncedSave(editor)}
-        className="flex-1 h-full bg-background overflow-y-auto mobile-editor relative"
+        className="flex-1 h-full bg-background overflow-y-auto mobile-editor relative
+          [&_.ProseMirror]:text-xl
+          [&_.ProseMirror]:sm:text-2xl
+          [&_p]:text-xl
+          [&_p]:sm:text-2xl
+          [&_p]:leading-relaxed
+          [&_h1]:text-5xl
+          [&_h2]:text-4xl
+          [&_h3]:text-3xl
+          [&_li]:text-xl
+          [&_li]:sm:text-2xl
+          [&_code]:text-xl
+          [&_code]:sm:text-2xl
+          [&_.ProseMirror]:px-4
+          [&_.ProseMirror]:sm:px-8
+          [&_.ProseMirror]:py-4
+          [&_*]:!leading-relaxed
+          [&_*]:font-['Monaspace_Neon']"
       />
     </div>
   );
