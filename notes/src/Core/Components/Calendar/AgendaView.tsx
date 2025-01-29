@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { MapPinIcon, Share2Icon } from 'lucide-react';
-import type { CalendarEvent } from '../../Types/CalendarEvent';
+import type { CalendarEvent } from '../../Database/db';
 
 interface AgendaViewProps {
   events: CalendarEvent[];

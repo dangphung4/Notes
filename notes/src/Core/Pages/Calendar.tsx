@@ -412,7 +412,16 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
   });
 
   const grouped = futureEvents.reduce((acc, event) => {
-    const dateKey = format(new Date(event.startDate), 'yyyy-MM-dd');
+    // Create a new date object and normalize to local midnight
+    const eventDate = new Date(event.startDate);
+    const year = eventDate.getFullYear();
+    const month = eventDate.getMonth();
+    const day = eventDate.getDate();
+    
+    // Create a new date object at local midnight
+    const normalizedDate = new Date(year, month, day);
+    const dateKey = format(normalizedDate, 'yyyy-MM-dd');
+    
     if (!acc[dateKey]) {
       acc[dateKey] = [];
     }
@@ -429,7 +438,6 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
     });
   });
 
-  // Sort dates
   return Object.fromEntries(
     Object.entries(grouped).sort(([dateA], [dateB]) => 
       new Date(dateA).getTime() - new Date(dateB).getTime()
@@ -1565,7 +1573,7 @@ export default function Calendar() {
 
       <Dialog open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen}>
         <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
-          <DialogHeader className="px-3 py-2 border-b">
+          <DialogHeader className="px-4 py-3 border-b">
             <DialogTitle className="text-base flex items-center gap-2">
               {!isEditing ? (
                 <>
@@ -1623,7 +1631,7 @@ export default function Calendar() {
             />
           ) : (
             <div className="flex flex-col">
-              <div className="p-3 space-y-3">
+              <div className="p-4 space-y-4">
                 <div className="flex items-start gap-2">
                   <ClockIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
                   <div className="space-y-0.5">
@@ -1638,9 +1646,109 @@ export default function Calendar() {
                     </div>
                   </div>
                 </div>
+
+                {selectedEvent?.location && (
+                  <div className="flex items-start gap-2">
+                    <MapPinIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>{selectedEvent.location}</div>
+                  </div>
+                )}
+
+                {selectedEvent?.description && (
+                  <div className="pt-2 border-t">
+                    <div className="font-medium mb-1 text-sm">Description</div>
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {selectedEvent.description}
+                    </div>
+                  </div>
+                )}
+
+                {selectedEvent?.tags && selectedEvent.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {selectedEvent.tags.map(tag => (
+                      <div
+                        key={tag.id}
+                        className="px-2 py-0.5 rounded-full text-xs"
+                        style={{
+                          backgroundColor: tag.color + '20',
+                          color: tag.color
+                        }}
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {selectedEvent?.sharedWith && selectedEvent.sharedWith.length > 0 && (
+                  <div className="pt-4 border-t">
+                    <div className="font-medium mb-2">Shared with</div>
+                    <div className="space-y-2">
+                      {selectedEvent.sharedWith.map((share) => (
+                        <div key={share.email} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <UserPlusIcon className="h-4 w-4 text-muted-foreground" />
+                            <span>{share.email}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {share.permission} • {share.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t">
+                  <div className="font-medium mb-2">Reminder</div>
+                  <div className="text-sm text-muted-foreground">
+                    {selectedEvent?.reminderMinutes 
+                      ? `${selectedEvent.reminderMinutes} minutes before`
+                      : 'No reminder set'}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <span>Created by</span>
+                    <div className="flex items-center gap-1">
+                      {selectedEvent?.createdByPhotoURL ? (
+                        <img 
+                          src={selectedEvent.createdByPhotoURL}
+                          alt=""
+                          className="w-4 h-4 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                          {selectedEvent?.createdBy.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span>{selectedEvent?.createdBy}</span>
+                    </div>
+                  </div>
+                  {selectedEvent?.lastModifiedBy && selectedEvent.lastModifiedBy !== selectedEvent.createdBy && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span>Last modified by</span>
+                      <div className="flex items-center gap-1">
+                        {selectedEvent.lastModifiedByPhotoURL ? (
+                          <img 
+                            src={selectedEvent.lastModifiedByPhotoURL}
+                            alt=""
+                            className="w-4 h-4 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                            {selectedEvent.lastModifiedBy.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span>{selectedEvent.lastModifiedByDisplayName || selectedEvent.lastModifiedBy}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="border-t p-3 flex justify-end gap-2">
+              <div className="border-t p-4 flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsEventDetailsOpen(false)}>
                   Close
                 </Button>
