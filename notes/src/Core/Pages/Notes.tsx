@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
-import { onSnapshot, collection, query, where, getDocs, documentId, getDoc, doc } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
@@ -23,6 +23,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescri
 import { PinIcon } from 'lucide-react';
 import { InfoIcon } from 'lucide-react';
 import { db } from '../Database/db';
+import { TagSelector } from '@/components/TagSelector';
+import { TagIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { X } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 
 const NoteCard = ({ note, shares, user, view, onClick }: { 
   note: Note, 
@@ -31,33 +39,11 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
   view: 'grid' | 'list',
   onClick: () => void 
 }) => {
-  const [ownerProfile, setOwnerProfile] = useState<any>(null);
-  
-  // Fetch owner's current profile
-  useEffect(() => {
-    const fetchOwnerProfile = async () => {
-      try {
-        // Get the owner's user document from Firebase Auth
-        const userDoc = await getDoc(doc(firestore, 'users', note.ownerUserId));
-        if (userDoc.exists()) {
-          setOwnerProfile(userDoc.data());
-        }
-      } catch (error) {
-        console.error('Error fetching owner profile:', error);
-      }
-    };
-
-    fetchOwnerProfile();
-  }, [note.ownerUserId]);
-
   const isOwner = note.ownerUserId === user?.uid;
   const noteShares = shares.filter(s => s.noteId === note.firebaseId);
   const hasShares = noteShares.length > 0;
-
-  // Use ownerProfile data if available, fall back to note data if not
-  const ownerDisplayName = ownerProfile?.displayName || note.ownerDisplayName;
-  const ownerPhotoURL = ownerProfile?.photoURL || note.ownerPhotoURL;
-  const ownerEmail = ownerProfile?.email || note.ownerEmail;
+  const [isEditingTags, setIsEditingTags] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<Tags[]>(note.tags || []);
 
   const handlePinClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -108,6 +94,43 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               </SheetDescription>
             </SheetHeader>
             <div className="mt-6 space-y-6">
+              {/* Add Tags Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Tags</h4>
+                  {isOwner && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditingTags(true);
+                      }}
+                    >
+                      {note.tags?.length ? 'Edit Tags' : 'Add Tags'}
+                    </Button>
+                  )}
+                </div>
+                {note.tags && note.tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {note.tags.map(tag => (
+                      <div
+                        key={tag.id}
+                        className="px-2 py-0.5 rounded-full text-xs"
+                        style={{
+                          backgroundColor: tag.color + '20',
+                          color: tag.color
+                        }}
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No tags added yet</p>
+                )}
+              </div>
+
               {/* Basic Info */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Basic Information</h4>
@@ -122,18 +145,18 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Owner</h4>
                 <div className="flex items-center gap-2">
-                  {ownerPhotoURL ? (
+                  {note.ownerPhotoURL ? (
                     <img 
-                      src={ownerPhotoURL} 
-                      alt={ownerDisplayName}
+                      src={note.ownerPhotoURL} 
+                      alt={note.ownerDisplayName}
                       className="w-8 h-8 rounded-full"
                     />
                   ) : (
                     <AvatarIcon className="w-8 h-8" />
                   )}
                   <div className="text-sm">
-                    <p>{ownerDisplayName}</p>
-                    <p className="text-muted-foreground">{ownerEmail}</p>
+                    <p>{note.ownerDisplayName}</p>
+                    <p className="text-muted-foreground">{note.ownerEmail}</p>
                   </div>
                 </div>
               </div>
@@ -178,6 +201,59 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                 </div>
               )}
             </div>
+
+            {/* Add Tag Editor Dialog */}
+            <Dialog open={isEditingTags} onOpenChange={setIsEditingTags}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Manage Tags</DialogTitle>
+                  <DialogDescription>
+                    Add or remove tags from this note
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <TagSelector
+                    selectedTags={selectedTags}
+                    onTagsChange={async (tags) => {
+                      setSelectedTags(tags);
+                      try {
+                        await db.updateNoteTags(note.firebaseId!, tags);
+                        toast({
+                          title: "Tags updated",
+                          description: "Note tags have been updated successfully"
+                        });
+                      } catch (error) {
+                        console.error('Error updating tags:', error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to update tags",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                    onCreateTag={async (tag) => {
+                      try {
+                        const newTag = await db.createTag(tag);
+                        return newTag;
+                      } catch (error) {
+                        console.error('Error creating tag:', error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to create tag",
+                          variant: "destructive"
+                        });
+                        throw error;
+                      }
+                    }}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button variant="secondary" onClick={() => setIsEditingTags(false)}>
+                    Done
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </SheetContent>
         </Sheet>
       </div>
@@ -207,17 +283,17 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
             {/* Owner Info - Updated layout */}
             <div className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-2">
-                {ownerPhotoURL ? (
+                {note.ownerPhotoURL ? (
                   <img 
-                    src={ownerPhotoURL} 
-                    alt={ownerDisplayName}
+                    src={note.ownerPhotoURL} 
+                    alt={note.ownerDisplayName}
                     className="w-6 h-6 rounded-full"
                   />
                 ) : (
                   <AvatarIcon className="w-5 h-5" />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  {isOwner ? 'You' : ownerDisplayName}
+                  {isOwner ? 'You' : note.ownerDisplayName}
                 </span>
               </div>
             </div>
@@ -243,6 +319,24 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                       {line}
                     </div>
                   )
+                ))}
+              </div>
+            )}
+
+            {/* Add tags display */}
+            {note.tags && note.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {note.tags.map(tag => (
+                  <div
+                    key={tag.id}
+                    className="px-2 py-0.5 rounded-full text-xs"
+                    style={{
+                      backgroundColor: tag.color + '20',
+                      color: tag.color
+                    }}
+                  >
+                    {tag.name}
+                  </div>
                 ))}
               </div>
             )}
@@ -343,6 +437,11 @@ export default function Notes() {
   const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>('updated');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
+  const [selectedTagFilters, setSelectedTagFilters] = useState<Tags[]>([]);
+  const [allTags, setAllTags] = useState<Tags[]>([]);
+  const [showTagFilter, setShowTagFilter] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isEditingTags, setIsEditingTags] = useState(false);
 
   // Persist view preference
   useEffect(() => {
@@ -529,6 +628,19 @@ export default function Notes() {
     };
   }, [user]);
 
+  // Add useEffect to load tags
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const tags = await db.getTags();
+        setAllTags(tags);
+      } catch (error) {
+        console.error('Error loading tags:', error);
+      }
+    };
+    loadTags();
+  }, []);
+
   const myNotes = notes.filter(note => note.ownerUserId === user?.uid);
   const sharedWithMe = notes.filter(note => {
     if (!user) return false;
@@ -540,7 +652,7 @@ export default function Notes() {
 
   // Enhanced filtering logic
   const filteredNotes = useMemo(() => {
-    return (activeTab === 'my-notes' ? myNotes : sharedWithMe)
+    const baseFiltered = (activeTab === 'my-notes' ? myNotes : sharedWithMe)
       .filter(note => {
         // Search query
         if (!note.title.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -577,7 +689,17 @@ export default function Notes() {
             return b.updatedAt.getTime() - a.updatedAt.getTime();
         }
       });
-  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy]);
+
+    // Add tag filtering
+    if (selectedTagFilters.length === 0) return baseFiltered;
+    
+    return baseFiltered.filter(note => {
+      if (!note.tags) return false;
+      return selectedTagFilters.every(filterTag =>
+        note.tags.some(noteTag => noteTag.id === filterTag.id)
+      );
+    });
+  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -693,6 +815,68 @@ export default function Notes() {
             </PopoverContent>
           </Popover>
 
+          {/* Add tag filter button and dropdown */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <TagIcon className="h-4 w-4" />
+                Tags
+                {selectedTagFilters.length > 0 && (
+                  <Badge 
+                    variant="secondary" 
+                    className="ml-1 h-5 px-1"
+                  >
+                    {selectedTagFilters.length}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-0" align="start">
+              <div className="p-2 border-b">
+                <Input
+                  placeholder="Search tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <ScrollArea className="h-52">
+                <div className="p-2">
+                  {allTags
+                    .filter(tag => 
+                      tag.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map(tag => (
+                      <div
+                        key={tag.id}
+                        className="flex items-center gap-2 p-1 hover:bg-muted rounded-sm cursor-pointer"
+                        onClick={() => {
+                          setSelectedTagFilters(prev => {
+                            const isSelected = prev.some(t => t.id === tag.id);
+                            return isSelected
+                              ? prev.filter(t => t.id !== tag.id)
+                              : [...prev, tag];
+                          });
+                        }}
+                      >
+                        <Checkbox
+                          checked={selectedTagFilters.some(t => t.id === tag.id)}
+                        />
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        <span className="text-sm">{tag.name}</span>
+                      </div>
+                    ))}
+                </div>
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Active Filters Display */}

@@ -10,6 +10,16 @@ export interface User {
   lastLoginAt: Date;
 }
 
+export interface Tags {
+  id: string;
+  name: string;
+  metadata: string;
+  group: string;
+  createdAt: Date;
+  createdBy: string;
+  color: string;
+}
+
 // Simplified interfaces without nesting
 export interface Note {
   id?: number;
@@ -18,6 +28,7 @@ export interface Note {
   content: string;
   updatedAt: Date;
   createdAt: Date;
+  tags?: Tags[];
   
   // Flattened owner fields
   ownerUserId: string;
@@ -32,7 +43,6 @@ export interface Note {
   lastEditedByPhotoURL?: string;
   lastEditedAt?: Date;
   
-  tags?: string[];
   isPinned?: boolean;
   isArchived?: boolean;
 }
@@ -48,6 +58,7 @@ export interface SharePermission {
   access: 'view' | 'edit';
   createdAt: Date;
   updatedAt?: Date;
+  tags?: Tags[];
 }
 
 // Update CalendarEvent type to include sharing
@@ -55,6 +66,7 @@ interface CalendarEventShare {
   email: string;
   permission: 'view' | 'edit';
   status: 'pending' | 'accepted' | 'declined';
+  tags?: Tags[];
 }
 
 export interface CalendarEvent {
@@ -68,19 +80,23 @@ export interface CalendarEvent {
   createdBy: string; // user email
   lastModifiedBy?: string;
   lastModifiedAt?: Date;
+  tags?: Tags[];
 }
 
 class NotesDB extends Dexie {
   notes: Dexie.Table<Note, number>;
   calendarEvents!: Dexie.Table<CalendarEvent, number>;
+  tags: Dexie.Table<Tags, string>;
 
   constructor() {
     super('NotesDB');
-    this.version(2).stores({
+    this.version(3).stores({
       notes: '++id, firebaseId, title, updatedAt',
-      calendarEvents: '++id, firebaseId, startDate, endDate, ownerUserId'
+      calendarEvents: '++id, firebaseId, startDate, endDate, ownerUserId',
+      tags: '++id, name, group'
     });
     this.notes = this.table('notes');
+    this.tags = this.table('tags');
   }
 
   // Load notes from Firebase
@@ -339,48 +355,59 @@ class NotesDB extends Dexie {
   }
 
   // Create new note
-  async createNote(note: Note): Promise<string> {
+  async createNote(note: Partial<Note>): Promise<string> {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
     try {
-      // Create in Firebase first
-      const docRef = await addDoc(collection(firestore, 'notes'), {
-        title: note.title,
-        content: note.content || '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      const noteData = {
+        ...note,
         ownerUserId: user.uid,
         ownerEmail: user.email,
-        ownerDisplayName: user.displayName || 'Unknown',
-        ownerPhotoURL: user.photoURL,
-        lastEditedByUserId: user.uid,
-        lastEditedByEmail: user.email,
-        lastEditedByDisplayName: user.displayName || 'Unknown',
-        lastEditedByPhotoURL: user.photoURL,
-        lastEditedAt: new Date(),
-        tags: [],
-        isPinned: false,
-        isArchived: false
-      });
-
-      // Then add to local DB
-      await this.notes.add({
-        firebaseId: docRef.id,
-        title: note.title,
-        content: note.content || '',
+        ownerDisplayName: user.displayName || '',
+        ownerPhotoURL: user.photoURL || '',
         createdAt: new Date(),
         updatedAt: new Date(),
-        ownerUserId: user.uid,
-        ownerEmail: user.email || '',
-        ownerDisplayName: user.displayName || 'Unknown',
-        ownerPhotoURL: user.photoURL || undefined,
-        tags: []
-      });
+        tags: note.tags || []
+      };
 
+      const docRef = await addDoc(collection(firestore, 'notes'), noteData);
+      await this.loadFromFirebase();
       return docRef.id;
     } catch (error) {
       console.error('Error creating note:', error);
+      throw error;
+    }
+  }
+
+  // Update note
+  async updateNote(noteId: string, updates: Partial<Note>) {
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      const noteRef = doc(firestore, 'notes', noteId);
+      const noteDoc = await getDoc(noteRef);
+      
+      if (!noteDoc.exists()) {
+        throw new Error('Note not found');
+      }
+
+      const updateData = {
+        ...updates,
+        updatedAt: new Date(),
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || '',
+        lastEditedByPhotoURL: user.photoURL || '',
+        lastEditedAt: new Date(),
+        tags: updates.tags || []
+      };
+
+      await updateDoc(noteRef, updateData);
+      await this.loadFromFirebase();
+    } catch (error) {
+      console.error('Error updating note:', error);
       throw error;
     }
   }
@@ -430,10 +457,12 @@ class NotesDB extends Dexie {
       });
 
       // Save locally
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const localId = await this.calendarEvents.add({
         ...event,
         firebaseId: docRef.id
       });
+
 
       // Schedule notification
       await this.scheduleEventReminder(event);
@@ -456,7 +485,6 @@ class NotesDB extends Dexie {
           body: `Reminder: ${event.title} starts in ${event.reminderMinutes} minutes`,
           icon: '/note-maskable.png',
           tag: `event-${event.id}`,
-          timestamp: reminderTime.getTime(),
           data: {
             eventId: event.id,
             url: `/calendar/${event.id}`
@@ -598,6 +626,85 @@ class NotesDB extends Dexie {
       }
     } catch (error) {
       console.error('Error updating calendar event:', error);
+      throw error;
+    }
+  }
+
+  // Add tag methods
+  async createTag(tag: Partial<Tags>): Promise<Tags> {
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      // Save to Firebase
+      const docRef = await addDoc(collection(firestore, 'tags'), {
+        ...tag,
+        createdAt: new Date(),
+        createdBy: user.email
+      });
+
+      // Save locally
+      const newTag = {
+        ...tag,
+        id: docRef.id,
+        createdAt: new Date(),
+        createdBy: user.email || ''
+      } as Tags;
+
+      await this.tags.add(newTag);
+      return newTag;
+    } catch (error) {
+      console.error('Error creating tag:', error);
+      throw error;
+    }
+  }
+
+  async getTags(): Promise<Tags[]> {
+    try {
+      const snapshot = await getDocs(collection(firestore, 'tags'));
+      return snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Tags[];
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+      throw error;
+    }
+  }
+
+  // Add methods for handling note tags
+  async updateNoteTags(noteId: string, tags: Tags[]) {
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    try {
+      // Update in Firebase
+      await updateDoc(doc(firestore, 'notes', noteId), {
+        tags: tags,
+        lastModifiedBy: user.email,
+        lastModifiedAt: new Date()
+      });
+
+      // Update locally
+      await this.notes.update(noteId, { tags });
+    } catch (error) {
+      console.error('Error updating note tags:', error);
+      throw error;
+    }
+  }
+
+  // Add method to get notes by tag
+  async getNotesByTag(tagId: string): Promise<Note[]> {
+    try {
+      const snapshot = await getDocs(
+        query(collection(firestore, 'notes'), where('tags', 'array-contains', tagId))
+      );
+      return snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Note[];
+    } catch (error) {
+      console.error('Error fetching notes by tag:', error);
       throw error;
     }
   }

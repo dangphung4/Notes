@@ -21,6 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { auth } from '../Auth/firebase';
+import { Pencil2Icon } from '@radix-ui/react-icons';
+import { TagSelector } from '@/components/TagSelector';
 
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
@@ -44,6 +46,218 @@ const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayE
       containerRef.current.scrollTop = Math.max(0, scrollPosition);
     }
   }, 100);
+};
+
+const generateTimeOptions = () => {
+  const options = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const time = new Date();
+      time.setHours(hour, minute, 0, 0);
+      options.push({
+        value: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
+        label: format(time, 'h:mm a')
+      });
+    }
+  }
+  return options;
+};
+
+// New compact time picker component
+const TimePicker = ({ value, onChange }: { value: Date, onChange: (date: Date) => void }) => {
+  return (
+    <Select
+      value={format(value, 'HH:mm')}
+      onValueChange={(time) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        const newDate = new Date(value);
+        newDate.setHours(hours, minutes);
+        onChange(newDate);
+      }}
+    >
+      <SelectTrigger className="w-24">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {generateTimeOptions().map(option => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+// Redesigned event form
+const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
+  const [event, setEvent] = useState(initialEvent);
+  const [showMore, setShowMore] = useState(false);
+
+  const handleCreateTag = async (tag: Partial<Tags>) => {
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    const newTag: Partial<Tags> = {
+      ...tag,
+      createdBy: user.email || '',
+      createdAt: new Date()
+    };
+
+    // Add to database
+    return await db.createTag(newTag);
+  };
+
+  return (
+    <div className="flex flex-col">
+      <div className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Pencil2Icon className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Add title"
+            value={event.title || ''}
+            onChange={e => setEvent({ ...event, title: e.target.value })}
+            className="text-lg font-medium border-none p-0 focus-visible:ring-0"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm">
+            <div className="w-16 text-muted-foreground">Starts</div>
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                type="date"
+                value={format(event.startDate || new Date(), 'yyyy-MM-dd')}
+                onChange={e => {
+                  const date = new Date(e.target.value);
+                  const current = new Date(event.startDate || new Date());
+                  date.setHours(current.getHours(), current.getMinutes());
+                  setEvent({ ...event, startDate: date });
+                }}
+                className="w-36"
+              />
+              {!event.allDay && <TimePicker value={event.startDate || new Date()} onChange={date => setEvent({ ...event, startDate: date })} />}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <div className="w-16 text-muted-foreground">Ends</div>
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                type="date"
+                value={format(event.endDate || new Date(), 'yyyy-MM-dd')}
+                onChange={e => {
+                  const date = new Date(e.target.value);
+                  const current = new Date(event.endDate || new Date());
+                  date.setHours(current.getHours(), current.getMinutes());
+                  setEvent({ ...event, endDate: date });
+                }}
+                className="w-36"
+              />
+              {!event.allDay && <TimePicker value={event.endDate || new Date()} onChange={date => setEvent({ ...event, endDate: date })} />}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm pl-16">
+            <Switch
+              checked={event.allDay}
+              onCheckedChange={checked => setEvent({ ...event, allDay: checked })}
+            />
+            <Label className="text-muted-foreground">All day</Label>
+          </div>
+        </div>
+
+        <div className="flex gap-2 py-2">
+          {['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#6366f1'].map(color => (
+            <button
+              key={color}
+              type="button"
+              className={cn(
+                "w-6 h-6 rounded-full transition-all",
+                event.color === color && "ring-2 ring-offset-2 ring-primary"
+              )}
+              style={{ backgroundColor: color }}
+              onClick={() => setEvent({ ...event, color })}
+            />
+          ))}
+        </div>
+
+        <Button
+          variant="ghost"
+          className="w-full justify-start h-8 px-0 text-muted-foreground"
+          onClick={() => setShowMore(!showMore)}
+        >
+          <ChevronRightIcon className={cn(
+            "h-4 w-4 mr-2 transition-transform",
+            showMore && "rotate-90"
+          )} />
+          {showMore ? "Hide details" : "Add details"}
+        </Button>
+
+        {showMore && (
+          <div className="space-y-3 animate-in slide-in-from-left">
+            <div className="flex items-center gap-2 text-sm group">
+              <MapPinIcon className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Add location"
+                value={event.location || ''}
+                onChange={e => setEvent({ ...event, location: e.target.value })}
+                className="flex-1 border-none px-0 focus-visible:ring-0"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Add description"
+                value={event.description || ''}
+                onChange={e => setEvent({ ...event, description: e.target.value })}
+                className="min-h-[100px] resize-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+              <ClockIcon className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={event.reminderMinutes?.toString()}
+                onValueChange={(value) => setEvent({ ...event, reminderMinutes: parseInt(value) })}
+              >
+                <SelectTrigger className="border-none px-0">
+                  <SelectValue placeholder="Add reminder" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">At time of event</SelectItem>
+                  <SelectItem value="5">5 minutes before</SelectItem>
+                  <SelectItem value="15">15 minutes before</SelectItem>
+                  <SelectItem value="30">30 minutes before</SelectItem>
+                  <SelectItem value="60">1 hour before</SelectItem>
+                  <SelectItem value="1440">1 day before</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Add tag selector */}
+            <div className="space-y-1">
+              <Label className="text-sm">Tags</Label>
+              <TagSelector
+                selectedTags={event.tags || []}
+                onTagsChange={tags => setEvent({ ...event, tags })}
+                onCreateTag={handleCreateTag}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t p-4 flex justify-end gap-2">
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button size="sm" onClick={() => onSubmit(event)}>
+          {isCreate ? 'Save' : 'Update'}
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export default function Calendar() {
@@ -94,14 +308,13 @@ export default function Calendar() {
     setEvents(allEvents);
   }
 
-  async function handleCreateEvent(e: React.FormEvent) {
-    e.preventDefault();
+  const handleCreateEvent = async (event: Partial<CalendarEvent>) => {
     try {
       const user = auth.currentUser;
       if (!user) throw new Error('User not authenticated');
 
       const eventToCreate = {
-        ...newEvent,
+        ...event,
         createdBy: user.email || '',
         lastModifiedBy: user.email || '',
         lastModifiedAt: new Date()
@@ -109,15 +322,6 @@ export default function Calendar() {
 
       await db.createCalendarEvent(eventToCreate);
       
-      if (eventToCreate.sharedWith && eventToCreate.sharedWith.length > 0) {
-        const emails = eventToCreate.sharedWith.map(share => share.email);
-        await db.shareCalendarEvent(
-          eventToCreate.id!,
-          emails,
-          eventToCreate.sharedWith[0].permission
-        );
-      }
-
       setIsCreateEventOpen(false);
       setNewEvent({
         title: '',
@@ -130,7 +334,9 @@ export default function Calendar() {
         color: '#3b82f6',
         sharedWith: []
       });
+      
       await loadEvents();
+      
       toast({
         title: "Event Created",
         description: "Your calendar event has been scheduled"
@@ -142,7 +348,7 @@ export default function Calendar() {
         variant: "destructive"
       });
     }
-  }
+  };
 
   // Function to handle time slot clicks
   const handleTimeSlotClick = (date: Date, hour: number) => {
@@ -324,25 +530,13 @@ export default function Calendar() {
     </div>
   );
 
-  const generateTimeOptions = () => {
-    const options = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        const time = new Date();
-        time.setHours(hour, minute, 0, 0);
-        options.push({
-          value: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-          label: format(time, 'h:mm a')
-        });
-      }
-    }
-    return options;
-  };
-
   const timeOptions = generateTimeOptions();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedEvent, setEditedEvent] = useState<Partial<CalendarEvent> | null>(null);
+
+  // Add isCreate state
+  const [isCreate, setIsCreate] = useState(true);
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
@@ -358,269 +552,39 @@ export default function Calendar() {
               <h1 className="text-xl font-semibold">Calendar</h1>
               <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Create</span>
+                  <Button 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => {
+                      setIsCreate(true);
+                      setNewEvent({
+                        title: '',
+                        description: '',
+                        startDate: new Date(),
+                        endDate: new Date(),
+                        allDay: false,
+                        reminderMinutes: 30,
+                        location: '',
+                        color: '#3b82f6',
+                        sharedWith: []
+                      });
+                    }}
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                    New Event
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-[95vw] sm:max-w-[525px] h-[95vh] sm:h-auto p-0">
-                  <DialogHeader className="sticky top-0 bg-background z-10 p-6 pb-4 border-b">
-                    <DialogTitle>Create New Event</DialogTitle>
-                    <DialogDescription>
-                      Add a new event to your calendar
-                    </DialogDescription>
+                <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
+                  <DialogHeader className="px-4 py-3 border-b">
+                    <DialogTitle className="text-lg">Create New Event</DialogTitle>
                   </DialogHeader>
 
-                  <div className="px-6 py-4 overflow-y-auto max-h-[calc(95vh-8rem)]">
-                    <form onSubmit={handleCreateEvent} className="space-y-4">
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Title</Label>
-                          <Input 
-                            value={newEvent.title}
-                            onChange={e => setNewEvent({...newEvent, title: e.target.value})}
-                            placeholder="Event title"
-                            className="mt-1.5"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Switch 
-                            checked={newEvent.allDay}
-                            onCheckedChange={checked => setNewEvent({...newEvent, allDay: checked})}
-                            id="all-day"
-                          />
-                          <Label htmlFor="all-day">All day</Label>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label>Start</Label>
-                            <div className="flex flex-col gap-2">
-                              <Input 
-                                type="date"
-                                value={format(newEvent.startDate || new Date(), 'yyyy-MM-dd')}
-                                onChange={e => {
-                                  const date = new Date(e.target.value);
-                                  const current = new Date(newEvent.startDate || new Date());
-                                  date.setHours(current.getHours(), current.getMinutes());
-                                  setNewEvent({...newEvent, startDate: date});
-                                }}
-                              />
-                              <Select
-                                value={format(newEvent.startDate || new Date(), 'HH:mm')}
-                                onValueChange={(time) => {
-                                  const [hours, minutes] = time.split(':').map(Number);
-                                  const newDate = new Date(newEvent.startDate || new Date());
-                                  newDate.setHours(hours, minutes);
-                                  setNewEvent({...newEvent, startDate: newDate});
-                                }}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                  {generateTimeOptions().map(option => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>End</Label>
-                            <div className="flex flex-col gap-2">
-                              <Input 
-                                type="date"
-                                value={format(newEvent.endDate || new Date(), 'yyyy-MM-dd')}
-                                onChange={e => {
-                                  const date = new Date(e.target.value);
-                                  const currentEnd = new Date(newEvent.endDate || new Date());
-                                  date.setHours(currentEnd.getHours(), currentEnd.getMinutes());
-                                  setNewEvent({...newEvent, endDate: date});
-                                }}
-                              />
-                              <Select
-                                value={format(newEvent.endDate || new Date(), 'HH:mm')}
-                                onValueChange={(time) => {
-                                  const [hours, minutes] = time.split(':').map(Number);
-                                  const newDate = new Date(newEvent.endDate || new Date());
-                                  newDate.setHours(hours, minutes);
-                                  setNewEvent({...newEvent, endDate: newDate});
-                                }}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                  {generateTimeOptions().map(option => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Location</Label>
-                          <Input 
-                            value={newEvent.location || ''}
-                            onChange={e => setNewEvent({...newEvent, location: e.target.value})}
-                            placeholder="Add location"
-                            className="mt-1.5"
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Description</Label>
-                          <Textarea 
-                            value={newEvent.description || ''}
-                            onChange={e => setNewEvent({...newEvent, description: e.target.value})}
-                            placeholder="Add description"
-                            className="mt-1.5"
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Color</Label>
-                          <div className="flex gap-2 mt-1.5">
-                            {['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#6366f1'].map(color => (
-                              <button
-                                key={color}
-                                type="button"
-                                className={cn(
-                                  "w-6 h-6 rounded-full",
-                                  newEvent.color === color && "ring-2 ring-offset-2 ring-primary"
-                                )}
-                                style={{ backgroundColor: color }}
-                                onClick={() => setNewEvent({...newEvent, color})}
-                              />
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Reminder</Label>
-                          <Select
-                            value={newEvent.reminderMinutes?.toString()}
-                            onValueChange={(value) => setNewEvent({...newEvent, reminderMinutes: parseInt(value)})}
-                          >
-                            <SelectTrigger className="mt-1.5">
-                              <SelectValue placeholder="Select reminder time" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0">At time of event</SelectItem>
-                              <SelectItem value="5">5 minutes before</SelectItem>
-                              <SelectItem value="15">15 minutes before</SelectItem>
-                              <SelectItem value="30">30 minutes before</SelectItem>
-                              <SelectItem value="60">1 hour before</SelectItem>
-                              <SelectItem value="1440">1 day before</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label>Participants</Label>
-                          <div className="flex gap-2 mt-1.5">
-                            <Input
-                              placeholder="Enter email address"
-                              value={newParticipant}
-                              onChange={(e) => setNewParticipant(e.target.value)}
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => {
-                                if (newParticipant && newParticipant.includes('@')) {
-                                  setNewEvent({
-                                    ...newEvent,
-                                    sharedWith: [
-                                      ...(newEvent.sharedWith || []),
-                                      {
-                                        email: newParticipant,
-                                        permission: 'view',
-                                        status: 'pending'
-                                      }
-                                    ]
-                                  });
-                                  setNewParticipant('');
-                                }
-                              }}
-                            >
-                              Add
-                            </Button>
-                          </div>
-                          
-                          {newEvent.sharedWith && newEvent.sharedWith.length > 0 && (
-                            <div className="mt-2 space-y-2">
-                              {newEvent.sharedWith.map((participant, index) => (
-                                <div key={index} className="flex items-center justify-between text-sm bg-muted p-2 rounded-md">
-                                  <div className="flex items-center gap-2">
-                                    <UserPlusIcon className="h-4 w-4 text-muted-foreground" />
-                                    <span>{participant.email}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Select
-                                      value={participant.permission}
-                                      onValueChange={(value: 'view' | 'edit') => {
-                                        const updatedSharedWith = [...(newEvent.sharedWith || [])];
-                                        updatedSharedWith[index] = {
-                                          ...participant,
-                                          permission: value
-                                        };
-                                        setNewEvent({
-                                          ...newEvent,
-                                          sharedWith: updatedSharedWith
-                                        });
-                                      }}
-                                    >
-                                      <SelectTrigger className="h-7 w-[100px]">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="view">Can view</SelectItem>
-                                        <SelectItem value="edit">Can edit</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7"
-                                      onClick={() => {
-                                        const updatedSharedWith = newEvent.sharedWith?.filter((_, i) => i !== index);
-                                        setNewEvent({
-                                          ...newEvent,
-                                          sharedWith: updatedSharedWith
-                                        });
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="sticky bottom-0 bg-background p-6 pt-4 border-t mt-auto">
-                    <div className="flex justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => setIsCreateEventOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit">Create Event</Button>
-                    </div>
-                  </div>
+                  <EventForm
+                    isCreate={true}
+                    initialEvent={newEvent}
+                    onSubmit={handleCreateEvent}
+                    onCancel={() => setIsCreateEventOpen(false)}
+                  />
                 </DialogContent>
               </Dialog>
             </div>
@@ -782,29 +746,48 @@ export default function Calendar() {
       </Tabs>
 
       <Dialog open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-[525px] h-[95vh] sm:h-auto p-0">
-          <DialogHeader className="sticky top-0 bg-background z-10 p-6 pb-4 border-b">
-            <DialogTitle>
-              {!isEditing ? (
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: selectedEvent?.color }}
-                  />
-                  {selectedEvent?.title}
-                </div>
-              ) : (
-                "Edit Event"
-              )}
+        <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
+          <DialogHeader className="px-3 py-2 border-b">
+            <DialogTitle className="text-base">
+              {!isEditing ? selectedEvent?.title : "Edit Event"}
             </DialogTitle>
           </DialogHeader>
-          
-          <div className="px-6 py-4 overflow-y-auto max-h-[calc(95vh-8rem)]">
-            {!isEditing ? (
-              <>
+
+          {isEditing ? (
+            <EventForm
+              isCreate={false}
+              initialEvent={editedEvent || selectedEvent || {}}
+              onSubmit={async (event) => {
+                if (!selectedEvent?.id) return;
+                try {
+                  await db.updateCalendarEvent(selectedEvent.id, event);
+                  toast({
+                    title: "Event Updated",
+                    description: "Your changes have been saved"
+                  });
+                  loadEvents();
+                  setIsEditing(false);
+                  setEditedEvent(null);
+                  setIsEventDetailsOpen(false);
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to update event",
+                    variant: "destructive"
+                  });
+                }
+              }}
+              onCancel={() => {
+                setIsEditing(false);
+                setEditedEvent(null);
+              }}
+            />
+          ) : (
+            <div className="flex flex-col">
+              <div className="p-3 space-y-3">
                 <div className="flex items-start gap-2">
-                  <ClockIcon className="h-4 w-4 mt-1 text-muted-foreground" />
-                  <div>
+                  <ClockIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div className="space-y-0.5">
                     <div>
                       {selectedEvent?.allDay ? 'All day' : (
                         `${format(selectedEvent?.startDate || new Date(), 'h:mm a')} - 
@@ -819,14 +802,14 @@ export default function Calendar() {
 
                 {selectedEvent?.location && (
                   <div className="flex items-start gap-2">
-                    <MapPinIcon className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <MapPinIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
                     <div>{selectedEvent.location}</div>
                   </div>
                 )}
 
                 {selectedEvent?.description && (
-                  <div className="pt-4 border-t">
-                    <div className="font-medium mb-2">Description</div>
+                  <div className="pt-2 border-t">
+                    <div className="font-medium mb-1 text-sm">Description</div>
                     <div className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {selectedEvent.description}
                     </div>
@@ -852,6 +835,23 @@ export default function Calendar() {
                   </div>
                 )}
 
+                {selectedEvent?.tags && selectedEvent.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {selectedEvent.tags.map(tag => (
+                      <div
+                        key={tag.id}
+                        className="flex items-center px-2 py-0.5 rounded-full text-xs"
+                        style={{ 
+                          backgroundColor: tag.color + '20',
+                          color: tag.color 
+                        }}
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="pt-4 border-t">
                   <div className="font-medium mb-2">Reminder</div>
                   <div className="text-sm text-muted-foreground">
@@ -867,179 +867,27 @@ export default function Calendar() {
                     <div>Last modified by {selectedEvent.lastModifiedBy}</div>
                   )}
                 </div>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Start</Label>
-                    <div className="flex flex-col gap-2 mt-1.5">
-                      <Input 
-                        type="date"
-                        value={format(editedEvent?.startDate || new Date(), 'yyyy-MM-dd')}
-                        onChange={e => {
-                          const date = new Date(e.target.value);
-                          const current = new Date(editedEvent?.startDate || new Date());
-                          date.setHours(current.getHours(), current.getMinutes());
-                          setEditedEvent({...editedEvent, startDate: date});
-                        }}
-                      />
-                      <Select
-                        value={format(editedEvent?.startDate || new Date(), 'HH:mm')}
-                        onValueChange={(time) => {
-                          const [hours, minutes] = time.split(':').map(Number);
-                          const newDate = new Date(editedEvent?.startDate || new Date());
-                          newDate.setHours(hours, minutes);
-                          setEditedEvent({...editedEvent, startDate: newDate});
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent position="popper">
-                          {generateTimeOptions().map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>End</Label>
-                    <div className="flex flex-col gap-2 mt-1.5">
-                      <Input 
-                        type="date"
-                        value={format(editedEvent?.endDate || new Date(), 'yyyy-MM-dd')}
-                        onChange={e => {
-                          const date = new Date(e.target.value);
-                          const current = new Date(editedEvent?.endDate || new Date());
-                          date.setHours(current.getHours(), current.getMinutes());
-                          setEditedEvent({...editedEvent, endDate: date});
-                        }}
-                      />
-                      <Select
-                        value={format(editedEvent?.endDate || new Date(), 'HH:mm')}
-                        onValueChange={(time) => {
-                          const [hours, minutes] = time.split(':').map(Number);
-                          const newDate = new Date(editedEvent?.endDate || new Date());
-                          newDate.setHours(hours, minutes);
-                          setEditedEvent({...editedEvent, endDate: newDate});
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent position="popper">
-                          {generateTimeOptions().map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Location</Label>
-                  <Input 
-                    value={editedEvent?.location || ''}
-                    onChange={e => setEditedEvent({...editedEvent, location: e.target.value})}
-                    className="mt-1.5"
-                  />
-                </div>
-
-                <div>
-                  <Label>Description</Label>
-                  <Textarea 
-                    value={editedEvent?.description || ''}
-                    onChange={e => setEditedEvent({...editedEvent, description: e.target.value})}
-                    className="mt-1.5"
-                  />
-                </div>
-
-                <div>
-                  <Label>Color</Label>
-                  <div className="flex gap-2 mt-1.5">
-                    {['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#6366f1'].map(color => (
-                      <button
-                        key={color}
-                        type="button"
-                        className={cn(
-                          "w-6 h-6 rounded-full",
-                          editedEvent?.color === color && "ring-2 ring-offset-2 ring-primary"
-                        )}
-                        style={{ backgroundColor: color }}
-                        onClick={() => setEditedEvent({...editedEvent, color})}
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
-            )}
 
-            <div className="sticky bottom-0 bg-background p-6 pt-4 border-t">
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (isEditing) {
-                      setIsEditing(false);
-                      setEditedEvent(null);
-                    } else {
-                      setIsEventDetailsOpen(false);
-                    }
-                  }}
-                >
-                  {isEditing ? 'Cancel' : 'Close'}
+              <div className="border-t p-3 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEventDetailsOpen(false)}>
+                  Close
                 </Button>
-                
                 {(selectedEvent?.createdBy === auth.currentUser?.email || 
-                 selectedEvent?.sharedWith?.some(share => 
-                   share.email === auth.currentUser?.email && share.permission === 'edit'
-                 )) && (
-                  isEditing ? (
-                    <Button
-                      onClick={async () => {
-                        if (!editedEvent || !selectedEvent?.id) return;
-                        
-                        try {
-                          await db.updateCalendarEvent(selectedEvent.id, editedEvent);
-                          toast({
-                            title: "Event Updated",
-                            description: "Your changes have been saved"
-                          });
-                          loadEvents();
-                          setIsEditing(false);
-                          setEditedEvent(null);
-                        } catch (error) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to update event",
-                            variant: "destructive"
-                          });
-                        }
-                      }}
-                    >
-                      Save Changes
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEditedEvent(selectedEvent);
-                        setIsEditing(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  )
+                  selectedEvent?.sharedWith?.some(share => 
+                    share.email === auth.currentUser?.email && share.permission === 'edit'
+                  )) && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreate(false);
+                      setEditedEvent(selectedEvent);
+                      setIsEditing(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
                 )}
-
                 {selectedEvent?.createdBy === auth.currentUser?.email && (
                   <Button
                     variant="destructive"
@@ -1051,12 +899,12 @@ export default function Calendar() {
                       }
                     }}
                   >
-                    Delete Event
+                    Delete
                   </Button>
                 )}
               </div>
             </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -1135,7 +983,7 @@ export default function Calendar() {
                       .map(email => email.trim())
                       .filter(Boolean);
                     
-                    await db.shareCalendarEvent(selectedEvent.id, emails, sharePermission);
+                    await db.shareCalendarEvent(selectedEvent?.id, emails, sharePermission);
                     
                     toast({
                       title: "Event Shared",
