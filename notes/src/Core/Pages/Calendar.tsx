@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '../Database/db';
 import type { CalendarEvent } from '../Database/db';
-import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown, Calendar as CalendarIcon, Search } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks, setYear } from "date-fns";
 import { cn } from '@/lib/utils';
 import {
@@ -26,6 +26,7 @@ import { TagSelector } from '@/components/TagSelector';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EventInvitations } from '../Components/Calendar/EventInvitations';
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
@@ -731,6 +732,90 @@ const DayEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventC
   );
 };
 
+// Add this new component near other component definitions
+const EventSearch = ({ 
+  events, 
+  onEventSelect 
+}: { 
+  events: CalendarEvent[], 
+  onEventSelect: (event: CalendarEvent) => void 
+}) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(open => !open);
+      }
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, []);
+
+  const filteredEvents = events.filter(event => {
+    const searchLower = search.toLowerCase();
+    return (
+      event.title.toLowerCase().includes(searchLower) ||
+      event.description?.toLowerCase().includes(searchLower) ||
+      event.location?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  return (
+    <div className="w-full lg:w-1/2">
+      <Button
+        variant="outline"
+        role="combobox"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        className="w-full justify-start text-sm text-muted-foreground"
+      >
+        <Search className="mr-2 h-4 w-4" />
+        Search events...
+        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+          <span className="text-xs">⌘</span>K
+        </kbd>
+      </Button>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          placeholder="Search events..." 
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>No events found.</CommandEmpty>
+          <CommandGroup heading="Events">
+            {filteredEvents.map(event => (
+              <CommandItem
+                key={event.id}
+                value={event.title}
+                onSelect={() => {
+                  onEventSelect(event);
+                  setOpen(false);
+                  setSearch('');
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: event.color || '#3b82f6' }}
+                  />
+                  <span>{event.title}</span>
+                </div>
+                <div className="ml-5 text-sm text-muted-foreground">
+                  {format(new Date(event.startDate), 'MMM d, yyyy')}
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </div>
+  );
+};
+
 export default function Calendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -1031,8 +1116,16 @@ export default function Calendar() {
           {/* Header Section */}
           <div className="flex flex-col gap-3 p-4">
             {/* Top Row - Title and Primary Actions */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold">Calendar</h1>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <EventSearch 
+                  events={events} 
+                  onEventSelect={(event) => {
+                    setSelectedEvent(event);
+                    setIsEventDetailsOpen(true);
+                  }} 
+                />
+              </div>
               <div className="flex items-center gap-2">
                 <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
                   <DialogTrigger asChild>

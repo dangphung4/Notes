@@ -11,7 +11,7 @@ import { onSnapshot, collection, query, where, getDocs, documentId } from 'fireb
 import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
-import type { Note } from '../Database/db';
+import type { Note, Tags } from '../Database/db';
 import { LayoutGridIcon, LayoutListIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -26,9 +26,7 @@ import { db } from '../Database/db';
 import { TagSelector } from '@/components/TagSelector';
 import { TagIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 
@@ -439,9 +437,7 @@ export default function Notes() {
   const [dateFilter, setDateFilter] = useState<Date | undefined>();
   const [selectedTagFilters, setSelectedTagFilters] = useState<Tags[]>([]);
   const [allTags, setAllTags] = useState<Tags[]>([]);
-  const [showTagFilter, setShowTagFilter] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isEditingTags, setIsEditingTags] = useState(false);
 
   // Persist view preference
   useEffect(() => {
@@ -655,13 +651,13 @@ export default function Notes() {
     const baseFiltered = (activeTab === 'my-notes' ? myNotes : sharedWithMe)
       .filter(note => {
         // Search query
-        if (!note.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        if (!note?.title?.toLowerCase().includes(searchQuery.toLowerCase())) {
           return false;
         }
         
         // Tags filter
         if (selectedTags.length > 0) {
-          if (!selectedTags.every(tag => note.tags?.includes(tag))) {
+          if (!selectedTags.every(tag => note?.tags?.some(noteTag => noteTag.id === tag))) {
             return false;
           }
         }
@@ -692,11 +688,11 @@ export default function Notes() {
 
     // Add tag filtering
     if (selectedTagFilters.length === 0) return baseFiltered;
-    
+      
     return baseFiltered.filter(note => {
       if (!note.tags) return false;
       return selectedTagFilters.every(filterTag =>
-        note.tags.some(noteTag => noteTag.id === filterTag.id)
+        note?.tags?.some(noteTag => noteTag.id === filterTag.id)
       );
     });
   }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters]);
