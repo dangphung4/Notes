@@ -3,16 +3,24 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
-import { db } from '../../Database/db';
-import type { CalendarEvent } from '../../Types/CalendarEvent';
+import { db, CalendarEvent } from '../../Database/db';
 import { auth } from '../../Auth/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ClockIcon, MapPinIcon } from 'lucide-react';
 
-export function EventInvitations() {
+interface EventInvitationsProps {
+  initialPendingEvents: CalendarEvent[];
+  onEventsUpdate: () => void;
+}
+
+export function EventInvitations({ initialPendingEvents, onEventsUpdate }: EventInvitationsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [pendingEvents, setPendingEvents] = useState<CalendarEvent[]>([]);
+  const [pendingEvents, setPendingEvents] = useState<CalendarEvent[]>(initialPendingEvents);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setPendingEvents(initialPendingEvents);
+  }, [initialPendingEvents]);
 
   const loadPendingEvents = async () => {
     try {
@@ -44,6 +52,7 @@ export function EventInvitations() {
       
       await db.updateEventShare(event.firebaseId, auth.currentUser?.email || '', status);
       await loadPendingEvents();
+      onEventsUpdate();
       
       toast({
         title: status === 'accepted' ? 'Event Accepted' : 'Event Declined',

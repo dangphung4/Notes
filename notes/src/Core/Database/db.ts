@@ -474,7 +474,7 @@ class NotesDB extends Dexie {
         firebaseId: docRef.id
       };
 
-      await this.calendarEvents.add(localEvent);
+      await this.calendarEvents.add(localEvent as CalendarEvent);
 
       return docRef.id;
     } catch (error) {
@@ -486,7 +486,8 @@ class NotesDB extends Dexie {
   private async scheduleEventReminder(event: CalendarEvent) {
     if ('Notification' in window && Notification.permission === 'granted') {
       const reminderTime = new Date(event.startDate);
-      reminderTime.setMinutes(reminderTime.getMinutes() - event.reminderMinutes);
+      const reminderMinutes = event.reminderMinutes || 0; // Ensure reminderMinutes is defined
+      reminderTime.setMinutes(reminderTime.getMinutes() - reminderMinutes);
 
       // Register notification trigger
       await navigator.serviceWorker.ready.then(registration => {
@@ -689,23 +690,59 @@ class NotesDB extends Dexie {
     if (!event || !user) throw new Error('Event not found or user not authenticated');
 
     try {
+      // Preserve existing shares and their status
       const updatedEvent = {
         ...event,
         ...updates,
+        // Keep the existing sharedWith array if not explicitly updated
+        sharedWith: updates.sharedWith || event.sharedWith,
         lastModifiedBy: user.email,
         lastModifiedAt: new Date()
       };
 
       if (event.firebaseId) {
-        await updateDoc(doc(firestore, 'calendarEvents', event.firebaseId), updatedEvent);
+        // Get current Firebase data to preserve share statuses
+        const eventRef = doc(firestore, 'calendarEvents', event.firebaseId);
+        const eventDoc = await getDoc(eventRef);
+        
+        if (eventDoc.exists()) {
+          const firebaseData = eventDoc.data();
+          // Merge existing shares with any new shares, preserving status
+          const existingShares = firebaseData.sharedWith || [];
+          const newShares = updates.sharedWith || [];
+          
+          // Create a map of existing shares by email
+          const shareMap = new Map(
+            existingShares.map((share: CalendarEventShare) => [share.email, share])
+          );
+          
+          // Update or add new shares while preserving existing status
+          newShares.forEach((share: CalendarEventShare) => {
+            const existingShare = shareMap.get(share.email);
+            if (existingShare) {
+              // Preserve the existing status
+              shareMap.set(share.email, { ...share, status: existingShare.status });
+            } else {
+              // New share gets 'pending' status
+              shareMap.set(share.email, { ...share, status: 'pending' });
+            }
+          });
+
+          // Update the event with merged shares
+          updatedEvent.sharedWith = Array.from(shareMap.values()) as CalendarEventShare[];
+        }
+
+        await updateDoc(eventRef, updatedEvent);
       }
 
-      await this.calendarEvents.update(id, updatedEvent);
+      await this.calendarEvents.update(id, updatedEvent as CalendarEvent);
       
       // Update reminder if time changed
       if (updates.startDate || updates.reminderMinutes) {
-        await this.scheduleEventReminder(updatedEvent);
+        await this.scheduleEventReminder(updatedEvent as CalendarEvent);
       }
+
+      return updatedEvent;
     } catch (error) {
       console.error('Error updating calendar event:', error);
       throw error;
@@ -778,9 +815,10 @@ class NotesDB extends Dexie {
         lastModifiedBy: user.email,
         lastModifiedAt: new Date()
       });
+      const noteIdNumber = parseInt(noteId, 10);
 
       // Update locally
-      await this.notes.update(noteId, { tags });
+      await this.notes.update(noteIdNumber, { tags });
     } catch (error) {
       console.error('Error updating note tags:', error);
       throw error;
@@ -796,7 +834,7 @@ class NotesDB extends Dexie {
       return snapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id
-      })) as Note[];
+      })) as unknown as Note[];
     } catch (error) {
       console.error('Error fetching notes by tag:', error);
       throw error;

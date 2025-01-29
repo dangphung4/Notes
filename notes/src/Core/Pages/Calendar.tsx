@@ -6,9 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '../Database/db';
-import type { CalendarEvent } from '../Types/CalendarEvent';
+import type { CalendarEvent } from '../Database/db';
 import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown } from 'lucide-react';
-import { format, startOfWeek, addDays, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns";
+import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from "date-fns";
 import { cn } from '@/lib/utils';
 import {
   Select,
@@ -553,6 +553,7 @@ export default function Calendar() {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareEmails, setShareEmails] = useState<string>('');
   const [sharePermission, setSharePermission] = useState<'view' | 'edit'>('view');
+  const [pendingInvitations, setPendingInvitations] = useState<CalendarEvent[]>([]);
 
   const [newEvent, setNewEvent] = useState<Partial<CalendarEvent>>({
     title: '',
@@ -581,8 +582,25 @@ export default function Calendar() {
     });
   };
 
+  const loadPendingInvitations = async () => {
+    try {
+      const events = await db.getSharedEvents();
+      const userEmail = auth.currentUser?.email;
+
+      const pending = events.filter(event => {
+        const userShare = event.sharedWith?.find(share => share.email === userEmail);
+        return userShare?.status === 'pending';
+      });
+
+      setPendingInvitations(pending);
+    } catch (error) {
+      console.error('Error loading pending invitations:', error);
+    }
+  };
+
   useEffect(() => {
     loadEvents();
+    loadPendingInvitations();
   }, []);
 
   async function loadEvents() {
@@ -860,7 +878,13 @@ export default function Calendar() {
                   />
                 </DialogContent>
               </Dialog>
-              <EventInvitations />
+              <EventInvitations 
+                initialPendingEvents={pendingInvitations}
+                onEventsUpdate={() => {
+                  loadEvents();
+                  loadPendingInvitations();
+                }}
+              />
             </div>
 
             <div className="flex items-center space-x-2">
