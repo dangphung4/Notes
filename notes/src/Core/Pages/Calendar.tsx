@@ -115,6 +115,8 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
   const [event, setEvent] = useState(initialEvent);
   const [showMore, setShowMore] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [shareEmails, setShareEmails] = useState('');
+  const [sharePermission, setSharePermission] = useState<'view' | 'edit'>('view');
 
   const handleCreateTag = async (tag: Partial<Tags>) => {
     const user = auth.currentUser;
@@ -304,6 +306,55 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
                 onCreateTag={handleCreateTag}
               />
             </div>
+
+            {/* Add sharing section */}
+            <div className="space-y-2">
+              <Label className="text-sm">Share with others</Label>
+              <Textarea
+                placeholder="Enter email addresses (one per line)"
+                value={shareEmails}
+                onChange={(e) => setShareEmails(e.target.value)}
+                className="min-h-[80px] text-sm"
+              />
+              <Select
+                value={sharePermission}
+                onValueChange={(value) => setSharePermission(value as 'view' | 'edit')}
+              >
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="Select permission" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="view">Can view</SelectItem>
+                  <SelectItem value="edit">Can edit</SelectItem>
+                </SelectContent>
+              </Select>
+              {event.sharedWith && event.sharedWith.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Currently shared with:</Label>
+                  {event.sharedWith.map((share) => (
+                    <div key={share.email} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <UserPlusIcon className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs">{share.email}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() => {
+                          setEvent({
+                            ...event,
+                            sharedWith: event.sharedWith?.filter(s => s.email !== share.email)
+                          });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -312,11 +363,181 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
         <Button variant="ghost" size="sm" onClick={onCancel}>
           Cancel
         </Button>
-        <Button size="sm" onClick={() => onSubmit(event)}>
+        <Button 
+          size="sm" 
+          onClick={() => {
+            // Process sharing emails
+            const newShares = shareEmails
+              .split('\n')
+              .map(email => email.trim())
+              .filter(Boolean)
+              .map(email => ({
+                email,
+                permission: sharePermission,
+                status: 'pending'
+              }));
+
+            // Combine with existing shares, removing duplicates
+            const existingEmails = new Set(event.sharedWith?.map(s => s.email) || []);
+            const uniqueNewShares = newShares.filter(share => !existingEmails.has(share.email));
+
+            onSubmit({
+              ...event,
+              sharedWith: [...(event.sharedWith || []), ...uniqueNewShares]
+            });
+          }}
+        >
           {isCreate ? 'Save' : 'Update'}
         </Button>
       </div>
     </div>
+  );
+};
+
+// Add this helper function near the top with other utility functions
+const groupEventsByDate = (events: CalendarEvent[]) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Filter out past events
+  const futureEvents = events.filter(event => {
+    const eventDate = new Date(event.startDate);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  });
+
+  const grouped = futureEvents.reduce((acc, event) => {
+    const dateKey = format(new Date(event.startDate), 'yyyy-MM-dd');
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(event);
+    return acc;
+  }, {} as Record<string, CalendarEvent[]>);
+
+  // Sort events within each day by start time
+  Object.keys(grouped).forEach(date => {
+    grouped[date].sort((a, b) => {
+      if (a.allDay && !b.allDay) return -1;
+      if (!a.allDay && b.allDay) return 1;
+      return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+    });
+  });
+
+  // Sort dates
+  return Object.fromEntries(
+    Object.entries(grouped).sort(([dateA], [dateB]) => 
+      new Date(dateA).getTime() - new Date(dateB).getTime()
+    )
+  );
+};
+
+// Update the AgendaView component
+const AgendaView = ({ 
+  events, 
+  onEventClick 
+}: { 
+  events: CalendarEvent[], 
+  onEventClick: (event: CalendarEvent) => void 
+}) => {
+  return (
+    <ScrollArea className="h-[calc(100vh-8rem)]">
+      <div className="space-y-4 p-4">
+        {events.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            <p>No events scheduled</p>
+          </div>
+        ) : (
+          Object.entries(groupEventsByDate(events)).map(([date, dateEvents]) => (
+            <div key={date} className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground sticky top-0 bg-background py-2">
+                {format(new Date(date), 'EEEE, MMMM d, yyyy')}
+              </h3>
+              <div className="space-y-2">
+                {dateEvents.map(event => (
+                  <div
+                    key={event.id}
+                    className="rounded-lg border bg-card p-3 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => onEventClick(event)}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Time Column */}
+                      <div className="w-24 flex-shrink-0">
+                        {event.allDay ? (
+                          <span className="text-sm font-medium text-muted-foreground">All day</span>
+                        ) : (
+                          <div className="text-sm">
+                            <div className="font-medium">
+                              {format(event.startDate, 'h:mm a')}
+                            </div>
+                            <div className="text-muted-foreground">
+                              {format(event.endDate, 'h:mm a')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Event Details Column */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: event.color || '#3b82f6' }}
+                            />
+                            <h4 className="font-medium truncate">{event.title}</h4>
+                          </div>
+                          {event.sharedWith && event.sharedWith.length > 0 && (
+                            <div className="flex-shrink-0">
+                              <Share2Icon className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        {event.tags && event.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {event.tags.map(tag => (
+                              <div
+                                key={tag.id}
+                                className="px-2 py-0.5 rounded-full text-xs"
+                                style={{
+                                  backgroundColor: tag.color + '20',
+                                  color: tag.color
+                                }}
+                              >
+                                {tag.name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Additional Details */}
+                        {(event.location || event.description) && (
+                          <div className="space-y-1">
+                            {event.location && (
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <MapPinIcon className="h-3 w-3" />
+                                <span className="truncate">{event.location}</span>
+                              </div>
+                            )}
+                            {event.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {event.description}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </ScrollArea>
   );
 };
 
@@ -432,47 +653,13 @@ export default function Calendar() {
   const [view, setView] = useState<'week' | 'day' | 'agenda'>('week');
   
   const renderAgendaView = () => (
-    <ScrollArea className="h-[calc(100vh-8rem)]">
-      <div className="space-y-4 p-4">
-        {events
-          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-          .map(event => (
-            <div
-              key={event.id}
-              className="rounded-lg border p-4 cursor-pointer hover:shadow-md transition-shadow"
-              style={{ borderLeftColor: event.color, borderLeftWidth: '4px' }}
-              onClick={() => handleEventClick(event)}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium">{event.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {format(new Date(event.startDate), 'EEEE, MMMM d')}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {event.allDay ? 'All day' : 
-                      `${format(new Date(event.startDate), 'h:mm a')} - 
-                       ${format(new Date(event.endDate), 'h:mm a')}`
-                    }
-                  </p>
-                </div>
-                {event.color && (
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: event.color }}
-                  />
-                )}
-              </div>
-              {event.location && (
-                <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
-                  <MapPinIcon className="h-4 w-4" />
-                  {event.location}
-                </div>
-              )}
-            </div>
-          ))}
-      </div>
-    </ScrollArea>
+    <AgendaView 
+      events={events} 
+      onEventClick={(event) => {
+        setSelectedEvent(event);
+        setIsEventDetailsOpen(true);
+      }} 
+    />
   );
 
   const weekViewRef = useRef<HTMLDivElement>(null);
