@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
-import { onSnapshot, collection, query, where, getDocs, documentId } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, getDocs, documentId, getDoc, doc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
@@ -31,9 +31,33 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
   view: 'grid' | 'list',
   onClick: () => void 
 }) => {
+  const [ownerProfile, setOwnerProfile] = useState<any>(null);
+  
+  // Fetch owner's current profile
+  useEffect(() => {
+    const fetchOwnerProfile = async () => {
+      try {
+        // Get the owner's user document from Firebase Auth
+        const userDoc = await getDoc(doc(firestore, 'users', note.ownerUserId));
+        if (userDoc.exists()) {
+          setOwnerProfile(userDoc.data());
+        }
+      } catch (error) {
+        console.error('Error fetching owner profile:', error);
+      }
+    };
+
+    fetchOwnerProfile();
+  }, [note.ownerUserId]);
+
   const isOwner = note.ownerUserId === user?.uid;
   const noteShares = shares.filter(s => s.noteId === note.firebaseId);
   const hasShares = noteShares.length > 0;
+
+  // Use ownerProfile data if available, fall back to note data if not
+  const ownerDisplayName = ownerProfile?.displayName || note.ownerDisplayName;
+  const ownerPhotoURL = ownerProfile?.photoURL || note.ownerPhotoURL;
+  const ownerEmail = ownerProfile?.email || note.ownerEmail;
 
   const handlePinClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -98,18 +122,18 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Owner</h4>
                 <div className="flex items-center gap-2">
-                  {note.ownerPhotoURL ? (
+                  {ownerPhotoURL ? (
                     <img 
-                      src={note.ownerPhotoURL} 
-                      alt={note.ownerDisplayName}
+                      src={ownerPhotoURL} 
+                      alt={ownerDisplayName}
                       className="w-8 h-8 rounded-full"
                     />
                   ) : (
                     <AvatarIcon className="w-8 h-8" />
                   )}
                   <div className="text-sm">
-                    <p>{note.ownerDisplayName}</p>
-                    <p className="text-muted-foreground">{note.ownerEmail}</p>
+                    <p>{ownerDisplayName}</p>
+                    <p className="text-muted-foreground">{ownerEmail}</p>
                   </div>
                 </div>
               </div>
@@ -183,17 +207,17 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
             {/* Owner Info - Updated layout */}
             <div className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-2">
-                {note.ownerPhotoURL ? (
+                {ownerPhotoURL ? (
                   <img 
-                    src={note.ownerPhotoURL} 
-                    alt={note.ownerDisplayName}
+                    src={ownerPhotoURL} 
+                    alt={ownerDisplayName}
                     className="w-6 h-6 rounded-full"
                   />
                 ) : (
                   <AvatarIcon className="w-5 h-5" />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  {isOwner ? 'You' : note.ownerDisplayName}
+                  {isOwner ? 'You' : ownerDisplayName}
                 </span>
               </div>
             </div>
