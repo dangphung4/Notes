@@ -62,7 +62,7 @@ export interface SharePermission {
 }
 
 // Update CalendarEvent type to include sharing
-interface CalendarEventShare {
+export interface CalendarEventShare {
   email: string;
   permission: 'view' | 'edit';
   status: 'pending' | 'accepted' | 'declined';
@@ -634,7 +634,7 @@ class NotesDB extends Dexie {
 
     try {
       // If it's a string, assume it's a Firebase ID
-      const firebaseId = typeof eventId === 'string' ? eventId : null;
+      let firebaseId = typeof eventId === 'string' ? eventId : null;
       let localEvent = null;
 
       // If it's a number, try to get the local event
@@ -737,13 +737,13 @@ class NotesDB extends Dexie {
           
           // Update or add new shares while preserving existing status
           newShares.forEach((share: CalendarEventShare) => {
-            const existingShare = shareMap.get(share.email);
+            const existingShare : CalendarEventShare = shareMap.get(share.email) as CalendarEventShare;
             if (existingShare) {
               // Preserve the existing status
-              shareMap.set(share.email, { ...share, status: existingShare.status });
+              shareMap.set(share.email, { ...share, status: existingShare.status } as CalendarEventShare);
             } else {
               // New share gets 'pending' status
-              shareMap.set(share.email, { ...share, status: 'pending' });
+              shareMap.set(share.email, { ...share, status: 'pending' } as CalendarEventShare);
             }
           });
 

@@ -7,8 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '../Database/db';
 import type { CalendarEvent } from '../Database/db';
-import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown } from 'lucide-react';
-import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from "date-fns";
+import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown, Calendar as CalendarIcon } from 'lucide-react';
+import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks, setYear } from "date-fns";
 import { cn } from '@/lib/utils';
 import {
   Select,
@@ -25,6 +25,7 @@ import { Pencil2Icon } from '@radix-ui/react-icons';
 import { TagSelector } from '@/components/TagSelector';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EventInvitations } from '../Components/Calendar/EventInvitations';
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
@@ -1081,7 +1082,10 @@ export default function Calendar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setCurrentWeek(new Date())}
+                  onClick={() => {
+                    setCurrentWeek(new Date());
+                    setSelectedDate(new Date());
+                  }}
                 >
                   Today
                 </Button>
@@ -1091,7 +1095,13 @@ export default function Calendar() {
                   variant="ghost"
                   size="icon"
                   className="rounded-none"
-                  onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
+                  onClick={() => {
+                    if (view === 'week') {
+                      setCurrentWeek(subWeeks(currentWeek, 1));
+                    } else {
+                      setSelectedDate(subDays(selectedDate, 1));
+                    }
+                  }}
                 >
                   <ChevronLeftIcon className="h-4 w-4" />
                 </Button>
@@ -1099,14 +1109,82 @@ export default function Calendar() {
                   variant="ghost"
                   size="icon"
                   className="rounded-none"
-                  onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
+                  onClick={() => {
+                    if (view === 'week') {
+                      setCurrentWeek(addWeeks(currentWeek, 1));
+                    } else {
+                      setSelectedDate(addDays(selectedDate, 1));
+                    }
+                  }}
                 >
                   <ChevronRightIcon className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="hidden sm:block min-w-[150px] text-sm font-medium">
-                {format(startOfWeek(currentWeek), 'MMMM yyyy')}
-              </div>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "min-w-[200px] justify-start text-left font-normal sm:pr-12",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <span>
+                      {view === 'week' 
+                        ? `${format(startOfWeek(currentWeek), 'MMMM d')} - ${format(addDays(startOfWeek(currentWeek), 6), 'MMMM d, yyyy')}`
+                        : format(selectedDate, 'MMMM d, yyyy')
+                      }
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div className="space-y-3 p-3">
+                    <Select
+                      value={format(view === 'week' ? currentWeek : selectedDate, 'yyyy')}
+                      onValueChange={(year) => {
+                        const newDate = view === 'week' 
+                          ? setYear(currentWeek, parseInt(year))
+                          : setYear(selectedDate, parseInt(year));
+                        if (view === 'week') {
+                          setCurrentWeek(newDate);
+                        } else {
+                          setSelectedDate(newDate);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 10 }, (_, i) => {
+                          const year = new Date().getFullYear() - 5 + i;
+                          return (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    
+                    <CalendarPicker
+                      mode="single"
+                      selected={view === 'week' ? currentWeek : selectedDate}
+                      onSelect={(date) => {
+                        if (!date) return;
+                        if (view === 'week') {
+                          setCurrentWeek(date);
+                        } else {
+                          setSelectedDate(date);
+                        }
+                      }}
+                      initialFocus
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
