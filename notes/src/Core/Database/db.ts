@@ -2,6 +2,14 @@ import Dexie from 'dexie';
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, documentId } from 'firebase/firestore';
 import { auth, db as firestore } from '../Auth/firebase';
 
+export interface User {
+  userId: string;
+  email: string;
+  displayName: string;
+  photoURL: string;
+  lastLoginAt: Date;
+}
+
 // Simplified interfaces without nesting
 export interface Note {
   id?: number;
