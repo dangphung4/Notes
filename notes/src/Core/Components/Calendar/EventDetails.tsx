@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { MapPinIcon, ClockIcon, UserPlusIcon } from 'lucide-react';
-import type { CalendarEvent } from '../../Types/CalendarEvent';
+import type { CalendarEvent } from '../../Database/db';
 import { auth } from '../../Auth/firebase';
 
 interface EventDetailsProps {
@@ -29,7 +29,7 @@ export const EventDetails = ({ event, onEdit, onDelete, onShare, onClose }: Even
             <div>
               {event.allDay ? 'All day' : (
                 `${format(event.startDate, 'h:mm a')} - 
-                 ${format(event.endDate, 'h:mm a')}`
+                 ${format(event.endDate ?? '', 'h:mm a')}`
               )}
             </div>
             <div className="text-sm text-muted-foreground">
