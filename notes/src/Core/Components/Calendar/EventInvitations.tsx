@@ -143,7 +143,10 @@ export function EventInvitations({ initialPendingEvents, onEventsUpdate }: Event
             </p>
           ) : (
             pendingEvents.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard 
+                key={event.firebaseId || event.id}
+                event={event} 
+              />
             ))
           )}
         </ScrollArea>

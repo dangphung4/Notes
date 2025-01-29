@@ -451,6 +451,10 @@ class NotesDB extends Dexie {
   }
 
   // Add calendar event methods
+  private generateUniqueId(): number {
+    return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+  }
+
   async createCalendarEvent(event: Partial<CalendarEvent>) {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
@@ -474,7 +478,7 @@ class NotesDB extends Dexie {
       // Save to local DB
       const localEvent = {
         ...eventData,
-        id: Date.now(), // Generate a temporary local ID
+        id: this.generateUniqueId(),
         firebaseId: docRef.id
       };
 
@@ -595,7 +599,7 @@ class NotesDB extends Dexie {
           const lastModifiedAt = eventData.lastModifiedAt?.toDate();
 
           sharedEvents.push({
-            id: Date.now(),
+            id: this.generateUniqueId(),
             firebaseId: doc.id,
             title: eventData.title || '',
             startDate,
@@ -673,7 +677,7 @@ class NotesDB extends Dexie {
         const lastModifiedAt = eventData.lastModifiedAt?.toDate();
 
         await this.calendarEvents.add({
-          id: Date.now(),
+          id: this.generateUniqueId(),
           firebaseId,
           title: eventData.title || '',
           startDate,

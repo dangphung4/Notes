@@ -289,6 +289,8 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">At time of event</SelectItem>
+                  <SelectItem value="1">1 minute before</SelectItem>
+                  <SelectItem value="3">3 minutes before</SelectItem>
                   <SelectItem value="5">5 minutes before</SelectItem>
                   <SelectItem value="15">15 minutes before</SelectItem>
                   <SelectItem value="30">30 minutes before</SelectItem>
@@ -454,84 +456,13 @@ const AgendaView = ({
               <h3 className="text-sm font-medium text-muted-foreground sticky top-0 bg-background py-2">
                 {format(new Date(date), 'EEEE, MMMM d, yyyy')}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {dateEvents.map(event => (
-                  <div
-                    key={event.id}
-                    className="rounded-lg border bg-card p-3 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => onEventClick(event)}
-                  >
-                    <div className="flex items-start gap-3">
-                      {/* Time Column */}
-                      <div className="w-24 flex-shrink-0">
-                        {event.allDay ? (
-                          <span className="text-sm font-medium text-muted-foreground">All day</span>
-                        ) : (
-                          <div className="text-sm">
-                            <div className="font-medium">
-                              {format(event.startDate, 'h:mm a')}
-                            </div>
-                            <div className="text-muted-foreground">
-                              {format(event.endDate, 'h:mm a')}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Event Details Column */}
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: event.color || '#3b82f6' }}
-                            />
-                            <h4 className="font-medium truncate">{event.title}</h4>
-                          </div>
-                          {event.sharedWith && event.sharedWith.length > 0 && (
-                            <div className="flex-shrink-0">
-                              <Share2Icon className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Tags */}
-                        {event.tags && event.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {event.tags.map(tag => (
-                              <div
-                                key={tag.id}
-                                className="px-2 py-0.5 rounded-full text-xs"
-                                style={{
-                                  backgroundColor: tag.color + '20',
-                                  color: tag.color
-                                }}
-                              >
-                                {tag.name}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Additional Details */}
-                        {(event.location || event.description) && (
-                          <div className="space-y-1">
-                            {event.location && (
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <MapPinIcon className="h-3 w-3" />
-                                <span className="truncate">{event.location}</span>
-                              </div>
-                            )}
-                            {event.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {event.description}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <AgendaEventBlock 
+                    key={event.firebaseId || event.id}
+                    event={event} 
+                    onEventClick={onEventClick}
+                  />
                 ))}
               </div>
             </div>
@@ -539,6 +470,263 @@ const AgendaView = ({
         )}
       </div>
     </ScrollArea>
+  );
+};
+
+// Week view event block - simplified
+const WeekEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventClick: (event: CalendarEvent) => void }) => {
+  return (
+    <div
+      className="absolute inset-x-1 rounded-sm p-1 text-xs hover:ring-2 hover:ring-primary cursor-pointer"
+      style={{
+        backgroundColor: event.color + '33',
+        borderLeft: `3px solid ${event.color}`,
+        top: '2px',
+        minHeight: '18px'
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onEventClick(event);
+      }}
+    >
+        <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-full bg-muted flex-shrink-0 overflow-hidden"
+            title={`Created by ${event.createdBy}`}
+            >
+                {event.createdByPhotoURL ? (
+                    <img src={event.createdByPhotoURL} alt="" className="w-full h-full object-cover" />
+                ) : (
+                    <span className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">{event.createdBy.charAt(0).toUpperCase()}</span>
+                )}
+            </div>
+            <div className="flex-1 min-w-0">
+                <div className="font-medium truncate flex items-center gap-1">
+                    {event.title}
+                    {event.sharedWith && event.sharedWith.length > 0 && (
+                        <Share2Icon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                    )}
+                </div>
+            </div>
+        </div>
+        <div className="flex items-center gap-1 text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs">
+                <ClockIcon className="w-2 h-2" />
+                {event.startDate && format(new Date(event.startDate), 'h:mm')} - {event.endDate && format(new Date(event.endDate), 'h:mm')}
+            </div>
+        </div>
+  
+    </div>
+  );
+};
+
+// Enhanced Agenda view event block with mobile responsiveness
+const AgendaEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventClick: (event: CalendarEvent) => void }) => {
+  return (
+    <div
+      className="rounded-lg border bg-card p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer mb-3 group"
+      onClick={(e) => {
+        e.stopPropagation();
+        onEventClick(event);
+      }}
+    >
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        {/* Time & Status Column */}
+        <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2 sm:w-32 flex-shrink-0 border-b sm:border-b-0 pb-3 sm:pb-0">
+          {event.allDay ? (
+            <span className="text-sm font-medium text-muted-foreground">All day</span>
+          ) : (
+            <div className="text-sm flex sm:flex-col items-center sm:items-start gap-2 sm:gap-1">
+              <div className="font-medium whitespace-nowrap">
+                {format(new Date(event.startDate), 'h:mm a')}
+              </div>
+              <div className="text-muted-foreground whitespace-nowrap">
+                {format(new Date(event.endDate || event.startDate), 'h:mm a')}
+              </div>
+            </div>
+          )}
+          {event.reminderMinutes && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap ml-auto sm:ml-0">
+              <ClockIcon className="h-3 w-3" />
+              <span>{event.reminderMinutes}m reminder</span>
+            </div>
+          )}
+        </div>
+
+        {/* Event Details */}
+        <div className="flex-1 min-w-0 space-y-3">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <div 
+                className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden"
+                title={`Created by ${event.createdBy}`}
+              >
+                {event.createdByPhotoURL ? (
+                  <img 
+                    src={event.createdByPhotoURL} 
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
+                    {event.createdBy.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: event.color || '#3b82f6' }}
+                  />
+                  <h4 className="font-medium text-base truncate">{event.title}</h4>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-sm text-muted-foreground">
+                  <span className="truncate max-w-[200px]">{event.createdBy}</span>
+                  {event.lastModifiedBy && event.lastModifiedBy !== event.createdBy && (
+                    <span className="truncate max-w-[200px]">• edited by {event.lastModifiedBy}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Sharing Status */}
+            {event.sharedWith && event.sharedWith.length > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground self-start">
+                <Share2Icon className="h-4 w-4" />
+                <span className="text-xs">{event.sharedWith.length}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          {event.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {event.description}
+            </p>
+          )}
+
+          {/* Location */}
+          {event.location && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPinIcon className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{event.location}</span>
+            </div>
+          )}
+
+          {/* Footer Section */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:justify-between pt-1">
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1 w-full sm:w-auto">
+              {event.tags && event.tags.map(tag => (
+                <div
+                  key={tag.id}
+                  className="px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
+                  style={{
+                    backgroundColor: tag.color + '20',
+                    color: tag.color
+                  }}
+                >
+                  {tag.name}
+                </div>
+              ))}
+            </div>
+
+            {/* Shared Users Preview */}
+            {event.sharedWith && event.sharedWith.length > 0 && (
+              <div className="flex -space-x-2 ml-0 sm:ml-2">
+                {event.sharedWith.slice(0, 3).map((share) => (
+                  <div
+                    key={share.email}
+                    className="w-6 h-6 rounded-full bg-muted ring-2 ring-background overflow-hidden"
+                    title={`${share.email} (${share.permission})`}
+                  >
+                    <span className="w-full h-full flex items-center justify-center text-xs">
+                      {share.email.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+                {event.sharedWith.length > 3 && (
+                  <div className="w-6 h-6 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-xs">
+                    +{event.sharedWith.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Day view event block
+const DayEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventClick: (event: CalendarEvent) => void }) => {
+  return (
+    <div
+      className="absolute inset-x-1 rounded-sm p-1.5 text-xs group hover:ring-2 hover:ring-primary cursor-pointer"
+      style={{
+        backgroundColor: event.color + '33',
+        borderLeft: `3px solid ${event.color}`,
+        top: '2px',
+        minHeight: '18px'
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onEventClick(event);
+      }}
+    >
+      <div className="flex items-center gap-1">
+        <div 
+          className="w-4 h-4 rounded-full bg-muted flex-shrink-0 overflow-hidden"
+          title={`Created by ${event.createdBy}`}
+        >
+          {event.createdByPhotoURL ? (
+            <img 
+              src={event.createdByPhotoURL} 
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="w-full h-full flex items-center justify-center text-[8px] text-muted-foreground">
+              {event.createdBy.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium truncate flex items-center gap-1">
+            {event.title}
+            {event.sharedWith && event.sharedWith.length > 0 && (
+              <Share2Icon className="w-3 h-3 text-muted-foreground" />
+            )}
+          </div>
+          {event.location && (
+            <div className="truncate text-muted-foreground">
+              {event.location}
+            </div>
+          )}
+
+
+          {event.startDate && event.endDate && (
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              {format(new Date(event.startDate), 'h:mm a')} - {format(new Date(event.endDate), 'h:mm a')}
+            </p>
+          )}
+
+          {event.tags && event.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {event.tags.map(tag => (
+                <div key={tag.id} className="px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: tag.color + '20', color: tag.color }}>
+                  {tag.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -616,13 +804,23 @@ export default function Calendar() {
         return userShare?.status === 'accepted';
       });
       
-      // Make sure we don't have duplicates (prefer local events)
-      const uniqueSharedEvents = acceptedSharedEvents.filter(
-        shared => !localEvents.some(local => local.firebaseId === shared.firebaseId)
-      );
+      // Create a Map to ensure unique events by firebaseId
+      const eventMap = new Map();
       
-      // Combine local and accepted shared events
-      setEvents([...localEvents, ...uniqueSharedEvents]);
+      // Prefer local events
+      localEvents.forEach(event => {
+        eventMap.set(event.firebaseId, event);
+      });
+      
+      // Add shared events only if they don't exist locally
+      acceptedSharedEvents.forEach(event => {
+        if (!eventMap.has(event.firebaseId)) {
+          eventMap.set(event.firebaseId, event);
+        }
+      });
+      
+      // Convert Map back to array
+      setEvents(Array.from(eventMap.values()));
     } catch (error) {
       console.error('Error loading events:', error);
       toast({
@@ -641,7 +839,10 @@ export default function Calendar() {
       const eventToCreate = {
         ...event,
         createdBy: user.email || '',
+        createdByPhotoURL: user.photoURL || '',
         lastModifiedBy: user.email || '',
+        lastModifiedByPhotoURL: user.photoURL || '',
+        lastModifiedByDisplayName: user.displayName || '',
         lastModifiedAt: new Date()
       } as CalendarEvent;
 
@@ -792,26 +993,14 @@ export default function Calendar() {
               >
                 <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-muted-foreground/20" />
                 {getEventsForDateAndTime(selectedDate, hour).map(event => (
-                  <div
-                    key={event.id}
-                    className="absolute inset-x-1 rounded p-2 text-sm hover:ring-2 hover:ring-primary"
-                    style={{
-                      backgroundColor: event.color + '33',
-                      borderLeft: `3px solid ${event.color}`,
-                      top: '4px'
+                  <DayEventBlock 
+                    key={event.firebaseId || event.id}
+                    event={event} 
+                    onEventClick={(event) => {
+                      setSelectedEvent(event);
+                      setIsEventDetailsOpen(true);
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEventClick(event);
-                    }}
-                  >
-                    <div className="font-medium">{event.title}</div>
-                    {event.location && (
-                      <div className="text-xs text-muted-foreground truncate">
-                        {event.location}
-                      </div>
-                    )}
-                  </div>
+                  />
                 ))}
               </div>
             </div>
@@ -993,31 +1182,14 @@ export default function Calendar() {
                             <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-muted-foreground/20" />
                             
                             {getEventsForDateAndTime(day, hour).map(event => (
-                              <div
-                                key={event.id}
-                                className={cn(
-                                  "absolute inset-x-1 rounded-sm p-1 text-xs",
-                                  "hover:ring-2 hover:ring-primary cursor-pointer",
-                                  "transition-all duration-200"
-                                )}
-                                style={{
-                                  backgroundColor: event.color + '33',
-                                  borderLeft: `3px solid ${event.color}`,
-                                  top: '2px',
-                                  minHeight: '18px'
+                              <WeekEventBlock 
+                                key={event.firebaseId || event.id}
+                                event={event} 
+                                onEventClick={(event) => {
+                                  setSelectedEvent(event);
+                                  setIsEventDetailsOpen(true);
                                 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEventClick(event);
-                                }}
-                              >
-                                <div className="font-medium truncate">{event.title}</div>
-                                {event.location && (
-                                  <div className="truncate text-muted-foreground">
-                                    {event.location}
-                                  </div>
-                                )}
-                              </div>
+                              />
                             ))}
                           </div>
                         ))}
@@ -1046,8 +1218,29 @@ export default function Calendar() {
       <Dialog open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen}>
         <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
           <DialogHeader className="px-3 py-2 border-b">
-            <DialogTitle className="text-base">
-              {!isEditing ? selectedEvent?.title : "Edit Event"}
+            <DialogTitle className="text-base flex items-center gap-2">
+              {!isEditing ? (
+                <>
+                  {selectedEvent?.createdBy !== auth.currentUser?.email && (
+                    <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex-shrink-0">
+                      {selectedEvent?.createdByPhotoURL ? (
+                        <img 
+                          src={selectedEvent.createdByPhotoURL} 
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
+                          {selectedEvent?.createdBy.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {selectedEvent?.title}
+                </>
+              ) : (
+                "Edit Event"
+              )}
             </DialogTitle>
           </DialogHeader>
 
@@ -1160,9 +1353,41 @@ export default function Calendar() {
                 </div>
 
                 <div className="pt-4 border-t text-sm text-muted-foreground">
-                  <div>Created by {selectedEvent?.createdBy}</div>
-                  {selectedEvent?.lastModifiedBy && (
-                    <div>Last modified by {selectedEvent.lastModifiedBy}</div>
+                  <div className="flex items-center gap-2">
+                    <span>Created by</span>
+                    <div className="flex items-center gap-1">
+                      {selectedEvent?.createdByPhotoURL ? (
+                        <img 
+                          src={selectedEvent.createdByPhotoURL}
+                          alt=""
+                          className="w-4 h-4 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                          {selectedEvent?.createdBy.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span>{selectedEvent?.createdBy}</span>
+                    </div>
+                  </div>
+                  {selectedEvent?.lastModifiedBy && selectedEvent.lastModifiedBy !== selectedEvent.createdBy && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span>Last modified by</span>
+                      <div className="flex items-center gap-1">
+                        {selectedEvent.lastModifiedByPhotoURL ? (
+                          <img 
+                            src={selectedEvent.lastModifiedByPhotoURL}
+                            alt=""
+                            className="w-4 h-4 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                            {selectedEvent.lastModifiedBy.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span>{selectedEvent.lastModifiedByDisplayName || selectedEvent.lastModifiedBy}</span>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
