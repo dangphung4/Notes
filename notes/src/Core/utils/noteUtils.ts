@@ -2,43 +2,38 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Note } from '../Database/db';
 
-export function getPreviewText(content: string, maxLength = 300): string {
+export function getPreviewText(content: string, maxLength: number = 200): string {
   try {
     const blocks = JSON.parse(content);
-    const text = blocks
-      .map((block: any) => {
-        // BlockNote structure has content array with text property
-        if (block.content) {
-          const blockText = block.content
-            .map((item: any) => {
-              if (typeof item === 'string') return item;
-              return item.text || '';
-            })
-            .join('');
+    let preview = '';
 
-          // Add formatting based on block type
-          switch (block.type) {
-            case 'heading':
-              return `# ${blockText}\n`;
-            case 'bulletListItem':
-              return `• ${blockText}\n`;
-            case 'numberedListItem':
-              return `1. ${blockText}\n`;
-            case 'paragraph':
-            default:
-              return `${blockText}\n`;
+    blocks.forEach((block: any) => {
+      if (block.type === 'heading') {
+        preview += `# ${block.content.map((c: any) => c.text).join('')}\n`;
+      } else if (block.type === 'bulletListItem') {
+        preview += `• ${block.content.map((c: any) => c.text).join('')}\n`;
+      } else if (block.type === 'numberedListItem') {
+        preview += `1. ${block.content.map((c: any) => c.text).join('')}\n`;
+      } else if (block.type === 'checkListItem') {
+        preview += `☐ ${block.content.map((c: any) => c.text).join('')}\n`;
+      } else if (block.type === 'paragraph') {
+        preview += `${block.content.map((c: any) => {
+          let text = c.text;
+          if (c.styles) {
+            if (c.styles.bold) text = `**${text}**`;
+            if (c.styles.italic) text = `_${text}_`;
+            if (c.styles.underline) text = `__${text}__`;
+            if (c.styles.strikethrough) text = `~~${text}~~`;
           }
-        }
-        return '';
-      })
-      .filter(Boolean)
-      .join('')
-      .trim();
+          return text;
+        }).join('')}\n`;
+      }
+    });
 
-    return text.length > maxLength 
-      ? `${text.substring(0, maxLength)}...` 
-      : text;
-  } catch (error) {
+    return preview.length > maxLength 
+      ? preview.slice(0, maxLength) + '...'
+      : preview;
+  } catch (e) {
     return '';
   }
 }
