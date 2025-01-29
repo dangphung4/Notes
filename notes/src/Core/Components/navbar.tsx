@@ -12,6 +12,7 @@ import {
   MoonIcon,
   SunIcon,
   GlobeIcon,
+  CalendarIcon,
 } from "@radix-ui/react-icons";
 import {
   Avatar,
@@ -72,6 +73,12 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
                 <span className="ml-2">Notes</span>
               </Button>
             )}
+            {user && (
+              <Button variant="ghost" onClick={() => navigate('/calendar')}>
+                <CalendarIcon className="h-5 w-5" />
+                <span className="ml-2">Calendar</span>
+              </Button>
+            )}
             {!user && (
               <Button variant="ghost" asChild>
                 <Link to="/install">
@@ -115,6 +122,10 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
                   <DropdownMenuItem onClick={() => navigate('/notes')}>
                     <FileTextIcon className="mr-2 h-4 w-4" />
                     <span>Notes</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/calendar')}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <span>Calendar</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/logout')}>

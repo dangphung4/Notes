@@ -36,7 +36,8 @@ import {
   ItalicIcon,
   UnderlineIcon,
   Heading2Icon,
-  Heading3Icon
+  Heading3Icon,
+  StrikethroughIcon
 } from 'lucide-react';
 import { BlockNoteEditor } from '@blocknote/core';
 
@@ -58,7 +59,8 @@ export default function EditNote() {
   const [activeStyles, setActiveStyles] = useState({
     bold: false,
     italic: false,
-    underline: false
+    underline: false,
+    strikethrough: false
   });
 
   // Set up real-time listener for the note
@@ -408,27 +410,26 @@ export default function EditNote() {
       setActiveStyles({
         bold: !!styles.bold,
         italic: !!styles.italic,
-        underline: !!styles.underline
+        underline: !!styles.underline,
+        strikethrough: !!styles.strike
       });
     };
 
-    const cleanup: Array<() => void> = [];
-
     // Update on selection change
-    const unsubscribe = editor.onSelectionChange(updateActiveStyles);
-    if (unsubscribe) cleanup.push(unsubscribe);
+    editor.onSelectionChange(() => {
+      updateActiveStyles();
+    });
 
     // Update on content change
-    const unsubscribeContent = editor.onChange(updateActiveStyles);
-    if (unsubscribeContent) cleanup.push(unsubscribeContent);
+    editor.onChange(() => {
+      updateActiveStyles();
+    });
 
     // Initial update
     updateActiveStyles();
 
-    return () => {
-      cleanup.forEach(fn => fn());
-    };
-  }, []);
+    // No need to return cleanup as BlockNote handles this internally
+  }, [editorRef.current]); // Only re-run if editor instance changes
 
   if (isLoading) {
     return (
@@ -653,6 +654,24 @@ export default function EditNote() {
         >
           <UnderlineIcon className="h-4 w-4" />
         </Button>
+
+        <Button 
+          variant={activeStyles.strikethrough ? "default" : "ghost"}
+          size="sm" 
+          className={cn(
+            "shrink-0 transition-colors",
+            activeStyles.strikethrough && "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.toggleStyles({ strike: true });
+            }
+          }}
+        >
+          <StrikethroughIcon className="h-4 w-4" />
+        </Button>
         <div className="w-px h-4 bg-border mx-1" />
         <Button 
           variant="ghost" 
@@ -833,6 +852,25 @@ export default function EditNote() {
         >
           <UnderlineIcon className="h-4 w-4" />
         </Button>
+
+        <Button 
+          variant={activeStyles.strikethrough ? "default" : "ghost"}
+          size="sm" 
+          className={cn(
+            "shrink-0 transition-colors",
+            activeStyles.strikethrough && "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.toggleStyles({ strike: true });
+            }
+          }}
+        >
+          <StrikethroughIcon className="h-4 w-4" />
+        </Button>
+        
         <div className="w-px h-4 bg-border mx-1" />
         <Button 
           variant="ghost" 

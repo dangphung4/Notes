@@ -21,6 +21,7 @@ import Notes from './Core/Pages/Notes';
 import NewNote from './Core/Pages/NewNote';
 import EditNote from './Core/Pages/EditNote';
 import Install from './Core/Pages/Install';
+import Calendar from './Core/Pages/Calendar';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -94,6 +95,14 @@ function App() {
                   element={
                     <PrivateRoute>
                       <NewNote />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/calendar"
+                  element={
+                    <PrivateRoute>
+                      <Calendar />
                     </PrivateRoute>
                   }
                 />
