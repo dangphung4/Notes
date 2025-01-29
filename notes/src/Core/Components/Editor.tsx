@@ -15,28 +15,37 @@ import "@fontsource/monaspace-neon/500.css";
 import "@fontsource/monaspace-neon/700.css";
 
 interface EditorProps {
-  content: string;  // Change to expect string since that's how it's stored
+  content: string; // Change to expect string since that's how it's stored
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onChange: (content: any[]) => void;
   onSave?: () => void;
   editorRef?: React.MutableRefObject<BlockNoteEditor | null>;
 }
 
-export default function Editor({ content, onChange, onSave, editorRef }: EditorProps) {
+export default function Editor({
+  content,
+  onChange,
+  onSave,
+  editorRef,
+}: EditorProps) {
   const [isDarkMode, setIsDarkMode] = useState(
-    document.documentElement.classList.contains('dark')
+    document.documentElement.classList.contains("dark")
   );
-
-
 
   // Create editor instance
   const editor = useCreateBlockNote({
-    initialContent: useMemo(() => 
-      content ? JSON.parse(content) : [{
-        type: 'paragraph',
-        content: []
-      }]
-    , [content]),
+    initialContent: useMemo(
+      () =>
+        content
+          ? JSON.parse(content)
+          : [
+              {
+                type: "paragraph",
+                content: [],
+              },
+            ],
+      [content]
+    ),
   });
   // Set editor reference if provided
   useEffect(() => {
@@ -53,7 +62,7 @@ export default function Editor({ content, onChange, onSave, editorRef }: EditorP
         onChange(blocks);
         onSave?.();
       } catch (error) {
-        console.error('Error saving editor content:', error);
+        console.error("Error saving editor content:", error);
       }
     }, 500),
     [onChange, onSave]
@@ -62,19 +71,19 @@ export default function Editor({ content, onChange, onSave, editorRef }: EditorP
   // Watch for theme changes
   useEffect(() => {
     // Set initial theme
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
+    setIsDarkMode(document.documentElement.classList.contains("dark"));
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          setIsDarkMode(document.documentElement.classList.contains('dark'));
+        if (mutation.attributeName === "class") {
+          setIsDarkMode(document.documentElement.classList.contains("dark"));
         }
       });
     });
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();
@@ -82,34 +91,21 @@ export default function Editor({ content, onChange, onSave, editorRef }: EditorP
 
   // Force theme update when component mounts
   useEffect(() => {
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
+    setIsDarkMode(document.documentElement.classList.contains("dark"));
   }, []);
 
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-background overflow-hidden">
-      <BlockNoteView 
-        editor={editor} 
+      <BlockNoteView
+        editor={editor}
         theme={isDarkMode ? "dark" : "light"}
         onChange={() => debouncedSave(editor)}
         className="flex-1 h-full bg-background overflow-y-auto mobile-editor relative
-          [&_.ProseMirror]:text-xl
-          [&_.ProseMirror]:sm:text-2xl
-          [&_p]:text-xl
-          [&_p]:sm:text-2xl
-          [&_p]:leading-relaxed
-          [&_h1]:text-5xl
-          [&_h2]:text-4xl
-          [&_h3]:text-3xl
-          [&_li]:text-xl
-          [&_li]:sm:text-2xl
-          [&_code]:text-xl
-          [&_code]:sm:text-2xl
-          [&_.ProseMirror]:px-4
-          [&_.ProseMirror]:sm:px-8
-          [&_.ProseMirror]:py-4
-          [&_*]:!leading-relaxed
-          [&_*]:font-['Monaspace_Neon']"
+    [&_.ProseMirror]:text-xl
+    [&_.ProseMirror]:sm:text-2xl
+    [&_.ProseMirror]:font-['Monaspace_Neon']
+    "
       />
     </div>
   );
-} 
+}
