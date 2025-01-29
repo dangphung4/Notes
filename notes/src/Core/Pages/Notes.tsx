@@ -29,6 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { XCircleIcon } from 'lucide-react';
 
 const NoteCard = ({ note, shares, user, view, onClick }: { 
   note: Note, 
@@ -697,6 +698,14 @@ export default function Notes() {
     });
   }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters]);
 
+  function clearFilters(): void {
+    setSearchQuery('');
+    setSelectedTags([]);
+    setDateFilter(undefined);
+    setSelectedTagFilters([]);
+    setSortBy('updated');
+  }
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Header */}
@@ -906,22 +915,38 @@ export default function Notes() {
           </div>
         )}
       </div>
+      
 
-      {/* Tabs */}
-      <Tabs 
-        value={activeTab} 
-        onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
-        className="mb-6"
-      >
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="my-notes" className="flex-1 sm:flex-initial">
-            My Notes ({myNotes.length})
-          </TabsTrigger>
-          <TabsTrigger value="shared" className="flex-1 sm:flex-initial">
-            Shared with Me ({sharedWithMe.length})
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* Tabs with improved mobile layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-6">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
+          className="flex-1"
+        >
+          <TabsList className="grid w-full grid-cols-2 h-9">
+            <TabsTrigger value="my-notes" className="text-sm">
+              My Notes ({myNotes.length})
+            </TabsTrigger>
+            <TabsTrigger value="shared" className="text-sm">
+              Shared ({sharedWithMe.length})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Clear Filters Button - only show if there are active filters */}
+        {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated') && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearFilters}
+            className="h-9 gap-2 whitespace-nowrap"
+          >
+            <XCircleIcon className="h-4 w-4" />
+            Clear Filters
+          </Button>
+        )}
+      </div>
 
       {/* Notes Grid/List */}
       {Object.entries(groupNotesByDate(filteredNotes)).map(([date, dateNotes]) => (

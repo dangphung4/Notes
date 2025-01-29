@@ -1096,16 +1096,14 @@ export default function Calendar() {
     </div>
   );
 
-  const timeOptions = generateTimeOptions();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedEvent, setEditedEvent] = useState<Partial<CalendarEvent> | null>(null);
 
   // Add isCreate state
-  const [isCreate, setIsCreate] = useState(true);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh)] overflow-hidden">
       <Tabs 
         defaultValue="week" 
         value={view} 
