@@ -763,7 +763,8 @@ export default function EditNote() {
 
       {/* Mobile bottom toolbar */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between px-2 py-2">
+        <div className="flex items-center justify-between px-4 py-2">
+          {/* Left side - Navigation */}
           <Button 
             variant="ghost" 
             size="sm" 
@@ -774,65 +775,23 @@ export default function EditNote() {
             <span>Back</span>
           </Button>
 
-          <div className="flex items-center gap-2">
-            {/* Save status indicator */}
-            <div className="flex items-center">
-              {saveStatus === 'saving' && (
-                <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
-              )}
-              {saveStatus === 'saved' && (
-                <CheckIcon className="h-4 w-4 text-green-500" />
-              )}
-              {saveStatus === 'error' && (
-                <XIcon className="h-4 w-4 text-destructive" />
-              )}
-            </div>
-
-            {/* Share button */}
-            <ShareDialog 
-              note={note} 
-              onShare={() => {
-                toast({
-                  title: "Note shared",
-                  description: "The note has been shared successfully.",
-                });
-              }}
-              onError={(error) => {
-                toast({
-                  title: "Error sharing note",
-                  description: error,
-                  variant: "destructive",
-                });
-              }}
-            />
-
-            {/* More actions */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreVerticalIcon className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" side="top">
-                <DropdownMenuItem onClick={() => window.print()}>
-                  <PrinterIcon className="h-4 w-4 mr-2" />
-                  Print
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('markdown')}>
-                  <FileTextIcon className="h-4 w-4 mr-2" />
-                  Export
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-              onClick={handleDelete}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <TrashIcon className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {/* Right side - Share */}
+          <ShareDialog 
+            note={note}
+            onShare={() => {
+              toast({
+                title: "Note shared",
+                description: "The note has been shared successfully.",
+              });
+            }}
+            onError={(error) => {
+              toast({
+                title: "Error sharing note",
+                description: error,
+                variant: "destructive",
+              });
+            }}
+          />
         </div>
       </div>
 
