@@ -600,7 +600,187 @@ export default function EditNote() {
         </div>
       </div>
 
-      {/* Update the quick actions toolbar */}
+      {/* Desktop Toolbar - Show only on desktop */}
+      <div className="hidden sm:flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b">
+        <Button 
+          variant={activeStyles.bold ? "default" : "ghost"}
+          size="sm" 
+          className={cn(
+            "shrink-0 transition-colors",
+            activeStyles.bold && "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.toggleStyles({ bold: true });
+            }
+          }}
+        >
+          <BoldIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant={activeStyles.italic ? "default" : "ghost"}
+          size="sm" 
+          className={cn(
+            "shrink-0 transition-colors",
+            activeStyles.italic && "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.toggleStyles({ italic: true });
+            }
+          }}
+        >
+          <ItalicIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant={activeStyles.underline ? "default" : "ghost"}
+          size="sm" 
+          className={cn(
+            "shrink-0 transition-colors",
+            activeStyles.underline && "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.toggleStyles({ underline: true });
+            }
+          }}
+        >
+          <UnderlineIcon className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-1" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="shrink-0"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.insertBlocks(
+                [{ type: "heading", props: { level: 1 } }],
+                editor.getTextCursorPosition().block,
+                'after'
+              );
+            }
+          }}
+        >
+          <Heading1Icon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="shrink-0"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.insertBlocks(
+                [{ type: "heading", props: { level: 2 } }],
+                editor.getTextCursorPosition().block,
+                'after'
+              );
+            }
+          }}
+        >
+          <Heading2Icon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="shrink-0"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.insertBlocks(
+                [{ type: "heading", props: { level: 3 } }],
+                editor.getTextCursorPosition().block,
+                'after'
+              );
+            }
+          }}
+        >
+          <Heading3Icon className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-1" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="shrink-0"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.insertBlocks(
+                [{ type: "bulletListItem" }],
+                editor.getTextCursorPosition().block,
+                'after'
+              );
+            }
+          }}
+        >
+          <ListIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="shrink-0"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.insertBlocks(
+                [{ type: "checkListItem", props: { checked: false } }],
+                editor.getTextCursorPosition().block,
+                'after'
+              );
+            }
+          }}
+        >
+          <CheckSquareIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              editor.focus();
+              editor.insertBlocks(
+                [{ type: "codeBlock", props: {} }],
+                editor.getTextCursorPosition().block,
+                'after'
+              );
+            }
+          }}
+          className="shrink-0"
+        >
+          <CodeIcon className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-1" />
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => {
+            const editor = editorRef.current;
+            if (editor) {
+              const editorElement = editor.domElement;
+              editorElement?.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+          className="shrink-0"
+        >
+          <ArrowUpIcon className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Mobile Toolbar - Show only on mobile */}
       <div className="sm:hidden flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b">
         <Button 
           variant={activeStyles.bold ? "default" : "ghost"}
