@@ -1,9 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/notes"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: build
     labels:
       - "dependencies"
       - "automerge"
@@ -19,6 +21,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: ci
     labels:
       - "dependencies"
       - "automerge" 
