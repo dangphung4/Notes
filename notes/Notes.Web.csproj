@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <SpaRoot>.</SpaRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Configure URLs -->
+    <AspNetCoreUrls>http://localhost:3000;https://localhost:3001</AspNetCoreUrls>
+  </PropertyGroup>
+
+  <Target Name="NpmInstall" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
+    <Exec Command="npm install" WorkingDirectory="$(SpaRoot)" />
+  </Target>
+
+  <Target Name="NpmBuild" AfterTargets="NpmInstall" Condition=" '$(Configuration)' == 'Debug' ">
+    <Exec Command="npm run build" WorkingDirectory="$(SpaRoot)" />
+  </Target>
+
+  <Target Name="NpmWatch" BeforeTargets="Run" Condition=" '$(Configuration)' == 'Debug' ">
+    <Exec Command="npm run watch" WorkingDirectory="$(SpaRoot)" />
+  </Target>
+
+  <ItemGroup>
+    <Content Remove="$(SpaRoot)\**" />
+    <None Remove="$(SpaRoot)\**" />
+    <None Include="$(SpaRoot)\**" Exclude="$(SpaRoot)\node_modules\**;$(SpaRoot)\wwwroot\**" />
+  </ItemGroup>
+
+</Project> 

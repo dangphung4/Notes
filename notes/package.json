@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/copy-assets.js && tsc -b && vite build",
+    "watch": "vite build --watch",
     "lint": "eslint \"**/*.{ts,tsx}\" --report-unused-disable-directives --max-warnings 0 --fix",
     "preview": "vite preview",
     "prepare": "simple-git-hooks",

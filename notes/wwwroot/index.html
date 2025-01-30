@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- Primary Meta Tags -->
+    <title>Notes ig</title>
+    <meta name="title" content="Notes ig" />
+    <meta
+      name="description"
+      content="A minimalist note-taking app with cloud sync, dark mode, and offline support. Built because I dont like apple notes."
+    />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://notes-lemon-nine.vercel.app/" />
+    <meta property="og:title" content="Notes ig" />
+    <meta
+      property="og:description"
+      content="A minimalist note-taking app with cloud sync, dark mode, and offline support. Built because I dont like apple notes."
+    />
+    <meta property="og:image" content="/assets/note512.svg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https://notes-lemon-nine.vercel.app/"
+    />
+    <meta property="twitter:title" content="Notes ig" />
+    <meta
+      property="twitter:description"
+      content="A minimalist note-taking app with cloud sync, dark mode, and offline support. Built because I dont like apple notes."
+    />
+    <meta property="twitter:image" content="src/assets/note512.svg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/assets/note-CMn3AErB.svg" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      sizes="32x32"
+      href="/assets/note32-GBLBNrbG.svg"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/note180-keJpNovB.svg"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      sizes="192x192"
+      href="/assets/note192-CdKLrSt8.svg"
+    />
+    <link rel="mask-icon" href="data:image/png;base64,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" color="#000000" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Notes ig" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS specific tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Notes ig" />
+
+    <!-- Apple touch icons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/note180-keJpNovB.svg"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="192x192"
+      href="/assets/note192-CdKLrSt8.svg"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="512x512"
+      href="/assets/note-maskable-cw2azrTR.svg"
+    />
+
+    <!-- Safari pinned tab icon -->
+    <link rel="mask-icon" href="data:image/png;base64,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" color="#000000" />
+
+    <!-- IOS ICON -->
+    <link
+      rel="apple-touch-icon"
+      sizes="512x512"
+      href="/assets/note-maskable-DBXP9EK1.png"
+    />
+    <script type="module" crossorigin src="/assets/main-BP3RNFIj.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-BzNPBnLE.css">
+  <link rel="manifest" href="/manifest.webmanifest"></head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

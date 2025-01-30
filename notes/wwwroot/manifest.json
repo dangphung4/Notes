@@ -1,0 +1,34 @@
+{
+  "name": "Notes ig",
+  "short_name": "Notes ig",
+  "description": "A minimalist note-taking app with cloud sync, dark mode, and offline support. Built because I dont like apple notes.",
+  "start_url": "/",
+  "display": "standalone",
+  "prefer_related_applications": false,
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "note-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "note-rounded.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+
+  ],
+  "shortcuts": [
+    {
+      "name": "New Note",
+      "short_name": "New",
+      "description": "Create a new note",
+      "url": "/notes/new",
+      "icons": [{ "src": "note-maskable.png", "sizes": "512x512" }]
+    }
+  ]
+} 

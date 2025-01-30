@@ -1,0 +1,1449 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/abap-DsBKuouk.js",
+      "PackagePath": "staticwebassets/assets/abap-DsBKuouk.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/actionscript-3-D_z4Izcz.js",
+      "PackagePath": "staticwebassets/assets/actionscript-3-D_z4Izcz.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ada-727ZlQH0.js",
+      "PackagePath": "staticwebassets/assets/ada-727ZlQH0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/agendaview-8xi8bClj.png",
+      "PackagePath": "staticwebassets/assets/agendaview-8xi8bClj.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/agendaview.png",
+      "PackagePath": "staticwebassets/assets/agendaview.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/andromeeda-C3khCPGq.js",
+      "PackagePath": "staticwebassets/assets/andromeeda-C3khCPGq.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/angular-html-LfdN0zeE.js",
+      "PackagePath": "staticwebassets/assets/angular-html-LfdN0zeE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/angular-ts-CKsD7JZE.js",
+      "PackagePath": "staticwebassets/assets/angular-ts-CKsD7JZE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/apache-Dn00JSTd.js",
+      "PackagePath": "staticwebassets/assets/apache-Dn00JSTd.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/apex-COJ4H7py.js",
+      "PackagePath": "staticwebassets/assets/apex-COJ4H7py.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/apl-BBq3IX1j.js",
+      "PackagePath": "staticwebassets/assets/apl-BBq3IX1j.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/applescript-Bu5BbsvL.js",
+      "PackagePath": "staticwebassets/assets/applescript-Bu5BbsvL.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ara-7O62HKoU.js",
+      "PackagePath": "staticwebassets/assets/ara-7O62HKoU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/asciidoc-BPT9niGB.js",
+      "PackagePath": "staticwebassets/assets/asciidoc-BPT9niGB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/asm-Dhn9LcZ4.js",
+      "PackagePath": "staticwebassets/assets/asm-Dhn9LcZ4.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/astro-CqkE3fuf.js",
+      "PackagePath": "staticwebassets/assets/astro-CqkE3fuf.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/aurora-x-D-2ljcwZ.js",
+      "PackagePath": "staticwebassets/assets/aurora-x-D-2ljcwZ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/awk-eg146-Ew.js",
+      "PackagePath": "staticwebassets/assets/awk-eg146-Ew.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ayu-dark-Cv9koXgw.js",
+      "PackagePath": "staticwebassets/assets/ayu-dark-Cv9koXgw.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ballerina-Du268qiB.js",
+      "PackagePath": "staticwebassets/assets/ballerina-Du268qiB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/bat-fje9CFhw.js",
+      "PackagePath": "staticwebassets/assets/bat-fje9CFhw.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/beancount-BwXTMy5W.js",
+      "PackagePath": "staticwebassets/assets/beancount-BwXTMy5W.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/berry-3xVqZejG.js",
+      "PackagePath": "staticwebassets/assets/berry-3xVqZejG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/bibtex-xW4inM5L.js",
+      "PackagePath": "staticwebassets/assets/bibtex-xW4inM5L.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/bicep-DHo0CJ0O.js",
+      "PackagePath": "staticwebassets/assets/bicep-DHo0CJ0O.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/blade-a8OxSdnT.js",
+      "PackagePath": "staticwebassets/assets/blade-a8OxSdnT.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/bsl-Dgyn0ogV.js",
+      "PackagePath": "staticwebassets/assets/bsl-Dgyn0ogV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/c-C3t2pwGQ.js",
+      "PackagePath": "staticwebassets/assets/c-C3t2pwGQ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cadence-DNquZEk8.js",
+      "PackagePath": "staticwebassets/assets/cadence-DNquZEk8.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cairo--RitsXJZ.js",
+      "PackagePath": "staticwebassets/assets/cairo--RitsXJZ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/catppuccin-frappe-CD_QflpE.js",
+      "PackagePath": "staticwebassets/assets/catppuccin-frappe-CD_QflpE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/catppuccin-latte-DRW-0cLl.js",
+      "PackagePath": "staticwebassets/assets/catppuccin-latte-DRW-0cLl.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/catppuccin-macchiato-C-_shW-Y.js",
+      "PackagePath": "staticwebassets/assets/catppuccin-macchiato-C-_shW-Y.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/catppuccin-mocha-LGGdnPYs.js",
+      "PackagePath": "staticwebassets/assets/catppuccin-mocha-LGGdnPYs.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/clarity-BHOwM8T6.js",
+      "PackagePath": "staticwebassets/assets/clarity-BHOwM8T6.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/clojure-DxSadP1t.js",
+      "PackagePath": "staticwebassets/assets/clojure-DxSadP1t.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cmake-DbXoA79R.js",
+      "PackagePath": "staticwebassets/assets/cmake-DbXoA79R.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cobol-PTqiYgYu.js",
+      "PackagePath": "staticwebassets/assets/cobol-PTqiYgYu.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/codeowners-Bp6g37R7.js",
+      "PackagePath": "staticwebassets/assets/codeowners-Bp6g37R7.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/codeql-sacFqUAJ.js",
+      "PackagePath": "staticwebassets/assets/codeql-sacFqUAJ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/coffee-dyiR41kL.js",
+      "PackagePath": "staticwebassets/assets/coffee-dyiR41kL.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/common-lisp-C7gG9l05.js",
+      "PackagePath": "staticwebassets/assets/common-lisp-C7gG9l05.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/coq-Dsg_Bt_b.js",
+      "PackagePath": "staticwebassets/assets/coq-Dsg_Bt_b.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cpp-BksuvNSY.js",
+      "PackagePath": "staticwebassets/assets/cpp-BksuvNSY.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/crystal-DtDmRg-F.js",
+      "PackagePath": "staticwebassets/assets/crystal-DtDmRg-F.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/csharp-D9R-vmeu.js",
+      "PackagePath": "staticwebassets/assets/csharp-D9R-vmeu.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/css-BPhBrDlE.js",
+      "PackagePath": "staticwebassets/assets/css-BPhBrDlE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/csv-B0qRVHPH.js",
+      "PackagePath": "staticwebassets/assets/csv-B0qRVHPH.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cue-DtFQj3wx.js",
+      "PackagePath": "staticwebassets/assets/cue-DtFQj3wx.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/cypher-m2LEI-9-.js",
+      "PackagePath": "staticwebassets/assets/cypher-m2LEI-9-.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/d-BoXegm-a.js",
+      "PackagePath": "staticwebassets/assets/d-BoXegm-a.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dark-plus-C3mMm8J8.js",
+      "PackagePath": "staticwebassets/assets/dark-plus-C3mMm8J8.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dart-B9wLZaAG.js",
+      "PackagePath": "staticwebassets/assets/dart-B9wLZaAG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dax-ClGRhx96.js",
+      "PackagePath": "staticwebassets/assets/dax-ClGRhx96.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dayview-CyvjQisK.png",
+      "PackagePath": "staticwebassets/assets/dayview-CyvjQisK.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dayview.png",
+      "PackagePath": "staticwebassets/assets/dayview.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/demo-DfIzu3YA.png",
+      "PackagePath": "staticwebassets/assets/demo-DfIzu3YA.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/demo.png",
+      "PackagePath": "staticwebassets/assets/demo.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/desktop-DEIpsLCJ.js",
+      "PackagePath": "staticwebassets/assets/desktop-DEIpsLCJ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/diff-BgYniUM_.js",
+      "PackagePath": "staticwebassets/assets/diff-BgYniUM_.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/docker-COcR7UxN.js",
+      "PackagePath": "staticwebassets/assets/docker-COcR7UxN.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dotenv-BjQB5zDj.js",
+      "PackagePath": "staticwebassets/assets/dotenv-BjQB5zDj.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dracula-BzJJZx-M.js",
+      "PackagePath": "staticwebassets/assets/dracula-BzJJZx-M.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dracula-soft-BXkSAIEj.js",
+      "PackagePath": "staticwebassets/assets/dracula-soft-BXkSAIEj.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/dream-maker-C-nORZOA.js",
+      "PackagePath": "staticwebassets/assets/dream-maker-C-nORZOA.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/edge-D5gP-w-T.js",
+      "PackagePath": "staticwebassets/assets/edge-D5gP-w-T.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/elixir-CLiX3zqd.js",
+      "PackagePath": "staticwebassets/assets/elixir-CLiX3zqd.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/elm-CmHSxxaM.js",
+      "PackagePath": "staticwebassets/assets/elm-CmHSxxaM.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/emacs-lisp-BX77sIaO.js",
+      "PackagePath": "staticwebassets/assets/emacs-lisp-BX77sIaO.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/erb-BYTLMnw6.js",
+      "PackagePath": "staticwebassets/assets/erb-BYTLMnw6.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/erlang-B-DoSBHF.js",
+      "PackagePath": "staticwebassets/assets/erlang-B-DoSBHF.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/everforest-dark-BgDCqdQA.js",
+      "PackagePath": "staticwebassets/assets/everforest-dark-BgDCqdQA.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/everforest-light-C8M2exoo.js",
+      "PackagePath": "staticwebassets/assets/everforest-light-C8M2exoo.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/fennel-bCA53EVm.js",
+      "PackagePath": "staticwebassets/assets/fennel-bCA53EVm.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/fish-w-ucz2PV.js",
+      "PackagePath": "staticwebassets/assets/fish-w-ucz2PV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/fluent-Dayu4EKP.js",
+      "PackagePath": "staticwebassets/assets/fluent-Dayu4EKP.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/fortran-fixed-form-TqA4NnZg.js",
+      "PackagePath": "staticwebassets/assets/fortran-fixed-form-TqA4NnZg.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/fortran-free-form-DKXYxT9g.js",
+      "PackagePath": "staticwebassets/assets/fortran-free-form-DKXYxT9g.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/fsharp-XplgxFYe.js",
+      "PackagePath": "staticwebassets/assets/fsharp-XplgxFYe.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/gdresource-BHYsBjWJ.js",
+      "PackagePath": "staticwebassets/assets/gdresource-BHYsBjWJ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/gdscript-DfxzS6Rs.js",
+      "PackagePath": "staticwebassets/assets/gdscript-DfxzS6Rs.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/gdshader-SKMF96pI.js",
+      "PackagePath": "staticwebassets/assets/gdshader-SKMF96pI.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/genie-ajMbGru0.js",
+      "PackagePath": "staticwebassets/assets/genie-ajMbGru0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/gherkin--30QC5Em.js",
+      "PackagePath": "staticwebassets/assets/gherkin--30QC5Em.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/git-commit-i4q6IMui.js",
+      "PackagePath": "staticwebassets/assets/git-commit-i4q6IMui.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/git-rebase-B-v9cOL2.js",
+      "PackagePath": "staticwebassets/assets/git-rebase-B-v9cOL2.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-dark-DHJKELXO.js",
+      "PackagePath": "staticwebassets/assets/github-dark-DHJKELXO.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-dark-default-Cuk6v7N8.js",
+      "PackagePath": "staticwebassets/assets/github-dark-default-Cuk6v7N8.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-dark-dimmed-DH5Ifo-i.js",
+      "PackagePath": "staticwebassets/assets/github-dark-dimmed-DH5Ifo-i.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-dark-high-contrast-E3gJ1_iC.js",
+      "PackagePath": "staticwebassets/assets/github-dark-high-contrast-E3gJ1_iC.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-light-DAi9KRSo.js",
+      "PackagePath": "staticwebassets/assets/github-light-DAi9KRSo.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-light-default-D7oLnXFd.js",
+      "PackagePath": "staticwebassets/assets/github-light-default-D7oLnXFd.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/github-light-high-contrast-BfjtVDDH.js",
+      "PackagePath": "staticwebassets/assets/github-light-high-contrast-BfjtVDDH.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/gleam-B430Bg39.js",
+      "PackagePath": "staticwebassets/assets/gleam-B430Bg39.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/glimmer-js-D-cwc0-E.js",
+      "PackagePath": "staticwebassets/assets/glimmer-js-D-cwc0-E.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/glimmer-ts-pgjy16dm.js",
+      "PackagePath": "staticwebassets/assets/glimmer-ts-pgjy16dm.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/glsl-DBO2IWDn.js",
+      "PackagePath": "staticwebassets/assets/glsl-DBO2IWDn.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/gnuplot-CM8KxXT1.js",
+      "PackagePath": "staticwebassets/assets/gnuplot-CM8KxXT1.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/go-B1SYOhNW.js",
+      "PackagePath": "staticwebassets/assets/go-B1SYOhNW.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/graphql-cDcHW_If.js",
+      "PackagePath": "staticwebassets/assets/graphql-cDcHW_If.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/groovy-DkBy-JyN.js",
+      "PackagePath": "staticwebassets/assets/groovy-DkBy-JyN.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/hack-D1yCygmZ.js",
+      "PackagePath": "staticwebassets/assets/hack-D1yCygmZ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/haml-B2EZWmdv.js",
+      "PackagePath": "staticwebassets/assets/haml-B2EZWmdv.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/handlebars-BQGss363.js",
+      "PackagePath": "staticwebassets/assets/handlebars-BQGss363.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/haskell-BILxekzW.js",
+      "PackagePath": "staticwebassets/assets/haskell-BILxekzW.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/haxe-C5wWYbrZ.js",
+      "PackagePath": "staticwebassets/assets/haxe-C5wWYbrZ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/hcl-HzYwdGDm.js",
+      "PackagePath": "staticwebassets/assets/hcl-HzYwdGDm.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/hjson-T-Tgc4AT.js",
+      "PackagePath": "staticwebassets/assets/hjson-T-Tgc4AT.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/hlsl-ifBTmRxC.js",
+      "PackagePath": "staticwebassets/assets/hlsl-ifBTmRxC.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/houston-DnULxvSX.js",
+      "PackagePath": "staticwebassets/assets/houston-DnULxvSX.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/html-C2L_23MC.js",
+      "PackagePath": "staticwebassets/assets/html-C2L_23MC.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/html-derivative-CSfWNPLT.js",
+      "PackagePath": "staticwebassets/assets/html-derivative-CSfWNPLT.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/http-FRrOvY1W.js",
+      "PackagePath": "staticwebassets/assets/http-FRrOvY1W.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/hxml-TIA70rKU.js",
+      "PackagePath": "staticwebassets/assets/hxml-TIA70rKU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/hy-BMj5Y0dO.js",
+      "PackagePath": "staticwebassets/assets/hy-BMj5Y0dO.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/imba-bv_oIlVt.js",
+      "PackagePath": "staticwebassets/assets/imba-bv_oIlVt.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-B1do9ovh.js",
+      "PackagePath": "staticwebassets/assets/index-B1do9ovh.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-BNKJMrNP.js",
+      "PackagePath": "staticwebassets/assets/index-BNKJMrNP.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-BOaxcqHz.js",
+      "PackagePath": "staticwebassets/assets/index-BOaxcqHz.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-BR5rja8t.js",
+      "PackagePath": "staticwebassets/assets/index-BR5rja8t.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-BSAZhzZx.js",
+      "PackagePath": "staticwebassets/assets/index-BSAZhzZx.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-BkChICKM.js",
+      "PackagePath": "staticwebassets/assets/index-BkChICKM.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-BsieYtlm.js",
+      "PackagePath": "staticwebassets/assets/index-BsieYtlm.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-C04OFAxf.js",
+      "PackagePath": "staticwebassets/assets/index-C04OFAxf.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-CPp5jXkv.js",
+      "PackagePath": "staticwebassets/assets/index-CPp5jXkv.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-C_aolqmU.js",
+      "PackagePath": "staticwebassets/assets/index-C_aolqmU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-Cc4xf-It.js",
+      "PackagePath": "staticwebassets/assets/index-Cc4xf-It.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-Ch_qCilz.js",
+      "PackagePath": "staticwebassets/assets/index-Ch_qCilz.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-CvBTqz6Y.js",
+      "PackagePath": "staticwebassets/assets/index-CvBTqz6Y.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-D0Zq5UJG.js",
+      "PackagePath": "staticwebassets/assets/index-D0Zq5UJG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-D7TIu75F.js",
+      "PackagePath": "staticwebassets/assets/index-D7TIu75F.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-DoT7l-Mw.js",
+      "PackagePath": "staticwebassets/assets/index-DoT7l-Mw.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-Dwteuxnt.js",
+      "PackagePath": "staticwebassets/assets/index-Dwteuxnt.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-c1KIH71z.js",
+      "PackagePath": "staticwebassets/assets/index-c1KIH71z.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/index-vY-h4J_N.js",
+      "PackagePath": "staticwebassets/assets/index-vY-h4J_N.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ini-BjABl1g7.js",
+      "PackagePath": "staticwebassets/assets/ini-BjABl1g7.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-100-46Mq0mOp.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-100-46Mq0mOp.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-100-BQDzDElq.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-100-BQDzDElq.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-200-BxfrU12A.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-200-BxfrU12A.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-200-DXfqWPZg.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-200-DXfqWPZg.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-300-DEbyFmpd.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-300-DEbyFmpd.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-300-f7r92Nkj.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-300-f7r92Nkj.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-500-BQ2gQN_M.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-500-BQ2gQN_M.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-500-DfX5FI9E.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-500-DfX5FI9E.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-600-BvOeHRLc.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-600-BvOeHRLc.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-600-D01NXWOK.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-600-D01NXWOK.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-700-B5TOIllR.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-700-B5TOIllR.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-700-Bj1B9WKG.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-700-Bj1B9WKG.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-800-Bdy4lAMa.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-800-Bdy4lAMa.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-800-DFVvDWwT.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-800-DFVvDWwT.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-900-CMga-52B.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-900-CMga-52B.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-900-ORHAl5ZU.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-900-ORHAl5ZU.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-regular-CahmJf_6.woff",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-regular-CahmJf_6.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/inter-v12-latin-regular-YtgfLPRn.woff2",
+      "PackagePath": "staticwebassets/assets/inter-v12-latin-regular-YtgfLPRn.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/java-xI-RfyKK.js",
+      "PackagePath": "staticwebassets/assets/java-xI-RfyKK.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/javascript-ySlJ1b_l.js",
+      "PackagePath": "staticwebassets/assets/javascript-ySlJ1b_l.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jinja-DGy0s7-h.js",
+      "PackagePath": "staticwebassets/assets/jinja-DGy0s7-h.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jison-BqZprYcd.js",
+      "PackagePath": "staticwebassets/assets/jison-BqZprYcd.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/json-BQoSv7ci.js",
+      "PackagePath": "staticwebassets/assets/json-BQoSv7ci.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/json5-w8dY5SsB.js",
+      "PackagePath": "staticwebassets/assets/json5-w8dY5SsB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jsonc-TU54ms6u.js",
+      "PackagePath": "staticwebassets/assets/jsonc-TU54ms6u.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jsonl-DREVFZK8.js",
+      "PackagePath": "staticwebassets/assets/jsonl-DREVFZK8.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jsonnet-BfivnA6A.js",
+      "PackagePath": "staticwebassets/assets/jsonnet-BfivnA6A.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jssm-P4WzXJd0.js",
+      "PackagePath": "staticwebassets/assets/jssm-P4WzXJd0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/jsx-BAng5TT0.js",
+      "PackagePath": "staticwebassets/assets/jsx-BAng5TT0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/julia-BBuGR-5E.js",
+      "PackagePath": "staticwebassets/assets/julia-BBuGR-5E.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/kanagawa-dragon-CkXjmgJE.js",
+      "PackagePath": "staticwebassets/assets/kanagawa-dragon-CkXjmgJE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/kanagawa-lotus-CfQXZHmo.js",
+      "PackagePath": "staticwebassets/assets/kanagawa-lotus-CfQXZHmo.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/kanagawa-wave-DWedfzmr.js",
+      "PackagePath": "staticwebassets/assets/kanagawa-wave-DWedfzmr.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/kotlin-B5lbUyaz.js",
+      "PackagePath": "staticwebassets/assets/kotlin-B5lbUyaz.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/kusto-mebxcVVE.js",
+      "PackagePath": "staticwebassets/assets/kusto-mebxcVVE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/laserwave-DUszq2jm.js",
+      "PackagePath": "staticwebassets/assets/laserwave-DUszq2jm.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/latex-C-cWTeAZ.js",
+      "PackagePath": "staticwebassets/assets/latex-C-cWTeAZ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/lean-XBlWyCtg.js",
+      "PackagePath": "staticwebassets/assets/lean-XBlWyCtg.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/less-BfCpw3nA.js",
+      "PackagePath": "staticwebassets/assets/less-BfCpw3nA.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/light-plus-B7mTdjB0.js",
+      "PackagePath": "staticwebassets/assets/light-plus-B7mTdjB0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/liquid-D3W5UaiH.js",
+      "PackagePath": "staticwebassets/assets/liquid-D3W5UaiH.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/list-item-xb9BgIlX.js",
+      "PackagePath": "staticwebassets/assets/list-item-xb9BgIlX.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/log-Cc5clBb7.js",
+      "PackagePath": "staticwebassets/assets/log-Cc5clBb7.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/logo-IuBKFhSY.js",
+      "PackagePath": "staticwebassets/assets/logo-IuBKFhSY.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/lua-CvWAzNxB.js",
+      "PackagePath": "staticwebassets/assets/lua-CvWAzNxB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/luau-Du5NY7AG.js",
+      "PackagePath": "staticwebassets/assets/luau-Du5NY7AG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/main-BzNPBnLE.css",
+      "PackagePath": "staticwebassets/assets/main-BzNPBnLE.css"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/main-Qf7Y-uj3.js",
+      "PackagePath": "staticwebassets/assets/main-Qf7Y-uj3.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/make-Bvotw-X0.js",
+      "PackagePath": "staticwebassets/assets/make-Bvotw-X0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/markdown-UIAJJxZW.js",
+      "PackagePath": "staticwebassets/assets/markdown-UIAJJxZW.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/marko-z0MBrx5-.js",
+      "PackagePath": "staticwebassets/assets/marko-z0MBrx5-.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/material-theme-D5KoaKCx.js",
+      "PackagePath": "staticwebassets/assets/material-theme-D5KoaKCx.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/material-theme-darker-BfHTSMKl.js",
+      "PackagePath": "staticwebassets/assets/material-theme-darker-BfHTSMKl.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/material-theme-lighter-B0m2ddpp.js",
+      "PackagePath": "staticwebassets/assets/material-theme-lighter-B0m2ddpp.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/material-theme-ocean-CyktbL80.js",
+      "PackagePath": "staticwebassets/assets/material-theme-ocean-CyktbL80.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/material-theme-palenight-Csfq5Kiy.js",
+      "PackagePath": "staticwebassets/assets/material-theme-palenight-Csfq5Kiy.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/matlab-D9-PGadD.js",
+      "PackagePath": "staticwebassets/assets/matlab-D9-PGadD.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/mdc-DB_EDNY_.js",
+      "PackagePath": "staticwebassets/assets/mdc-DB_EDNY_.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/mdx-sdHcTMYB.js",
+      "PackagePath": "staticwebassets/assets/mdx-sdHcTMYB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/mermaid-Ci6OQyBP.js",
+      "PackagePath": "staticwebassets/assets/mermaid-Ci6OQyBP.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/min-dark-CafNBF8u.js",
+      "PackagePath": "staticwebassets/assets/min-dark-CafNBF8u.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/min-light-CTRr51gU.js",
+      "PackagePath": "staticwebassets/assets/min-light-CTRr51gU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/mipsasm-BC5c_5Pe.js",
+      "PackagePath": "staticwebassets/assets/mipsasm-BC5c_5Pe.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/module-BvCTiNll.js",
+      "PackagePath": "staticwebassets/assets/module-BvCTiNll.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/mojo-Tz6hzZYG.js",
+      "PackagePath": "staticwebassets/assets/mojo-Tz6hzZYG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monaspace-neon-latin-400-normal-BZtV1wRa.woff2",
+      "PackagePath": "staticwebassets/assets/monaspace-neon-latin-400-normal-BZtV1wRa.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monaspace-neon-latin-400-normal-DVFelWsN.woff",
+      "PackagePath": "staticwebassets/assets/monaspace-neon-latin-400-normal-DVFelWsN.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monaspace-neon-latin-500-normal-DCChELAx.woff2",
+      "PackagePath": "staticwebassets/assets/monaspace-neon-latin-500-normal-DCChELAx.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monaspace-neon-latin-500-normal-Mk1UqFzK.woff",
+      "PackagePath": "staticwebassets/assets/monaspace-neon-latin-500-normal-Mk1UqFzK.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monaspace-neon-latin-700-normal-Dt0-VHyh.woff",
+      "PackagePath": "staticwebassets/assets/monaspace-neon-latin-700-normal-Dt0-VHyh.woff"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monaspace-neon-latin-700-normal-liCHvTJ-.woff2",
+      "PackagePath": "staticwebassets/assets/monaspace-neon-latin-700-normal-liCHvTJ-.woff2"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/monokai-D4h5O-jR.js",
+      "PackagePath": "staticwebassets/assets/monokai-D4h5O-jR.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/move-DB_GagMm.js",
+      "PackagePath": "staticwebassets/assets/move-DB_GagMm.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/narrat-DLbgOhZU.js",
+      "PackagePath": "staticwebassets/assets/narrat-DLbgOhZU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/native-B5Vb9Oiz.js",
+      "PackagePath": "staticwebassets/assets/native-B5Vb9Oiz.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/nextflow-B0XVJmRM.js",
+      "PackagePath": "staticwebassets/assets/nextflow-B0XVJmRM.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/nginx-D_VnBJ67.js",
+      "PackagePath": "staticwebassets/assets/nginx-D_VnBJ67.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/night-owl-C39BiMTA.js",
+      "PackagePath": "staticwebassets/assets/night-owl-C39BiMTA.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/nim-ZlGxZxc3.js",
+      "PackagePath": "staticwebassets/assets/nim-ZlGxZxc3.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/nix-shcSOmrb.js",
+      "PackagePath": "staticwebassets/assets/nix-shcSOmrb.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/nord-Ddv68eIx.js",
+      "PackagePath": "staticwebassets/assets/nord-Ddv68eIx.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note-CMn3AErB.svg",
+      "PackagePath": "staticwebassets/assets/note-CMn3AErB.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note-maskable-DBXP9EK1.png",
+      "PackagePath": "staticwebassets/assets/note-maskable-DBXP9EK1.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note-maskable-cw2azrTR.svg",
+      "PackagePath": "staticwebassets/assets/note-maskable-cw2azrTR.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note-maskable.png",
+      "PackagePath": "staticwebassets/assets/note-maskable.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note-maskable.svg",
+      "PackagePath": "staticwebassets/assets/note-maskable.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note-rounded.png",
+      "PackagePath": "staticwebassets/assets/note-rounded.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note.svg",
+      "PackagePath": "staticwebassets/assets/note.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note144.svg",
+      "PackagePath": "staticwebassets/assets/note144.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note167.svg",
+      "PackagePath": "staticwebassets/assets/note167.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note180-keJpNovB.svg",
+      "PackagePath": "staticwebassets/assets/note180-keJpNovB.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note180.svg",
+      "PackagePath": "staticwebassets/assets/note180.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note192-CdKLrSt8.svg",
+      "PackagePath": "staticwebassets/assets/note192-CdKLrSt8.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note192.svg",
+      "PackagePath": "staticwebassets/assets/note192.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note32-GBLBNrbG.svg",
+      "PackagePath": "staticwebassets/assets/note32-GBLBNrbG.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note32.svg",
+      "PackagePath": "staticwebassets/assets/note32.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/note512.svg",
+      "PackagePath": "staticwebassets/assets/note512.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/nushell-D4Tzg5kh.js",
+      "PackagePath": "staticwebassets/assets/nushell-D4Tzg5kh.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/objective-c-Deuh7S70.js",
+      "PackagePath": "staticwebassets/assets/objective-c-Deuh7S70.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/objective-cpp-BUEGK8hf.js",
+      "PackagePath": "staticwebassets/assets/objective-cpp-BUEGK8hf.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ocaml-BNioltXt.js",
+      "PackagePath": "staticwebassets/assets/ocaml-BNioltXt.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/one-dark-pro-GBQ2dnAY.js",
+      "PackagePath": "staticwebassets/assets/one-dark-pro-GBQ2dnAY.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/one-light-PoHY5YXO.js",
+      "PackagePath": "staticwebassets/assets/one-light-PoHY5YXO.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/pascal-JqZropPD.js",
+      "PackagePath": "staticwebassets/assets/pascal-JqZropPD.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/perl-CHQXSrWU.js",
+      "PackagePath": "staticwebassets/assets/perl-CHQXSrWU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/php-B5ebYQev.js",
+      "PackagePath": "staticwebassets/assets/php-B5ebYQev.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/plastic-3e1v2bzS.js",
+      "PackagePath": "staticwebassets/assets/plastic-3e1v2bzS.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/plsql-LKU2TuZ1.js",
+      "PackagePath": "staticwebassets/assets/plsql-LKU2TuZ1.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/po-BFLt1xDp.js",
+      "PackagePath": "staticwebassets/assets/po-BFLt1xDp.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/poimandres-CS3Unz2-.js",
+      "PackagePath": "staticwebassets/assets/poimandres-CS3Unz2-.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/polar-DKykz6zU.js",
+      "PackagePath": "staticwebassets/assets/polar-DKykz6zU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/postcss-B3ZDOciz.js",
+      "PackagePath": "staticwebassets/assets/postcss-B3ZDOciz.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/powerquery-CSHBycmS.js",
+      "PackagePath": "staticwebassets/assets/powerquery-CSHBycmS.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/powershell-BIEUsx6d.js",
+      "PackagePath": "staticwebassets/assets/powershell-BIEUsx6d.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/prisma-B48N-Iqd.js",
+      "PackagePath": "staticwebassets/assets/prisma-B48N-Iqd.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/prolog-BY-TUvya.js",
+      "PackagePath": "staticwebassets/assets/prolog-BY-TUvya.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/proto-zocC4JxJ.js",
+      "PackagePath": "staticwebassets/assets/proto-zocC4JxJ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/pug-CM9l7STV.js",
+      "PackagePath": "staticwebassets/assets/pug-CM9l7STV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/puppet-Cza_XSSt.js",
+      "PackagePath": "staticwebassets/assets/puppet-Cza_XSSt.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/purescript-Bg-kzb6g.js",
+      "PackagePath": "staticwebassets/assets/purescript-Bg-kzb6g.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/python-DhUJRlN_.js",
+      "PackagePath": "staticwebassets/assets/python-DhUJRlN_.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/qml-D8XfuvdV.js",
+      "PackagePath": "staticwebassets/assets/qml-D8XfuvdV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/qmldir-C8lEn-DE.js",
+      "PackagePath": "staticwebassets/assets/qmldir-C8lEn-DE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/qss-DhMKtDLN.js",
+      "PackagePath": "staticwebassets/assets/qss-DhMKtDLN.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/r-CwjWoCRV.js",
+      "PackagePath": "staticwebassets/assets/r-CwjWoCRV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/racket-CzouJOBO.js",
+      "PackagePath": "staticwebassets/assets/racket-CzouJOBO.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/raku-B1bQXN8T.js",
+      "PackagePath": "staticwebassets/assets/raku-B1bQXN8T.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/razor-CNLDkMZG.js",
+      "PackagePath": "staticwebassets/assets/razor-CNLDkMZG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/red-bN70gL4F.js",
+      "PackagePath": "staticwebassets/assets/red-bN70gL4F.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/reg-5LuOXUq_.js",
+      "PackagePath": "staticwebassets/assets/reg-5LuOXUq_.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/regexp-DWJ3fJO_.js",
+      "PackagePath": "staticwebassets/assets/regexp-DWJ3fJO_.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/rel-DJlmqQ1C.js",
+      "PackagePath": "staticwebassets/assets/rel-DJlmqQ1C.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/riscv-QhoSD0DR.js",
+      "PackagePath": "staticwebassets/assets/riscv-QhoSD0DR.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/rose-pine-CmCqftbK.js",
+      "PackagePath": "staticwebassets/assets/rose-pine-CmCqftbK.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/rose-pine-dawn-Ds-gbosJ.js",
+      "PackagePath": "staticwebassets/assets/rose-pine-dawn-Ds-gbosJ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/rose-pine-moon-CjDtw9vr.js",
+      "PackagePath": "staticwebassets/assets/rose-pine-moon-CjDtw9vr.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/rst-4NLicBqY.js",
+      "PackagePath": "staticwebassets/assets/rst-4NLicBqY.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ruby-DeZ3UC14.js",
+      "PackagePath": "staticwebassets/assets/ruby-DeZ3UC14.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/rust-Be6lgOlo.js",
+      "PackagePath": "staticwebassets/assets/rust-Be6lgOlo.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/sas-BmTFh92c.js",
+      "PackagePath": "staticwebassets/assets/sas-BmTFh92c.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/sass-BJ4Li9vH.js",
+      "PackagePath": "staticwebassets/assets/sass-BJ4Li9vH.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/scala-DQVVAn-B.js",
+      "PackagePath": "staticwebassets/assets/scala-DQVVAn-B.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/scheme-BJGe-b2p.js",
+      "PackagePath": "staticwebassets/assets/scheme-BJGe-b2p.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/scss-C31hgJw-.js",
+      "PackagePath": "staticwebassets/assets/scss-C31hgJw-.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/sdbl-BLhTXw86.js",
+      "PackagePath": "staticwebassets/assets/sdbl-BLhTXw86.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/shaderlab-B7qAK45m.js",
+      "PackagePath": "staticwebassets/assets/shaderlab-B7qAK45m.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/shellscript-atvbtKCR.js",
+      "PackagePath": "staticwebassets/assets/shellscript-atvbtKCR.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/shellsession-C_rIy8kc.js",
+      "PackagePath": "staticwebassets/assets/shellsession-C_rIy8kc.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/slack-dark-BthQWCQV.js",
+      "PackagePath": "staticwebassets/assets/slack-dark-BthQWCQV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/slack-ochin-DqwNpetd.js",
+      "PackagePath": "staticwebassets/assets/slack-ochin-DqwNpetd.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/smalltalk-DkLiglaE.js",
+      "PackagePath": "staticwebassets/assets/smalltalk-DkLiglaE.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/snazzy-light-Bw305WKR.js",
+      "PackagePath": "staticwebassets/assets/snazzy-light-Bw305WKR.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/solarized-dark-DXbdFlpD.js",
+      "PackagePath": "staticwebassets/assets/solarized-dark-DXbdFlpD.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/solarized-light-L9t79GZl.js",
+      "PackagePath": "staticwebassets/assets/solarized-light-L9t79GZl.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/solidity-C1w2a3ep.js",
+      "PackagePath": "staticwebassets/assets/solidity-C1w2a3ep.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/soy-C-lX7w71.js",
+      "PackagePath": "staticwebassets/assets/soy-C-lX7w71.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/sparql-bYkjHRlG.js",
+      "PackagePath": "staticwebassets/assets/sparql-bYkjHRlG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/splunk-Cf8iN4DR.js",
+      "PackagePath": "staticwebassets/assets/splunk-Cf8iN4DR.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/sql-COK4E0Yg.js",
+      "PackagePath": "staticwebassets/assets/sql-COK4E0Yg.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ssh-config-BknIz3MU.js",
+      "PackagePath": "staticwebassets/assets/ssh-config-BknIz3MU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/stata-DorPZHa4.js",
+      "PackagePath": "staticwebassets/assets/stata-DorPZHa4.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/stylus-BeQkCIfX.js",
+      "PackagePath": "staticwebassets/assets/stylus-BeQkCIfX.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/svelte-MSaWC3Je.js",
+      "PackagePath": "staticwebassets/assets/svelte-MSaWC3Je.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/swift-BSxZ-RaX.js",
+      "PackagePath": "staticwebassets/assets/swift-BSxZ-RaX.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/synthwave-84-CbfX1IO0.js",
+      "PackagePath": "staticwebassets/assets/synthwave-84-CbfX1IO0.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/system-verilog-C7L56vO4.js",
+      "PackagePath": "staticwebassets/assets/system-verilog-C7L56vO4.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/systemd-CUnW07Te.js",
+      "PackagePath": "staticwebassets/assets/systemd-CUnW07Te.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/talonscript-C1XDQQGZ.js",
+      "PackagePath": "staticwebassets/assets/talonscript-C1XDQQGZ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/tasl-CQjiPCtT.js",
+      "PackagePath": "staticwebassets/assets/tasl-CQjiPCtT.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/tcl-DQ1-QYvQ.js",
+      "PackagePath": "staticwebassets/assets/tcl-DQ1-QYvQ.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/templ-dwX3ZSMB.js",
+      "PackagePath": "staticwebassets/assets/templ-dwX3ZSMB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/terraform-BbSNqyBO.js",
+      "PackagePath": "staticwebassets/assets/terraform-BbSNqyBO.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/tex-rYs2v40G.js",
+      "PackagePath": "staticwebassets/assets/tex-rYs2v40G.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/tokyo-night-DBQeEorK.js",
+      "PackagePath": "staticwebassets/assets/tokyo-night-DBQeEorK.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/toml-CB2ApiWb.js",
+      "PackagePath": "staticwebassets/assets/toml-CB2ApiWb.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/ts-tags-CipyTH0X.js",
+      "PackagePath": "staticwebassets/assets/ts-tags-CipyTH0X.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/tsv-B_m7g4N7.js",
+      "PackagePath": "staticwebassets/assets/tsv-B_m7g4N7.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/tsx-B6W0miNI.js",
+      "PackagePath": "staticwebassets/assets/tsx-B6W0miNI.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/turtle-BMR_PYu6.js",
+      "PackagePath": "staticwebassets/assets/turtle-BMR_PYu6.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/twig-NC5TFiHP.js",
+      "PackagePath": "staticwebassets/assets/twig-NC5TFiHP.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/typescript-Dj6nwHGl.js",
+      "PackagePath": "staticwebassets/assets/typescript-Dj6nwHGl.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/typespec-BpWG_bgh.js",
+      "PackagePath": "staticwebassets/assets/typespec-BpWG_bgh.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/typst-BVUVsWT6.js",
+      "PackagePath": "staticwebassets/assets/typst-BVUVsWT6.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/v-CAQ2eGtk.js",
+      "PackagePath": "staticwebassets/assets/v-CAQ2eGtk.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vala-BFOHcciG.js",
+      "PackagePath": "staticwebassets/assets/vala-BFOHcciG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vb-CdO5JTpU.js",
+      "PackagePath": "staticwebassets/assets/vb-CdO5JTpU.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/verilog-CJaU5se_.js",
+      "PackagePath": "staticwebassets/assets/verilog-CJaU5se_.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vesper-BEBZ7ncR.js",
+      "PackagePath": "staticwebassets/assets/vesper-BEBZ7ncR.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vhdl-DYoNaHQp.js",
+      "PackagePath": "staticwebassets/assets/vhdl-DYoNaHQp.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/viml-m4uW47V2.js",
+      "PackagePath": "staticwebassets/assets/viml-m4uW47V2.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vitesse-black-Bkuqu6BP.js",
+      "PackagePath": "staticwebassets/assets/vitesse-black-Bkuqu6BP.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vitesse-dark-D0r3Knsf.js",
+      "PackagePath": "staticwebassets/assets/vitesse-dark-D0r3Knsf.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vitesse-light-CVO1_9PV.js",
+      "PackagePath": "staticwebassets/assets/vitesse-light-CVO1_9PV.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vue-BuYVFjOK.js",
+      "PackagePath": "staticwebassets/assets/vue-BuYVFjOK.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vue-html-xdeiXROB.js",
+      "PackagePath": "staticwebassets/assets/vue-html-xdeiXROB.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/vyper-nyqBNV6O.js",
+      "PackagePath": "staticwebassets/assets/vyper-nyqBNV6O.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/wasm-C6j12Q_x.js",
+      "PackagePath": "staticwebassets/assets/wasm-C6j12Q_x.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/wasm-CG6Dc4jp.js",
+      "PackagePath": "staticwebassets/assets/wasm-CG6Dc4jp.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/weekview-BRWEje24.png",
+      "PackagePath": "staticwebassets/assets/weekview-BRWEje24.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/weekview.png",
+      "PackagePath": "staticwebassets/assets/weekview.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/wenyan-7A4Fjokl.js",
+      "PackagePath": "staticwebassets/assets/wenyan-7A4Fjokl.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/wgsl-CB0Krxn9.js",
+      "PackagePath": "staticwebassets/assets/wgsl-CB0Krxn9.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/wikitext-DCE3LsBG.js",
+      "PackagePath": "staticwebassets/assets/wikitext-DCE3LsBG.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/wolfram-C3FkfJm5.js",
+      "PackagePath": "staticwebassets/assets/wolfram-C3FkfJm5.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/workbox-window.prod.es5-DL_hIMXg.js",
+      "PackagePath": "staticwebassets/assets/workbox-window.prod.es5-DL_hIMXg.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/xml-e3z08dGr.js",
+      "PackagePath": "staticwebassets/assets/xml-e3z08dGr.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/xsl-Dd0NUgwM.js",
+      "PackagePath": "staticwebassets/assets/xsl-Dd0NUgwM.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/yaml-CVw76BM1.js",
+      "PackagePath": "staticwebassets/assets/yaml-CVw76BM1.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/zenscript-HnGAYVZD.js",
+      "PackagePath": "staticwebassets/assets/zenscript-HnGAYVZD.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/assets/zig-BVz_zdnA.js",
+      "PackagePath": "staticwebassets/assets/zig-BVz_zdnA.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/favicon.svg",
+      "PackagePath": "staticwebassets/favicon.svg"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/index.html",
+      "PackagePath": "staticwebassets/index.html"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/manifest.json",
+      "PackagePath": "staticwebassets/manifest.json"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/manifest.webmanifest",
+      "PackagePath": "staticwebassets/manifest.webmanifest"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/note-maskable.png",
+      "PackagePath": "staticwebassets/note-maskable.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/note-rounded.png",
+      "PackagePath": "staticwebassets/note-rounded.png"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/sw.js",
+      "PackagePath": "staticwebassets/sw.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/sw.js.map",
+      "PackagePath": "staticwebassets/sw.js.map"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/workbox-b833909e.js",
+      "PackagePath": "staticwebassets/workbox-b833909e.js"
+    },
+    {
+      "Id": "/Users/dangphung/work/personal/Notes/notes/wwwroot/workbox-b833909e.js.map",
+      "PackagePath": "staticwebassets/workbox-b833909e.js.map"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.Notes.Web.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.Notes.Web.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.build.Notes.Web.props",
+      "PackagePath": "build\\Notes.Web.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.Notes.Web.props",
+      "PackagePath": "buildMultiTargeting\\Notes.Web.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.Notes.Web.props",
+      "PackagePath": "buildTransitive\\Notes.Web.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
