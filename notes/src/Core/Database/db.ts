@@ -800,7 +800,7 @@ class NotesDB extends Dexie {
 
           // Update local copies for all users who have accepted the share
           const acceptedShares = mergedShares.filter((share: { status: string; }) => share.status === 'accepted');
-          for (const share of acceptedShares) {
+          for (const _share of acceptedShares) {
             const sharedEventRef = await this.calendarEvents
               .where('firebaseId')
               .equals(event.firebaseId)
