@@ -53,6 +53,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Create source code archive
+      - name: Create Source Archive
+        run: |
+          cd ..
+          zip -r source-code.zip notes/ \
+            -x "notes/node_modules/*" \
+            -x "notes/dist/*" \
+            -x "notes/.cache/*" \
+            -x "notes/coverage/*" \
+            -x "notes/.env*" \
+            -x "notes/*.log"
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -64,14 +76,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            notes/dist/**/*
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: notes/dist/
-          retention-days: 30
+            source-code.zip
 
   notify:
     needs: release
