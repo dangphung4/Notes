@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -114,7 +117,7 @@ const presetColors = [
 ];
 
 // Redesigned event form
-const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
+const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }: { isCreate: boolean, initialEvent: Partial<CalendarEvent>, onSubmit: (event: Partial<CalendarEvent>) => void, onCancel: () => void }) => {
   const [event, setEvent] = useState(initialEvent);
   const [showMore, setShowMore] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -226,7 +229,7 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
                       )}
                       style={{ backgroundColor: color }}
                       onClick={() => {
-                        setEvent(prev => ({ ...prev, color }));
+                        setEvent((prev: any) => ({ ...prev, color }));
                         setIsColorPickerOpen(false);
                       }}
                     >
@@ -239,7 +242,7 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
                 <Input
                   type="color"
                   value={event.color || '#3b82f6'}
-                  onChange={e => setEvent(prev => ({ ...prev, color: e.target.value }))}
+                  onChange={e => setEvent((prev: any) => ({ ...prev, color: e.target.value }))}
                   className="w-full h-8"
                 />
               </div>
@@ -336,7 +339,7 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
               {event.sharedWith && event.sharedWith.length > 0 && (
                 <div className="mt-2 space-y-1">
                   <Label className="text-xs text-muted-foreground">Currently shared with:</Label>
-                  {event.sharedWith.map((share) => (
+                  {event.sharedWith.map((share: any) => (
                     <div key={share.email} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <UserPlusIcon className="h-3 w-3 text-muted-foreground" />
@@ -349,7 +352,7 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
                         onClick={() => {
                           setEvent({
                             ...event,
-                            sharedWith: event.sharedWith?.filter(s => s.email !== share.email)
+                            sharedWith: event.sharedWith?.filter((s: { email: any; }) => s.email !== share.email)
                           });
                         }}
                       >
@@ -379,11 +382,11 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
               .map(email => ({
                 email,
                 permission: sharePermission,
-                status: 'pending'
+                status: 'pending' as const
               }));
 
             // Combine with existing shares, removing duplicates
-            const existingEmails = new Set(event.sharedWith?.map(s => s.email) || []);
+            const existingEmails = new Set(event.sharedWith?.map((s: { email: any; }) => s.email) || []);
             const uniqueNewShares = newShares.filter(share => !existingEmails.has(share.email));
 
             onSubmit({
@@ -565,7 +568,7 @@ const AgendaView = ({
                               {/* Duration for non-all-day events */}
                               {!event.allDay && (
                                 <div className="text-xs text-muted-foreground mt-0.5">
-                                  {format(new Date(event.endDate), 'h:mm a')}
+                                  {event.endDate ? format(new Date(event.endDate), 'h:mm a') : ''}
                                 </div>
                               )}
 
@@ -678,148 +681,6 @@ const WeekEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEvent
   );
 };
 
-// Enhanced Agenda view event block with mobile responsiveness
-const AgendaEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventClick: (event: CalendarEvent) => void }) => {
-  return (
-    <div
-      className="rounded-lg border bg-card p-3 sm:p-4 hover:shadow-md transition-shadow cursor-pointer mb-3 group"
-      onClick={(e) => {
-        e.stopPropagation();
-        onEventClick(event);
-      }}
-    >
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        {/* Time & Status Column */}
-        <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2 sm:w-32 flex-shrink-0 border-b sm:border-b-0 pb-3 sm:pb-0">
-          {event.allDay ? (
-            <span className="text-sm font-medium text-muted-foreground">All day</span>
-          ) : (
-            <div className="text-sm flex sm:flex-col items-center sm:items-start gap-2 sm:gap-1">
-              <div className="font-medium whitespace-nowrap">
-                {format(new Date(event.startDate), 'h:mm a')}
-              </div>
-              <div className="text-muted-foreground whitespace-nowrap">
-                {format(new Date(event.endDate || event.startDate), 'h:mm a')}
-              </div>
-            </div>
-          )}
-          {event.reminderMinutes && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap ml-auto sm:ml-0">
-              <ClockIcon className="h-3 w-3" />
-              <span>{event.reminderMinutes}m reminder</span>
-            </div>
-          )}
-        </div>
-
-        {/* Event Details */}
-        <div className="flex-1 min-w-0 space-y-3">
-          {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div 
-                className="w-8 h-8 rounded-full bg-muted flex-shrink-0 overflow-hidden"
-                title={`Created by ${event.createdBy}`}
-              >
-                {event.createdByPhotoURL ? (
-                  <img 
-                    src={event.createdByPhotoURL} 
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
-                    {event.createdBy.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: event.color || '#3b82f6' }}
-                  />
-                  <h4 className="font-medium text-base truncate">{event.title}</h4>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-sm text-muted-foreground">
-                  <span className="truncate max-w-[200px]">{event.createdBy}</span>
-                  {event.lastModifiedBy && event.lastModifiedBy !== event.createdBy && (
-                    <span className="truncate max-w-[200px]">• edited by {event.lastModifiedBy}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Sharing Status */}
-            {event.sharedWith && event.sharedWith.length > 0 && (
-              <div className="flex items-center gap-1 text-muted-foreground self-start">
-                <Share2Icon className="h-4 w-4" />
-                <span className="text-xs">{event.sharedWith.length}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Description */}
-          {event.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {event.description}
-            </p>
-          )}
-
-          {/* Location */}
-          {event.location && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{event.location}</span>
-            </div>
-          )}
-
-          {/* Footer Section */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:justify-between pt-1">
-            {/* Tags */}
-            <div className="flex flex-wrap gap-1 w-full sm:w-auto">
-              {event.tags && event.tags.map(tag => (
-                <div
-                  key={tag.id}
-                  className="px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
-                  style={{
-                    backgroundColor: tag.color + '20',
-                    color: tag.color
-                  }}
-                >
-                  {tag.name}
-                </div>
-              ))}
-            </div>
-
-            {/* Shared Users Preview */}
-            {event.sharedWith && event.sharedWith.length > 0 && (
-              <div className="flex -space-x-2 ml-0 sm:ml-2">
-                {event.sharedWith.slice(0, 3).map((share) => (
-                  <div
-                    key={share.email}
-                    className="w-6 h-6 rounded-full bg-muted ring-2 ring-background overflow-hidden"
-                    title={`${share.email} (${share.permission})`}
-                  >
-                    <span className="w-full h-full flex items-center justify-center text-xs">
-                      {share.email.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                ))}
-                {event.sharedWith.length > 3 && (
-                  <div className="w-6 h-6 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-xs">
-                    +{event.sharedWith.length - 3}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Day view event block
 const DayEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventClick: (event: CalendarEvent) => void }) => {
@@ -889,7 +750,7 @@ const DayEventBlock = ({ event, onEventClick }: { event: CalendarEvent; onEventC
   );
 };
 
-// Add this new component near other component definitions
+
 const EventSearch = ({ 
   events, 
   onEventSelect 
@@ -985,7 +846,7 @@ export default function Calendar() {
   const [shareEmails, setShareEmails] = useState<string>('');
   const [sharePermission, setSharePermission] = useState<'view' | 'edit'>('view');
   const [pendingInvitations, setPendingInvitations] = useState<CalendarEvent[]>([]);
-  const [isCreate, setIsCreate] = useState(true);
+  const [, setIsCreate] = useState(true);
 
   const [newEvent, setNewEvent] = useState<Partial<CalendarEvent>>({
     title: '',
@@ -999,7 +860,6 @@ export default function Calendar() {
     sharedWith: []
   });
 
-  const [newParticipant, setNewParticipant] = useState('');
 
   const weekDays = Array.from({ length: 7 }, (_, i) => 
     addDays(startOfWeek(currentWeek), i)
@@ -1133,24 +993,8 @@ export default function Calendar() {
     setIsCreateEventOpen(true);
   };
 
-  // Function to handle event clicks
-  const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setIsEventDetailsOpen(true);
-  };
 
   const [view, setView] = useState<'week' | 'day' | 'agenda'>('week');
-  
-  const renderAgendaView = () => (
-    <AgendaView 
-      events={events} 
-      selectedDate={selectedDate}
-      onEventClick={(event) => {
-        setSelectedEvent(event);
-        setIsEventDetailsOpen(true);
-      }} 
-    />
-  );
 
   const weekViewRef = useRef<HTMLDivElement>(null);
   const dayViewRef = useRef<HTMLDivElement>(null);
@@ -1584,7 +1428,7 @@ export default function Calendar() {
             <EventForm
               isCreate={false}
               initialEvent={editedEvent || selectedEvent || {}}
-              onSubmit={async (event) => {
+              onSubmit={async (event: Partial<CalendarEvent>) => {
                 if (!selectedEvent?.id) return;
                 try {
                   await db.updateCalendarEvent(selectedEvent.id, event);
@@ -1821,9 +1665,14 @@ export default function Calendar() {
                     const emails = shareEmails
                       .split('\n')
                       .map(email => email.trim())
-                      .filter(Boolean);
+                      .filter(Boolean)
+                      .map(email => ({
+                        email,
+                        permission: sharePermission,
+                        status: 'pending' as const
+                      }));
                     
-                    await db.shareCalendarEvent(selectedEvent?.id, emails, sharePermission);
+                    await db.shareCalendarEvent(selectedEvent?.id, emails.map(e => e.email), sharePermission);
                     
                     toast({
                       title: "Event Shared",

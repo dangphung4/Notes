@@ -1,9 +1,8 @@
 /// <reference lib="webworker" />
-
 import { precacheAndRoute } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
+import { StaleWhileRevalidate, CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 
 declare let self: ServiceWorkerGlobalScope;
@@ -14,6 +13,36 @@ self.skipWaiting();
 
 // Precache static assets
 precacheAndRoute(self.__WB_MANIFEST);
+
+// Define Firestore and other API patterns to ignore
+const IGNORED_URLS = [
+  /^https:\/\/firestore\.googleapis\.com\/.*/,
+  /^https:\/\/www\.googleapis\.com\/.*/,
+  /^https:\/\/firebase\.googleapis\.com\/.*/,
+  /^https:\/\/identitytoolkit\.googleapis\.com\/.*/,
+  // Add specific pattern for Firestore channels
+  /^https:\/\/firestore\.googleapis\.com\/google\.firestore\.v1\.Firestore\/Listen\/channel.*/
+];
+
+// Handle Firestore requests with NetworkOnly strategy
+IGNORED_URLS.forEach(pattern => {
+  registerRoute(
+    ({ url }) => pattern.test(url.href),
+    new NetworkOnly({
+      plugins: [
+        {
+          // Suppress logging for these requests
+          cacheDidUpdate: async () => {},
+          cacheWillUpdate: async () => null,
+          cachedResponseWillBeUsed: async () => null,
+          requestWillFetch: async ({ request }) => request,
+          fetchDidFail: async () => {},
+          fetchDidSucceed: async ({ response }) => response,
+        },
+      ],
+    })
+  );
+});
 
 // Cache images
 registerRoute(
@@ -109,4 +138,5 @@ self.addEventListener('push', (event) => {
 // Handle notification close
 self.addEventListener('notificationclose', (event) => {
   console.log('Notification was closed', event.notification);
-}); 
+});
+

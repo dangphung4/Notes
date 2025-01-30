@@ -44,15 +44,10 @@ function CommandPalette() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  // Use location to check current path
   const location = useLocation();
   const isCalendarPage = location.pathname === "/calendar";
   
-  // Debug log
-  console.log('Current path:', location.pathname);
-  console.log('Is Calendar Page:', isCalendarPage);
 
-  // Filter out home from commands when on calendar page
   const publicPages = [
     {
       id: "home",

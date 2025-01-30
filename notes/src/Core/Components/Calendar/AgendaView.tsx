@@ -73,7 +73,7 @@ export const AgendaView = ({ events, onEventClick }: AgendaViewProps) => {
                             {format(new Date(event.startDate), 'h:mm a')}
                           </div>
                           <div className="text-muted-foreground">
-                            {format(new Date(event.endDate), 'h:mm a')}
+                            {event.endDate ? format(new Date(event.endDate), 'h:mm a') : ''}
                           </div>
                         </div>
                       )}

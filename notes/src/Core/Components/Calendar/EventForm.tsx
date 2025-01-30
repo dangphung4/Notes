@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +15,7 @@ import { Pencil2Icon } from '@radix-ui/react-icons';
 import { MapPinIcon, ChevronRightIcon, ClockIcon, Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TimePicker } from './TimePicker';
-import type { CalendarEvent } from '../../Types/CalendarEvent';
-import type { Tags } from '../../Types/Tags';
+import type { CalendarEvent, Tags } from '../../Database/db';
 
 interface EventFormProps {
   isCreate: boolean;
@@ -28,8 +28,6 @@ export const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }: EventF
   const [event, setEvent] = useState(initialEvent);
   const [showMore, setShowMore] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-  const [shareEmails, setShareEmails] = useState('');
-  const [sharePermission, setSharePermission] = useState<'view' | 'edit'>('view');
 
   const handleCreateTag = async (tag: Partial<Tags>) => {
     const user = auth.currentUser;
@@ -159,7 +157,7 @@ export const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }: EventF
                 <Input
                   type="color"
                   value={event.color || '#3b82f6'}
-                  onChange={e => setEvent(prev => ({ ...prev, color: e.target.value }))}
+                  onChange={e => setEvent((prev: any) => ({ ...prev, color: e.target.value }))}
                   className="w-full h-8"
                 />
               </div>

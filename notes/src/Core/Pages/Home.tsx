@@ -20,15 +20,17 @@ import {
   GitHubLogoIcon,
   VercelLogoIcon,
   EnterIcon,
+  CalendarIcon,
 } from "@radix-ui/react-icons";
 import demoImage from "../../assets/demo.png";
 import logo from "../../assets/note.svg";
-import { CpuIcon, Smartphone, SmartphoneIcon } from "lucide-react";
+import { CloudIcon, CommandIcon, CpuIcon, FileTextIcon, HomeIcon, Smartphone, SmartphoneIcon, UserIcon } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const isMacOs = navigator.userAgent.includes('Mac');
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
       {/* Hero Section */}
@@ -58,7 +60,11 @@ export default function Home() {
           ) : (
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button onClick={() => navigate("/auth")} size="lg" className="w-full sm:w-auto">
+                <Button
+                  onClick={() => navigate("/auth")}
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
                   <EnterIcon className="mr-2 h-5 w-5" /> Sign In
                 </Button>
                 <Button
@@ -82,6 +88,98 @@ export default function Home() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Command pallete section instructions */}
+      {/* Command palette section */}
+      <section className="container mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Command Palette
+        </h2>
+        <div className="max-w-2xl mx-auto">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-center space-x-2">
+                <CommandIcon className="h-10 w-10 text-primary" />
+                <CardTitle className="text-2xl">Quick Navigation</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-1">
+                  <kbd className="pointer-events-none h-7 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-sm font-medium flex">
+                    {isMacOs ? "⌘" : "Ctrl"}
+                  </kbd>
+                  <span className="text-sm text-muted-foreground">+</span>
+                  <kbd className="pointer-events-none h-7 select-none items-center gap-1 rounded border bg-muted px-2 font-mono text-sm font-medium flex">
+                    K
+                  </kbd>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold">Available Commands:</h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="flex items-center gap-2">
+                    <HomeIcon className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Go Home</span>
+                    <div className="ml-auto flex gap-1">
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        G
+                      </kbd>
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        H
+                      </kbd>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Calendar</span>
+                    <div className="ml-auto flex gap-1">
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        G
+                      </kbd>
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        C
+                      </kbd>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileTextIcon className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Notes</span>
+                    <div className="ml-auto flex gap-1">
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        G
+                      </kbd>
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        N
+                      </kbd>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Profile</span>
+                    <div className="ml-auto flex gap-1">
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        G
+                      </kbd>
+                      <kbd className="rounded bg-muted px-2 py-0.5 text-xs">
+                        P
+                      </kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-lg border p-4 bg-muted/30">
+                <p className="text-sm text-muted-foreground text-center">
+                  Press <span className="font-semibold">Esc</span> to close the
+                  command palette at any time
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -207,9 +305,42 @@ export default function Home() {
       {/* Additional Features Section */}
       <section className="container mx-auto px-4 py-20">
         <h3 className="text-2xl font-bold text-center mb-8">
-          Additional Features
+          Everything You Need in One Place
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Calendar Integration</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Seamlessly integrate your notes with calendar events. Plan your
+                schedule, set reminders, and keep your tasks organized in a
+                timeline view. Perfect for project planning and daily
+                organization.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <CloudIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Event Synchronization</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Your notes and events stay in sync across all devices. Add an
+                event in your calendar and automatically create linked notes.
+                Never miss a meeting or deadline again.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
@@ -220,24 +351,26 @@ export default function Home() {
             <CardContent>
               <CardDescription>
                 Capture your thoughts instantly with our streamlined interface.
-                No complicated menus or setups required.
+                Access from anywhere - web, mobile, or desktop app.
               </CardDescription>
             </CardContent>
           </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <ClockIcon className="h-6 w-6 text-primary" />
-                <CardTitle>Cloud Sync</CardTitle>
+                <CardTitle>Real-time Cloud Sync</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Your notes are automatically saved and synced across all your
-                devices. Never lose your thoughts again.
+                Changes sync instantly across all your devices. Work seamlessly
+                between your phone, tablet, and computer without missing a beat.
               </CardDescription>
             </CardContent>
           </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
@@ -247,11 +380,13 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Constantly improving with new features and refinements based on
-                user feedback and needs.
+                We're constantly improving with new features based on user
+                feedback. Recent additions include calendar integration and
+                enhanced sync capabilities.
               </CardDescription>
             </CardContent>
           </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
@@ -261,38 +396,41 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Built for speed and performance. Your notes load instantly,
-                letting you focus on what matters.
+                Optimized for speed - your notes and calendar events load
+                instantly. Quick search across all your content lets you find
+                what you need fast.
               </CardDescription>
             </CardContent>
           </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <CpuIcon className="h-6 w-6 text-primary" />
-                <CardTitle>Productivity Features</CardTitle>
+                <CardTitle>Smart Features</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Nested todos with collapsible subtasks, markdown support for
-                notes (headers, lists, bold/italic), voice-to-text input (Web
-                Speech API), and more.
+                Advanced features including nested todos, markdown support,
+                voice-to-text, and intelligent calendar suggestions to help you
+                stay organized.
               </CardDescription>
             </CardContent>
           </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <RocketIcon className="h-6 w-6 text-primary" />
-                <CardTitle>AI Integrations</CardTitle>
+                <CardTitle>AI Enhancements</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Plug in your own AI models or use what I pick for you. Enjoy
-                suggestions and autocompletion, along with summarization and
-                more.
+                Smart scheduling suggestions, meeting note templates, and
+                AI-powered organization help you make the most of your time and
+                notes.
               </CardDescription>
             </CardContent>
           </Card>
