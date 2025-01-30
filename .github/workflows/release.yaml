@@ -17,6 +17,10 @@ jobs:
       packages: write
       pull-requests: read # Required for generating changelog
 
+    defaults:
+      run:
+        working-directory: notes # Set the working directory for all run steps
+
     steps:
       - name: Checkout Git repository
         uses: actions/checkout@v4
@@ -28,6 +32,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: notes/package-lock.json # Specify the path to package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -59,13 +64,13 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            dist/**/*
+            notes/dist/**/*
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/
+          path: notes/dist/
           retention-days: 30
 
   notify:
