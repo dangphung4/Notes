@@ -33,6 +33,12 @@ interface NavProps {
   toggleDarkMode: () => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.darkMode
+ * @param root0.toggleDarkMode
+ */
 export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -147,6 +153,12 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
   );
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.darkMode
+ * @param root0.toggleDarkMode
+ */
 export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();

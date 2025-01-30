@@ -834,6 +834,9 @@ const EventSearch = ({
   );
 };
 
+/**
+ *
+ */
 export default function Calendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -895,6 +898,9 @@ export default function Calendar() {
     loadPendingInvitations();
   }, []);
 
+  /**
+   *
+   */
   async function loadEvents() {
     try {
       // Get local events

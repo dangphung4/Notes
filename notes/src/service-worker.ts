@@ -78,6 +78,9 @@ button?.addEventListener("click", () => {
   });
 });
 
+/**
+ *
+ */
 function randomNotification() {
   new Notification("Hello World");
   setTimeout(randomNotification, 30000);

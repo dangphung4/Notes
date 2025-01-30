@@ -2,6 +2,11 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen md:pt-16">

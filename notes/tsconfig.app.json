@@ -24,7 +24,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* JSDoc */
+    "checkJs": true,
+    "allowJs": true,
+    "removeComments": false,
+    "declaration": true,
+    "declarationMap": true
   },
   "include": ["src"]
 }

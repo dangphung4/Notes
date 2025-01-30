@@ -24,6 +24,13 @@ interface ShareDialogProps {
   onError?: (error: string) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.note
+ * @param root0.onShare
+ * @param root0.onError
+ */
 export default function ShareDialog({ note, onShare, onError }: ShareDialogProps) {
   const { user } = useAuth();
   const [email, setEmail] = useState('');

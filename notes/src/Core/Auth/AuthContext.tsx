@@ -19,6 +19,11 @@ const AuthContext = createContext<AuthContextType>({
   disableGuestMode: () => {}
 });
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

@@ -557,6 +557,9 @@ const NoteSearch = ({
   );
 };
 
+/**
+ *
+ */
 export default function Notes() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -834,6 +837,9 @@ export default function Notes() {
     });
   }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters]);
 
+  /**
+   *
+   */
   function clearFilters(): void {
     setSearchQuery('');
     setSelectedTags([]);

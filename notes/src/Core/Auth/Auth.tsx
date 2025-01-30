@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from './firebase';
@@ -7,6 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useNavigate, Link } from 'react-router-dom';
 
+/**
+ * Auth component for user authentication
+ * @component
+ * @returns {JSX.Element} The rendered Auth component
+ */
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -26,6 +26,9 @@ import Calendar from './Core/Pages/Calendar';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, Command } from "@/components/ui/command";
 
 // Separate component for command palette
+/**
+ *
+ */
 function CommandPalette() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -197,6 +200,9 @@ function CommandPalette() {
 }
 
 // Main App component
+/**
+ *
+ */
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -229,6 +235,11 @@ function App() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  /**
+   *
+   * @param root0
+   * @param root0.children
+   */
   function PrivateRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
 
@@ -239,6 +250,9 @@ function App() {
   }
 
   // Routes configuration component
+  /**
+   *
+   */
   function AppRoutes() {
     return (
       <>
@@ -319,6 +333,9 @@ function App() {
   );
 }
 
+/**
+ *
+ */
 function LogoutHandler() {
   const navigate = useNavigate();
 
