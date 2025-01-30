@@ -20,10 +20,6 @@ jobs:
     
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     
-    defaults:
-      run:
-        working-directory: notes
-    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,10 +32,16 @@ jobs:
           cache-dependency-path: notes/package-lock.json
           
       - name: Install commitlint
+        working-directory: notes
         run: |
           npm install --save-dev @commitlint/config-conventional @commitlint/cli
           
+      - name: Copy commitlint config
+        run: |
+          cp .commitlintrc.json notes/
+          
       - name: Validate commits
+        working-directory: notes
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
@@ -49,5 +51,6 @@ jobs:
         
       - name: Check PR title
         if: github.event_name == 'pull_request'
+        working-directory: notes
         run: |
           echo "${{ github.event.pull_request.title }}" | npx commitlint --verbose
