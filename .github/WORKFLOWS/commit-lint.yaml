@@ -4,6 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
     branches: [ main, master, development ]
+  pull_request_target:
+    branches: [ main, master, development ]
   push:
     branches: [ main, master, development ]
 
@@ -16,59 +18,26 @@ jobs:
     name: Validate Conventional Commits
     runs-on: ubuntu-latest
     
-    # what this does: prevents the action from running twice on PRs from the same repo
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     
+    defaults:
+      run:
+        working-directory: notes
+    
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: 'npm'
-          
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
+          cache-dependency-path: notes/package-lock.json
           
       - name: Install commitlint
         run: |
           npm install --save-dev @commitlint/config-conventional @commitlint/cli
-          
-      - name: Create commitlint config
-        run: |
-          echo '{
-            "extends": ["@commitlint/config-conventional"],
-            "rules": {
-              "type-enum": [
-                2,
-                "always",
-                [
-                  "feat",
-                  "fix",
-                  "docs",
-                  "style",
-                  "refactor",
-                  "perf",
-                  "test",
-                  "build",
-                  "ci",
-                  "chore",
-                  "revert"
-                ]
-              ],
-              "type-case": [2, "always", "lower"],
-              "type-empty": [2, "never"],
-              "subject-empty": [2, "never"],
-              "subject-full-stop": [2, "never", "."],
-              "header-max-length": [2, "always", 72]
-            }
-          }' > .commitlintrc.json
           
       - name: Validate commits
         run: |
