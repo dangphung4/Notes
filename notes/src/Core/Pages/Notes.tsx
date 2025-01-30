@@ -30,6 +30,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { XCircleIcon } from 'lucide-react';
+import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 
 const NoteCard = ({ note, shares, user, view, onClick }: { 
   note: Note, 
@@ -421,6 +422,141 @@ const groupNotesByDate = (notes: Note[]) => {
   return groups;
 };
 
+const NoteSearch = ({ 
+  notes, 
+  onNoteSelect 
+}: { 
+  notes: Note[], 
+  onNoteSelect: (note: Note) => void 
+}) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen(open => !open);
+      }
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, []);
+
+  const filteredNotes = notes.filter(note => {
+    const searchLower = search.toLowerCase();
+    return (
+      note.title.toLowerCase().includes(searchLower) ||
+      note.content?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  return (
+    <div className="w-full max-w-md">
+      <Button
+        variant="outline"
+        role="combobox"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        className="w-full justify-start text-sm text-muted-foreground"
+      >
+        <MagnifyingGlassIcon className="mr-2 h-4 w-4" />
+        Search notes...
+        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+          <span className="text-xs">⌘</span>K
+        </kbd>
+      </Button>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          placeholder="Search notes..." 
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>No notes found.</CommandEmpty>
+          <CommandGroup heading="Notes">
+            {filteredNotes.map(note => (
+              <CommandItem
+                key={note.firebaseId}
+                value={note.title}
+                onSelect={() => {
+                  onNoteSelect(note);
+                  setOpen(false);
+                  setSearch('');
+                }}
+                className="flex-col items-start gap-1 !py-3"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <FileTextIcon className="h-4 w-4" />
+                    <span className="font-medium">{note.title || 'Untitled'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{formatTimeAgo(note.updatedAt)}</span>
+                    {note.isPinned && <PinIcon className="h-3 w-3 text-primary" />}
+                  </div>
+                </div>
+
+                {/* Owner info */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground ml-6">
+                  {note.ownerPhotoURL ? (
+                    <img 
+                      src={note.ownerPhotoURL} 
+                      alt={note.ownerDisplayName}
+                      className="w-4 h-4 rounded-full"
+                    />
+                  ) : (
+                    <AvatarIcon className="w-4 h-4" />
+                  )}
+                  <span>{note.ownerDisplayName}</span>
+                </div>
+
+                {/* Preview */}
+                {note.content && (
+                  <div className="ml-6 text-xs text-muted-foreground line-clamp-2 mt-1">
+                    {getPreviewText(note.content, 150)}
+                  </div>
+                )}
+
+                {/* Tags */}
+                {note.tags && note.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 ml-6 mt-1">
+                    {note.tags.map(tag => (
+                      <div
+                        key={tag.id}
+                        className="px-1.5 py-0.5 rounded-full text-[10px]"
+                        style={{
+                          backgroundColor: tag.color + '20',
+                          color: tag.color
+                        }}
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {note.lastEditedAt &&  note.lastEditedByUserId &&  note.lastEditedByPhotoURL && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground ml-6">
+                    {note.lastEditedByPhotoURL && (
+                    <img 
+                      src={note.lastEditedByPhotoURL} 
+                      alt={note.lastEditedByDisplayName}
+                      className="w-4 h-4 rounded-full"
+                    />
+                    )}
+                    <span>Edited {formatTimeAgo(note.lastEditedAt)}</span>
+                  </div>
+                )}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </div>
+  );
+};
+
 export default function Notes() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -713,12 +849,9 @@ export default function Notes() {
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+            <NoteSearch 
+              notes={notes} 
+              onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
             />
           </div>
 
