@@ -38,6 +38,11 @@ export function getPreviewText(content: string, maxLength: number = 200): string
   }
 }
 
+/**
+ * Formats a date into a localized string
+ * @param {Date} date - The date to format
+ * @returns {string} Formatted date string
+ */
 export function formatDate(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -47,6 +52,12 @@ export function formatDate(date: Date) {
   }).format(date);
 }
 
+/**
+ * Formats the last edited information for a note
+ * @param {Note} note - The note object
+ * @returns {string} Formatted string showing who last edited the note and when
+ * @see {@link formatTimeAgo} for time formatting
+ */
 export function formatLastEdited(note: Note): string {
   const date = note.lastEditedAt || note.updatedAt;
   const timeAgo = formatTimeAgo(date);

@@ -32,10 +32,18 @@ import weekview from "../../assets/weekview.png";
 import logo from "../../assets/note.svg";
 import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon} from "lucide-react";
 
+/**
+ * Home page component that displays the landing page of the application
+ * @component
+ * @returns {JSX.Element} The rendered Home component
+ */
 export default function Home() {
+  /** User authentication context */
   const { user } = useAuth();
+  /** Navigation hook for routing */
   const navigate = useNavigate();
 
+  /** Detects if user is on MacOS for keyboard shortcuts */
   const isMacOs = navigator.userAgent.includes('Mac');
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
