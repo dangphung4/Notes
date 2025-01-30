@@ -26,7 +26,7 @@ import { TagSelector } from '@/components/TagSelector';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EventInvitations } from '../Components/Calendar/EventInvitations';
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
@@ -432,7 +432,6 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
 // Update the AgendaView component
 const AgendaView = ({ 
   events, 
-  selectedDate, 
   onEventClick 
 }: { 
   events: CalendarEvent[], 
