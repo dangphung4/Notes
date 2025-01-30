@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # Optional: Allow manual trigger from GitHub UI
+  workflow_dispatch:
+  release:
+    types: [prereleased,released]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: read # Required for generating changelog
+
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for changelog generation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Generate Changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configuration: ".github/changelog.json"
+          commitMode: true
+          ignorePreReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/**/*
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 30
+
+  notify:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on Success
+        if: success()
+        run: |
+          echo "🎉 Release ${{ github.ref_name }} has been published successfully!"
+          echo "View the release at: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" 
