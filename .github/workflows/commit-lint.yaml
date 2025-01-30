@@ -18,8 +18,6 @@ jobs:
     name: Validate Conventional Commits
     runs-on: ubuntu-latest
     
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,7 +48,7 @@ jobs:
           fi
         
       - name: Check PR title
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
         working-directory: notes
         run: |
           echo "${{ github.event.pull_request.title }}" | npx commitlint --verbose
