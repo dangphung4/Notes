@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '../Database/db';
-import type { CalendarEvent } from '../Database/db';
+import type { CalendarEvent, Tags } from '../Database/db';
 import { PlusIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, Share2Icon, UserPlusIcon, X, Check, ChevronDown, Calendar as CalendarIcon, Search } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks, setYear, subDays } from "date-fns";
 import { cn } from '@/lib/utils';
@@ -399,37 +399,25 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }) => {
   );
 };
 
-// Add this helper function near the top with other utility functions
 const groupEventsByDate = (events: CalendarEvent[]) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Filter out past events
-  const futureEvents = events.filter(event => {
-    const eventDate = new Date(event.startDate);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate >= today;
-  });
-
-  const grouped = futureEvents.reduce((acc, event) => {
-    // Create a new date object and normalize to local midnight
+  // Group events by their date string (YYYY-MM-DD)
+  const grouped = events.reduce((acc, event) => {
+    // Convert the UTC timestamp to local date string
     const eventDate = new Date(event.startDate);
     const year = eventDate.getFullYear();
-    const month = eventDate.getMonth();
-    const day = eventDate.getDate();
+    const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+    const day = String(eventDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     
-    // Create a new date object at local midnight
-    const normalizedDate = new Date(year, month, day);
-    const dateKey = format(normalizedDate, 'yyyy-MM-dd');
     
-    if (!acc[dateKey]) {
-      acc[dateKey] = [];
+    if (!acc[dateStr]) {
+      acc[dateStr] = [];
     }
-    acc[dateKey].push(event);
+    acc[dateStr].push(event);
     return acc;
   }, {} as Record<string, CalendarEvent[]>);
 
-  // Sort events within each day by start time
+  // Sort events within each day
   Object.keys(grouped).forEach(date => {
     grouped[date].sort((a, b) => {
       if (a.allDay && !b.allDay) return -1;
@@ -438,11 +426,7 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
     });
   });
 
-  return Object.fromEntries(
-    Object.entries(grouped).sort(([dateA], [dateB]) => 
-      new Date(dateA).getTime() - new Date(dateB).getTime()
-    )
-  );
+  return grouped;
 };
 
 // Update the AgendaView component
@@ -455,30 +439,30 @@ const AgendaView = ({
   selectedDate: Date,
   onEventClick: (event: CalendarEvent) => void 
 }) => {
-  // Get today's date at midnight for comparison
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const groupedEvents = groupEventsByDate(events);
 
-  // Get next 30 days starting from selected date
+  // Get next 30 days starting from today
   const next30Days = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date(selectedDate);
+    const date = new Date();
     date.setDate(date.getDate() + i);
     return format(date, 'yyyy-MM-dd');
   });
 
-  const groupedEvents = groupEventsByDate(events);
-  
-  // Ensure we have entries for the next 30 days even if no events
+  // Filter and sort dates
+  const sortedDates = Object.keys(groupedEvents)
+    .filter(dateStr => {
+      // Only show dates from today onwards
+      return dateStr >= todayStr;
+    })
+    .sort((a, b) => a.localeCompare(b));
+
+  // Add empty slots for future dates
   next30Days.forEach(date => {
     if (!groupedEvents[date]) {
       groupedEvents[date] = [];
     }
   });
-
-  // Sort dates
-  const sortedDates = Object.keys(groupedEvents).sort((a, b) => 
-    new Date(a).getTime() - new Date(b).getTime()
-  );
 
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
@@ -490,14 +474,12 @@ const AgendaView = ({
             <p className="text-sm">Click the + button to create a new event</p>
           </div>
         ) : (
-          sortedDates.map(date => {
-            const dateEvents = groupedEvents[date];
-            const dateObj = new Date(date);
-            const isToday = dateObj.toDateString() === today.toDateString();
-            const isPast = dateObj < today;
+          sortedDates.map(dateStr => {
+            const dateEvents = groupedEvents[dateStr];
+            const isToday = dateStr === todayStr;
 
             return (
-              <div key={date} className={cn(
+              <div key={dateStr} className={cn(
                 "transition-colors",
                 isToday && "bg-muted/30"
               )}>
@@ -508,19 +490,18 @@ const AgendaView = ({
                       "text-xl font-semibold leading-none",
                       isToday && "text-primary"
                     )}>
-                      {format(dateObj, 'd')}
+                      {format(new Date(dateStr), 'd')}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {format(dateObj, 'EEE')}
+                      {format(new Date(dateStr), 'EEE')}
                     </div>
                   </div>
                   <div>
                     <h3 className={cn(
                       "text-sm font-medium",
-                      isToday && "text-primary",
-                      isPast && "text-muted-foreground"
+                      isToday && "text-primary"
                     )}>
-                      {isToday ? 'Today' : format(dateObj, 'MMMM d, yyyy')}
+                      {isToday ? 'Today' : format(new Date(dateStr), 'MMMM d, yyyy')}
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       {dateEvents.length === 0 
@@ -550,7 +531,7 @@ const AgendaView = ({
                         <div className="w-12 flex-shrink-0 pt-1 text-center">
                           <span className={cn(
                             "text-sm font-medium",
-                            isPast && "text-muted-foreground"
+                            isToday && "text-muted-foreground"
                           )}>
                             {event.allDay ? (
                               'All day'
@@ -576,7 +557,7 @@ const AgendaView = ({
                                 />
                                 <h4 className={cn(
                                   "font-medium truncate",
-                                  isPast && "text-muted-foreground"
+                                  isToday && "text-muted-foreground"
                                 )}>
                                   {event.title}
                                 </h4>
@@ -1726,25 +1707,6 @@ export default function Calendar() {
                       <span>{selectedEvent?.createdBy}</span>
                     </div>
                   </div>
-                  {selectedEvent?.lastModifiedBy && selectedEvent.lastModifiedBy !== selectedEvent.createdBy && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <span>Last modified by</span>
-                      <div className="flex items-center gap-1">
-                        {selectedEvent.lastModifiedByPhotoURL ? (
-                          <img 
-                            src={selectedEvent.lastModifiedByPhotoURL}
-                            alt=""
-                            className="w-4 h-4 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
-                            {selectedEvent.lastModifiedBy.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <span>{selectedEvent.lastModifiedByDisplayName || selectedEvent.lastModifiedBy}</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
 

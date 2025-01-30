@@ -22,6 +22,7 @@ import NewNote from './Core/Pages/NewNote';
 import EditNote from './Core/Pages/EditNote';
 import Install from './Core/Pages/Install';
 import Calendar from './Core/Pages/Calendar';
+import { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "./Core/Components/ui/command";
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -63,6 +64,12 @@ function App() {
 
     return <>{children}</>;
   }
+  
+  const [open, setOpen] = useState(false);
+
+  // add commands to navigate to pages, and pages will show depending if you are authenticated
+  const commands = [
+  ]
 
   return (
     <BrowserRouter>
