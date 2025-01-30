@@ -12,6 +12,7 @@ import {
   MoonIcon,
   SunIcon,
   GlobeIcon,
+  CalendarIcon,
 } from "@radix-ui/react-icons";
 import {
   Avatar,
@@ -72,6 +73,12 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
                 <span className="ml-2">Notes</span>
               </Button>
             )}
+            {user && (
+              <Button variant="ghost" onClick={() => navigate('/calendar')}>
+                <CalendarIcon className="h-5 w-5" />
+                <span className="ml-2">Calendar</span>
+              </Button>
+            )}
             {!user && (
               <Button variant="ghost" asChild>
                 <Link to="/install">
@@ -115,6 +122,10 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
                   <DropdownMenuItem onClick={() => navigate('/notes')}>
                     <FileTextIcon className="mr-2 h-4 w-4" />
                     <span>Notes</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/calendar')}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <span>Calendar</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/logout')}>
@@ -168,7 +179,7 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
   }, [darkMode]);
 
   return (
-    <div className="md:hidden fixed bottom-4 right-4 flex flex-col items-end gap-2 z-50">
+    <div className="md:hidden fixed bottom-16 right-2 flex flex-col items-end gap-2 z-50">
       {isOpen && (
         <div className="flex flex-col items-end gap-2 mb-2">
           <Button
@@ -196,6 +207,14 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
                 onClick={() => handleNavigation('/notes')}
               >
                 <FileTextIcon className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="default"
+                size="icon"
+                className="rounded-full shadow-lg"
+                onClick={() => handleNavigation('/calendar')}
+              >
+                <CalendarIcon className="h-5 w-5" />
               </Button>
               <Button
                 variant="default"

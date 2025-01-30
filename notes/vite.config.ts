@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { resolve } from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -55,7 +54,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,svg,png,ico,txt}'],
         runtimeCaching: [
           {
@@ -72,7 +71,15 @@ export default defineConfig({
               }
             }
           }
-        ]
+        ],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/[^/?]+\.[^/]+$/],
+        skipWaiting: true,
+        clientsClaim: true,
+        disableDevLogs: true,
+        sourcemap: true,
+        cleanupOutdatedCaches: true,
+        mode: 'production'
       }
     })
   ],
