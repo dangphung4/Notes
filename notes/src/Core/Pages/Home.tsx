@@ -21,10 +21,16 @@ import {
   VercelLogoIcon,
   EnterIcon,
   CalendarIcon,
+  Share2Icon,
+  HomeIcon,
+  FileTextIcon,
 } from "@radix-ui/react-icons";
 import demoImage from "../../assets/demo.png";
+import agendaview from "../../assets/agendaview.png";
+import dayview from "../../assets/dayview.png";
+import weekview from "../../assets/weekview.png";
 import logo from "../../assets/note.svg";
-import { CloudIcon, CommandIcon, CpuIcon, FileTextIcon, HomeIcon, Smartphone, SmartphoneIcon, UserIcon } from "lucide-react";
+import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon} from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
@@ -190,17 +196,59 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <MixIcon className="h-6 w-6 text-primary" />
-                <CardTitle>Clean Design</CardTitle>
+                <CommandIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Command Palette</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Minimalist interface that helps you focus on writing. No
-                distractions, just pure content creation.
+                Quick navigation with keyboard shortcuts (⌘/Ctrl + K). Access all your notes and app features instantly.
               </CardDescription>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Calendar Integration</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Seamlessly manage events, set reminders, and organize your schedule with our built-in calendar.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <TagIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Smart Tags</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Organize notes with customizable tags and colors. Filter and search your content effortlessly.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <Share2Icon className="h-6 w-6 text-primary" />
+                <CardTitle>Collaboration</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Share notes and events with others. Control permissions and work together in real-time.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
@@ -210,22 +258,21 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Easy on the eyes with automatic theme switching. Perfect for
-                late-night writing sessions.
+                Easy on the eyes with automatic theme switching. Perfect for late-night writing sessions.
               </CardDescription>
             </CardContent>
           </Card>
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <Smartphone className="h-6 w-6 text-primary" />
+                <SmartphoneIcon className="h-6 w-6 text-primary" />
                 <CardTitle>PWA Ready</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                PWA ready, so you can install it on your phone and desktop with
-                a single click.
+                Install as a native app on any device. Work offline and sync when connected.
               </CardDescription>
             </CardContent>
           </Card>
@@ -295,9 +342,136 @@ export default function Home() {
               className="w-full h-auto"
               onError={(e) => {
                 e.currentTarget.src =
-                  "https://placehold.co/600x400?text=App+Screenshot";
+                  "../../assets/agendaview.png";
               }}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Calendar Showcase Section */}
+      <section className="container mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">Calendar Integration</h2>
+        <div className="space-y-16">
+          {/* Calendar Overview */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+            <div className="flex-1 space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                  1
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Multiple Views</h3>
+                  <p className="text-muted-foreground">
+                    Switch between Day, Week, and Agenda views to manage your schedule effectively.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                  2
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Event Management</h3>
+                  <p className="text-muted-foreground">
+                    Create, edit, and share events with customizable colors and reminders.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                  3
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Collaboration</h3>
+                  <p className="text-muted-foreground">
+                    Share events with team members and manage permissions.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 rounded-lg overflow-hidden shadow-xl">
+              <img
+                src={weekview}
+                alt="Calendar Week View"
+                className="w-full h-auto"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "../../assets/weekview.png";
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Calendar Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="rounded-lg overflow-hidden shadow-xl">
+              <img
+                src={dayview}
+                alt="Calendar Day View"
+                className="w-full h-auto"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "../../assets/dayview.png";
+                }}
+              />
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-xl">
+              <img
+                src={agendaview}
+                alt="Calendar Agenda View"
+                className="w-full h-auto"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "../../assets/agendaview.png";
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Calendar Features List */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <Share2Icon className="h-6 w-6 text-primary" />
+                  <CardTitle>Event Sharing</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Share events with team members and control viewing or editing permissions. Perfect for team coordination.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <CommandIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Quick Search</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Instantly find events using the command palette (⌘/Ctrl + K). Search across all your calendar entries.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <TagIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Event Tags</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Organize events with custom tags and colors. Filter and categorize your schedule efficiently.
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
