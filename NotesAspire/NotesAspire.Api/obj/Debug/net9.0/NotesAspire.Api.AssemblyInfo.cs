@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NotesAspire.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+99520b137bcbfdb2c7be399e619efbd92154719d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bb6eb7dec573b85d95f213ff25ba2dd531bc17b7")]
 [assembly: System.Reflection.AssemblyProductAttribute("NotesAspire.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NotesAspire.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

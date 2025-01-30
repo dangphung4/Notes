@@ -102,7 +102,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
       },
     },
-    outDir: 'wwwroot',
+    outDir: 'dist',
     emptyOutDir: true
   },
   publicDir: 'public',

@@ -8,9 +8,9 @@
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [
     {
-      "Name": "Notes.Web/wwwroot",
+      "Name": "Notes.Web/dist",
       "Source": "Notes.Web",
-      "ContentRoot": "/Users/dangphung/work/personal/Notes/notes/wwwroot/",
+      "ContentRoot": "/Users/dangphung/work/personal/Notes/notes/dist/",
       "BasePath": "_content/Notes.Web",
       "Pattern": "**"
     }
