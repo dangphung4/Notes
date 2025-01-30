@@ -41,6 +41,9 @@ import {
 } from 'lucide-react';
 import { BlockNoteEditor } from '@blocknote/core';
 
+/**
+ *
+ */
 export default function EditNote() {
   const { id } = useParams();
   const navigate = useNavigate();

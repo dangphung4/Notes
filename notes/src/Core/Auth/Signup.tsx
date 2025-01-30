@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useNavigate, Link } from 'react-router-dom';
 
+/**
+ *
+ */
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

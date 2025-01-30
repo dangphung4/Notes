@@ -2,6 +2,9 @@ import { GitHubLogoIcon, LinkedInLogoIcon } from "@radix-ui/react-icons";
 import { Link } from "react-router-dom";
 import { DownloadIcon, } from "lucide-react";
 import { Button } from "@/components/ui/button";
+/**
+ *
+ */
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 

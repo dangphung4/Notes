@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/copy-assets.js && tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint \"**/*.{ts,tsx}\" --report-unused-disable-directives --max-warnings 0 --fix",
     "preview": "vite preview",
     "prepare": "simple-git-hooks",
     "lint-staged": "lint-staged"
@@ -93,12 +93,11 @@
     "sharp-ico": "0.1.5"
   },
   "simple-git-hooks": {
-    "pre-commit": "npm run lint-staged"
+    "pre-commit": "npx lint-staged"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix"
     ]
   }
 }

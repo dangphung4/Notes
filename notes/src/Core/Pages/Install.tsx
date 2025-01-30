@@ -9,6 +9,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppleIcon, SmartphoneIcon, MonitorIcon } from "lucide-react";
 
+/**
+ *
+ */
 export default function Install() {
   return (
     <div className="container mx-auto px-4 py-12">

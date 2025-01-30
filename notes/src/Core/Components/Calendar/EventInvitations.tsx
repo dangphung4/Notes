@@ -13,6 +13,12 @@ interface EventInvitationsProps {
   onEventsUpdate: () => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.initialPendingEvents
+ * @param root0.onEventsUpdate
+ */
 export function EventInvitations({ initialPendingEvents, onEventsUpdate }: EventInvitationsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [pendingEvents, setPendingEvents] = useState<CalendarEvent[]>(initialPendingEvents);

@@ -22,6 +22,14 @@ interface EditorProps {
   editorRef?: React.MutableRefObject<BlockNoteEditor | null>;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.content
+ * @param root0.onChange
+ * @param root0.onSave
+ * @param root0.editorRef
+ */
 export default function Editor({
   content,
   onChange,

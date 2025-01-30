@@ -18,6 +18,16 @@ interface NoteHeaderProps {
   isNewNote?: boolean;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.title
+ * @param root0.onTitleChange
+ * @param root0.onSave
+ * @param root0.onDelete
+ * @param root0.isSaving
+ * @param root0.isNewNote
+ */
 export default function NoteHeader({
   title,
   onTitleChange,

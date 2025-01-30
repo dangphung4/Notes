@@ -28,6 +28,9 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+/**
+ *
+ */
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();

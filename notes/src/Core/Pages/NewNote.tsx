@@ -10,6 +10,9 @@ import { NoteTemplate, noteTemplates } from '../Components/NoteTemplates';
 import TemplateDialog from '../Components/TemplateDialog';
 import { SaveIcon, LayoutTemplateIcon } from 'lucide-react';
 
+/**
+ *
+ */
 export default function NewNote() {
   const { user } = useAuth();
   const navigate = useNavigate();

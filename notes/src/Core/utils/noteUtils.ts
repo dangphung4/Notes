@@ -2,6 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Note } from '../Database/db';
 
+/**
+ *
+ * @param content
+ * @param maxLength
+ */
 export function getPreviewText(content: string, maxLength: number = 200): string {
   try {
     const blocks = JSON.parse(content);
@@ -71,6 +76,10 @@ export function formatLastEdited(note: Note): string {
   return `Updated ${timeAgo}`;
 }
 
+/**
+ *
+ * @param date
+ */
 export function formatTimeAgo(date: Date): string {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);

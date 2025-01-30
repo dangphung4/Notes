@@ -17,6 +17,12 @@ interface TemplateDialogProps {
   children: ReactNode;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onSelectTemplate
+ * @param root0.children
+ */
 export default function TemplateDialog({ onSelectTemplate, children }: TemplateDialogProps) {
   const [open, setOpen] = useState(false);
 

@@ -92,11 +92,17 @@ export interface CalendarEvent {
   tags?: Tags[];
 }
 
+/**
+ *
+ */
 class NotesDB extends Dexie {
   notes: Dexie.Table<Note, number>;
   calendarEvents!: Dexie.Table<CalendarEvent, number>;
   tags: Dexie.Table<Tags, string>;
 
+  /**
+   *
+   */
   constructor() {
     super('NotesDB');
     this.version(4).stores({
@@ -109,6 +115,9 @@ class NotesDB extends Dexie {
   }
 
   // Load notes from Firebase
+  /**
+   *
+   */
   async loadFromFirebase() {
     const user = auth.currentUser;
     if (!user) return;
@@ -203,6 +212,10 @@ class NotesDB extends Dexie {
   }
 
   // Sync note with Firebase
+  /**
+   *
+   * @param note
+   */
   async syncNote(note: Note) {
     const user = auth.currentUser;
     if (!user) return;
@@ -276,6 +289,12 @@ class NotesDB extends Dexie {
   }
 
   // Share note with another user
+  /**
+   *
+   * @param noteId
+   * @param recipientEmail
+   * @param access
+   */
   async shareNote(noteId: string, recipientEmail: string, access: 'view' | 'edit' = 'view') {
     const user = auth.currentUser;
     if (!user) return;
@@ -328,6 +347,10 @@ class NotesDB extends Dexie {
   }
 
   // Delete note
+  /**
+   *
+   * @param firebaseId
+   */
   async deleteNote(firebaseId: string) {
     const user = auth.currentUser;
     if (!user) return;
@@ -364,6 +387,10 @@ class NotesDB extends Dexie {
   }
 
   // Create new note
+  /**
+   *
+   * @param note
+   */
   async createNote(note: Partial<Note>): Promise<string> {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
@@ -390,6 +417,11 @@ class NotesDB extends Dexie {
   }
 
   // Update note
+  /**
+   *
+   * @param noteId
+   * @param updates
+   */
   async updateNote(noteId: string, updates: Partial<Note>) {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
@@ -422,6 +454,11 @@ class NotesDB extends Dexie {
   }
 
   // Add new method for toggling pin
+  /**
+   *
+   * @param noteId
+   * @param isPinned
+   */
   async toggleNotePin(noteId: string, isPinned: boolean) {
     const user = auth.currentUser;
     if (!user) return;
@@ -452,10 +489,17 @@ class NotesDB extends Dexie {
   }
 
   // Add calendar event methods
+  /**
+   *
+   */
   private generateUniqueId(): number {
     return Date.now() * 1000 + Math.floor(Math.random() * 1000);
   }
 
+  /**
+   *
+   * @param event
+   */
   async createCalendarEvent(event: Partial<CalendarEvent>): Promise<CalendarEvent> {
     console.log('Creating event:', event); // Add debug logging
     const user = auth.currentUser;
@@ -500,6 +544,10 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param event
+   */
   private async scheduleEventReminder(event: CalendarEvent) {
     if ('Notification' in window && Notification.permission === 'granted') {
       const reminderTime = new Date(event.startDate);
@@ -521,6 +569,10 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param id
+   */
   async deleteCalendarEvent(id: number) {
     const event = await this.calendarEvents.get(id);
     if (!event) return;
@@ -539,6 +591,12 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param eventId
+   * @param shareWith
+   * @param permission
+   */
   async shareCalendarEvent(eventId: number, shareWith: string[], permission: 'view' | 'edit' = 'view') {
     const event = await this.calendarEvents.get(eventId);
     const user = auth.currentUser;
@@ -576,6 +634,9 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   */
   async getSharedEvents(): Promise<CalendarEvent[]> {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
@@ -635,6 +696,12 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param eventId
+   * @param email
+   * @param status
+   */
   async updateEventShare(eventId: number | string, email: string, status: 'accepted' | 'declined') {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
@@ -744,6 +811,11 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param id
+   * @param updates
+   */
   async updateCalendarEvent(id: number, updates: Partial<CalendarEvent>) {
     console.log('Updating event:', { id, updates });
     const event = await this.calendarEvents.get(id);
@@ -839,6 +911,10 @@ class NotesDB extends Dexie {
   }
 
   // Add tag methods
+  /**
+   *
+   * @param tag
+   */
   async createTag(tag: Partial<Tags>): Promise<Tags> {
     console.log('Creating tag with data:', tag); // Debug log
     const user = auth.currentUser;
@@ -879,6 +955,9 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   */
   async getTags(): Promise<Tags[]> {
     try {
       const snapshot = await getDocs(collection(firestore, 'tags'));
@@ -893,6 +972,11 @@ class NotesDB extends Dexie {
   }
 
   // Add methods for handling note tags
+  /**
+   *
+   * @param noteId
+   * @param tags
+   */
   async updateNoteTags(noteId: string, tags: Tags[]) {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
@@ -915,6 +999,10 @@ class NotesDB extends Dexie {
   }
 
   // Add method to get notes by tag
+  /**
+   *
+   * @param tagId
+   */
   async getNotesByTag(tagId: string): Promise<Note[]> {
     try {
       const snapshot = await getDocs(
@@ -931,6 +1019,10 @@ class NotesDB extends Dexie {
   }
 
   // Add this new method
+  /**
+   *
+   * @param firebaseId
+   */
   private async syncSharedEvent(firebaseId: string) {
     const user = auth.currentUser;
     if (!user) return;

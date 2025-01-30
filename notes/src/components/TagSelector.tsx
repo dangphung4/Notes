@@ -37,6 +37,13 @@ const presetColors = [
   '#14b8a6', '#2dd4bf', '#0d9488',
 ];
 
+/**
+ *
+ * @param root0
+ * @param root0.selectedTags
+ * @param root0.onTagsChange
+ * @param root0.onCreateTag
+ */
 export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSelectorProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [existingTags, setExistingTags] = useState<Tags[]>([]);
