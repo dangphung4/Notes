@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Dexie from 'dexie';
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, documentId } from 'firebase/firestore';
 import { auth, db as firestore } from '../Auth/firebase';
@@ -728,7 +729,7 @@ class NotesDB extends Dexie {
             sharedWith: updatedShares,
             lastModifiedAt: new Date(),
             lastModifiedBy: user.email
-          });
+          } as Partial<CalendarEvent>);
         }
       } else if (status === 'declined' && localEvent) {
         // Remove from local DB if declined
@@ -798,7 +799,7 @@ class NotesDB extends Dexie {
           await updateDoc(eventRef, firestoreData);
 
           // Update local copies for all users who have accepted the share
-          const acceptedShares = mergedShares.filter(share => share.status === 'accepted');
+          const acceptedShares = mergedShares.filter((share: { status: string; }) => share.status === 'accepted');
           for (const share of acceptedShares) {
             const sharedEventRef = await this.calendarEvents
               .where('firebaseId')
