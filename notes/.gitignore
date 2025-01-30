@@ -516,6 +516,19 @@ Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
 
+./NotesAspire/bin
+./NotesAspire/obj
+./NotesAspire/dist
+./NotesAspire/NotesAspire.Host/bin
+./NotesAspire/NotesAspire.Host/obj
+./NotesAspire/NotesAspire.Host/dist
+./NotesAspire/NotesAspire.Api/bin
+/NotesAspire/NotesAspire.Api/obj
+/NotesAspire/NotesAspire.Api/dist
+./NotesAspire/NotesAspire.Web/bin
+./NotesAspire/NotesAspire.Web/obj
+./NotesAspire/NotesAspire.Web/dist
+
 # Dump file
 *.stackdump
 
@@ -537,6 +550,10 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+*bin
+*obj
+*dist
 
 # .NET Core
 bin/

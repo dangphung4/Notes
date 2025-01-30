@@ -1,0 +1,12 @@
+/NotesAspire/bin
+/NotesAspire/obj
+/NotesAspire/dist
+
+bin
+obj
+dist
+
+*bin
+*obj
+*dist
+
