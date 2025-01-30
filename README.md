@@ -14,14 +14,14 @@ A minimalist, offline-first todo and note-taking app designed to replace Apple N
 
 - Node.js 20+
 - npm/yarn
+- .NET 9.0+
 - Firebase account
 
 ### Environment Setup
 
 Create a `.env` file in the `/notes` directory:
 
-```
-
+```bash
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -34,13 +34,35 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 ### Installation & Running
 
+#### Development with Vite Only
+
 ```bash
-
 cd notes
-
 npm install
 npm run dev
 ```
+
+#### Development with .NET Aspire
+
+```bash
+# Run the Aspire host project
+cd NotesAspire/NotesAspire.Host
+dotnet run
+
+# to turn on Watch (Currently hot reload is not configured to watch changes in the react project)
+dotnet watch 
+```
+
+This will:
+- Start the Aspire dashboard
+- Build and run the React app
+- Start the API server
+- Enable real-time updates for React changes
+
+Visit:
+- Dashboard: https://localhost:15039
+- Web App: https://localhost:3001
+- API: https://localhost:7041
 
 ---
 
@@ -130,6 +152,9 @@ npm run build
 ## Tech Stack
 
 - **Frontend**: Vite + React + TypeScript
+- **Backend**:
+  - .NET 9.0
+  - .NET Aspire
 - **State/DB**:
   - Local: Dexie.js (IndexedDB)
   - Cloud: Firebase Firestore

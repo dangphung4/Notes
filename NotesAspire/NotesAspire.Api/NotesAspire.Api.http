@@ -1,0 +1,6 @@
+@NotesAspire.Api_HostAddress = http://localhost:5189
+
+GET {{NotesAspire.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

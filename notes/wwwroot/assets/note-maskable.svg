@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <!-- Extra padding for maskable icon safe area -->
+    <rect width="512" height="512" fill="black"/>
+    
+    <!-- Main N shape with adjusted positioning for maskable icon -->
+    <path d="M153.6 358.4 L153.6 153.6 L358.4 358.4 L358.4 153.6" 
+          stroke="white" 
+          stroke-width="56" 
+          fill="none"
+          stroke-linecap="square"/>
+    
+    <path d="M128 243.2 L179.2 294.4 M332.8 217.6 L384 268.8" 
+          stroke="black" 
+          stroke-width="18" 
+          stroke-linecap="square"/>
+</svg> 

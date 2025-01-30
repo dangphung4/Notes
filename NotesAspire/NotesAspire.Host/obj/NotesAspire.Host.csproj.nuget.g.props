@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <RestoreSuccess Condition=" '$(RestoreSuccess)' == '' ">True</RestoreSuccess>
+    <RestoreTool Condition=" '$(RestoreTool)' == '' ">NuGet</RestoreTool>
+    <ProjectAssetsFile Condition=" '$(ProjectAssetsFile)' == '' ">$(MSBuildThisFileDirectory)project.assets.json</ProjectAssetsFile>
+    <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">/Users/dangphung/.nuget/packages/</NuGetPackageRoot>
+    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">/Users/dangphung/.nuget/packages/</NuGetPackageFolders>
+    <NuGetProjectStyle Condition=" '$(NuGetProjectStyle)' == '' ">PackageReference</NuGetProjectStyle>
+    <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">6.12.2</NuGetToolVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <SourceRoot Include="/Users/dangphung/.nuget/packages/" />
+  </ItemGroup>
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)microsoft.extensions.configuration.usersecrets/9.0.0/buildTransitive/net8.0/Microsoft.Extensions.Configuration.UserSecrets.props" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.configuration.usersecrets/9.0.0/buildTransitive/net8.0/Microsoft.Extensions.Configuration.UserSecrets.props')" />
+    <Import Project="$(NuGetPackageRoot)aspire.hosting.apphost/9.0.0/build/Aspire.Hosting.AppHost.props" Condition="Exists('$(NuGetPackageRoot)aspire.hosting.apphost/9.0.0/build/Aspire.Hosting.AppHost.props')" />
+    <Import Project="$(NuGetPackageRoot)aspire.dashboard.sdk.osx-arm64/9.0.0/buildTransitive/Aspire.Dashboard.Sdk.osx-arm64.props" Condition="Exists('$(NuGetPackageRoot)aspire.dashboard.sdk.osx-arm64/9.0.0/buildTransitive/Aspire.Dashboard.Sdk.osx-arm64.props')" />
+  </ImportGroup>
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgGrpc_Tools Condition=" '$(PkgGrpc_Tools)' == '' ">/Users/dangphung/.nuget/packages/grpc.tools/2.67.0</PkgGrpc_Tools>
+    <PkgAspire_Hosting_Orchestration_osx-arm64 Condition=" '$(PkgAspire_Hosting_Orchestration_osx-arm64)' == '' ">/Users/dangphung/.nuget/packages/aspire.hosting.orchestration.osx-arm64/9.0.0</PkgAspire_Hosting_Orchestration_osx-arm64>
+    <PkgAspire_Dashboard_Sdk_osx-arm64 Condition=" '$(PkgAspire_Dashboard_Sdk_osx-arm64)' == '' ">/Users/dangphung/.nuget/packages/aspire.dashboard.sdk.osx-arm64/9.0.0</PkgAspire_Dashboard_Sdk_osx-arm64>
+  </PropertyGroup>
+</Project>

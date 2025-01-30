@@ -1,0 +1,20 @@
+{
+  "Version": 1,
+  "Hash": "ZC+dbL79uebQQpPG5WBmQONJGZEMcGbTOyONmZqYwSI=",
+  "Source": "Notes.Web",
+  "BasePath": "_content/Notes.Web",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Notes.Web/dist",
+      "Source": "Notes.Web",
+      "ContentRoot": "/Users/dangphung/work/personal/Notes/notes/dist/",
+      "BasePath": "_content/Notes.Web",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [],
+  "Endpoints": []
+}

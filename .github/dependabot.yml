@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # NPM dependencies for React app
   - package-ecosystem: "npm"
     directory: "/notes"
     schedule:
@@ -17,6 +18,27 @@ updates:
         patterns:
           - "*"
 
+  # NuGet dependencies for Aspire projects
+  - package-ecosystem: "nuget"
+    directory: "/NotesAspire"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: build
+    labels:
+      - "dependencies"
+      - "automerge"
+    reviewers:
+      - "dangphung4"
+    groups:
+      aspire-dependencies:
+        patterns:
+          - "Aspire.*"
+      microsoft-dependencies:
+        patterns:
+          - "Microsoft.*"
+
+  # GitHub Actions workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
