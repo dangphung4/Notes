@@ -142,11 +142,49 @@ const NoteCard = ({
   navigate: (path: string) => void
 }) => {
   const isOwner = note.ownerUserId === user?.uid;
-  const noteShares = shares.filter(s => s.noteId === note.firebaseId);
+  const [noteShares, setNoteShares] = useState<SharePermission[]>([]);
+  const [isLoadingShares, setIsLoadingShares] = useState(false);
   const hasShares = noteShares.length > 0;
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Tags[]>(note.tags || []);
   const [localNote, setLocalNote] = useState(note);
+
+  // Add function to load shares
+  const loadShares = async () => {
+    if (!note.firebaseId) return;
+    
+    setIsLoadingShares(true);
+    try {
+      const sharesRef = collection(firestore, 'shares');
+      const sharesQuery = query(sharesRef, where('noteId', '==', note.firebaseId));
+      const snapshot = await getDocs(sharesQuery);
+      
+      const sharesList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        email: doc.data().email,
+        displayName: doc.data().displayName,
+        photoURL: doc.data().photoURL,
+        access: doc.data().access,
+        noteId: doc.data().noteId,
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+      }));
+      
+      setNoteShares(sharesList);
+    } catch (error) {
+      console.error('Error loading shares:', error);
+    } finally {
+      setIsLoadingShares(false);
+    }
+  };
+
+  // Load shares when sheet opens
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  
+  useEffect(() => {
+    if (isSheetOpen) {
+      loadShares();
+    }
+  }, [isSheetOpen, note.firebaseId]);
 
   // Update local state when note prop changes
   useEffect(() => {
@@ -185,13 +223,16 @@ const NoteCard = ({
             />
           </Button>
         )}
-        <Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSheetOpen(true);
+              }}
             >
               <InfoIcon className="h-4 w-4" />
             </Button>
@@ -364,13 +405,14 @@ const NoteCard = ({
                       <Badge variant="secondary">Owner</Badge>
                     </div>
 
-                    {/* Share Button - for owners and users with edit permissions */}
+                    {/* Share Button */}
                     {hasEditAccess(note, user, shares) && (
                       <div className="flex justify-between items-center pt-2">
                         <span className="text-sm text-muted-foreground">Share this note</span>
                         <ShareDialog 
                           note={note}
                           onShare={() => {
+                            loadShares(); // Reload shares after new share is added
                             toast({
                               title: "Note shared",
                               description: "The note has been shared successfully"
@@ -388,11 +430,15 @@ const NoteCard = ({
                     )}
 
                     {/* Shared Users List */}
-                    {noteShares.length > 0 && (
-                      <div className="space-y-2 pt-2 border-t">
-                        <div className="text-sm text-muted-foreground">Shared with</div>
-                        <div className="space-y-2">
-                          {noteShares.map(share => (
+                    <div className="space-y-2 pt-2 border-t">
+                      <div className="text-sm text-muted-foreground">Shared with</div>
+                      <div className="space-y-2">
+                        {isLoadingShares ? (
+                          <div className="flex justify-center py-4">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                          </div>
+                        ) : noteShares.length > 0 ? (
+                          noteShares.map(share => (
                             <div key={share.id} className="flex items-center gap-3">
                               {share.photoURL ? (
                                 <img 
@@ -410,7 +456,6 @@ const NoteCard = ({
                                 <div className="text-xs text-muted-foreground truncate">{share.email}</div>
                               </div>
                               <Badge variant="outline">{share.access}</Badge>
-                              {/* Only owner can remove shares */}
                               {note.ownerUserId === user?.uid && (
                                 <Button
                                   variant="ghost"
@@ -419,6 +464,7 @@ const NoteCard = ({
                                     e.stopPropagation();
                                     try {
                                       await deleteDoc(doc(firestore, 'shares', share.id!));
+                                      await loadShares(); // Reload shares after deletion
                                       toast({
                                         title: "Share removed",
                                         description: "User's access has been removed"
@@ -437,10 +483,14 @@ const NoteCard = ({
                                 </Button>
                               )}
                             </div>
-                          ))}
-                        </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-muted-foreground text-center py-2">
+                            This note hasn't been shared with anyone yet
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </Card>
                 </div>
 
