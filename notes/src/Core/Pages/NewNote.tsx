@@ -124,6 +124,7 @@ export default function NewNote() {
   };
 
   // Update the content change handler to prevent focus loss
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleContentChange = useCallback((content: any[]) => {
     const contentStr = JSON.stringify(content);
     // Use functional update to prevent unnecessary re-renders
@@ -545,7 +546,6 @@ export default function NewNote() {
       {/* Editor Container - remove padding on mobile */}
       <div className="flex-1 overflow-hidden">
         <Editor
-          key={note.content}
           content={note.content}
           onChange={handleContentChange}
           editorRef={editorRef}
