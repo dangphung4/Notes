@@ -190,7 +190,10 @@ const NoteCard = ({
               <InfoIcon className="h-4 w-4" />
             </Button>
           </SheetTrigger>
-          <SheetContent onClick={(e) => e.stopPropagation()}>
+          <SheetContent 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full sm:max-w-[440px] px-2 sm:px-6"
+          >
             <SheetHeader>
               <SheetTitle>Note Details</SheetTitle>
               <SheetDescription>
@@ -198,8 +201,10 @@ const NoteCard = ({
               </SheetDescription>
             </SheetHeader>
             
-            <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
-              <div className="pr-4 space-y-6">
+            <ScrollArea 
+              className="h-[calc(100vh-8rem)] mt-6 pr-2 sm:pr-4"
+            >
+              <div className="space-y-6">
                 {/* Note Stats Section */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium flex items-center gap-2">
