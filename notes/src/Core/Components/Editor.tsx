@@ -248,39 +248,9 @@ export default function Editor({
         }}
         className={cn(
           "flex-1 h-full overflow-y-auto mobile-editor relative",
-          // Base styles
-          "bg-background text-foreground",
-          // Editor specific styles
-          "[&_.bn-container]:h-full [&_.bn-container]:bg-background",
           "[&_.ProseMirror]:min-h-[calc(100vh-8rem)] [&_.ProseMirror]:p-4",
-          "[&_.ProseMirror]:text-xl [&_.ProseMirror]:sm:text-2xl",
-          "[&_.ProseMirror]:font-[var(--editor-font)]",
-          // Content styling
-          "[&_.ProseMirror_a]:text-primary hover:[&_.ProseMirror_a]:text-primary/80",
-          "[&_.ProseMirror_blockquote]:border-l-primary [&_.ProseMirror_blockquote]:bg-muted/50",
-          "[&_.ProseMirror_pre]:bg-muted",
-          "[&_.ProseMirror_hr]:border-border",
-          // Toolbar styling
-          "[&_.bn-toolbar]:bg-background [&_.bn-toolbar]:border-border",
-          "[&_.bn-toolbar-button]:text-muted-foreground",
-          "[&_.bn-toolbar-button:hover]:bg-accent hover:[&_.bn-toolbar-button]:text-accent-foreground",
-          "[&_.bn-toolbar-button.active]:bg-primary [&_.bn-toolbar-button.active]:text-primary-foreground",
-          // Menu styling
-          "[&_.bn-menu]:bg-popover [&_.bn-menu]:border-border [&_.bn-menu]:text-popover-foreground",
-          "[&_.bn-menu-item]:text-sm [&_.bn-menu-item]:leading-none",
-          "[&_.bn-menu-item:hover]:bg-accent [&_.bn-menu-item:hover]:text-accent-foreground",
-          // Button styling
-          "[&_.bn-button]:bg-background [&_.bn-button]:text-foreground",
-          "[&_.bn-button]:border-input hover:[&_.bn-button]:bg-accent",
-          "[&_.bn-button]:rounded-md [&_.bn-button]:px-3 [&_.bn-button]:py-2",
-          // Dark mode overrides
-          "dark:[&_.ProseMirror]:bg-background dark:[&_.ProseMirror]:text-foreground",
-          "dark:[&_.bn-toolbar]:bg-background/95 dark:[&_.bn-toolbar]:backdrop-blur",
-          "dark:[&_.bn-menu]:bg-popover dark:[&_.bn-menu]:text-popover-foreground",
-          "dark:[&_.bn-button]:bg-background dark:[&_.bn-button]:text-foreground",
-          // Prose styles
-          "prose dark:prose-invert prose-headings:font-[var(--editor-font)]",
-          "prose-p:my-2 prose-headings:my-4"
+          //  styling - larger on mobile, normal on sm and up
+          "[&_.ProseMirror]:text-xl [&_.ProseMirror]:sm:text-base",
         )}
       />
     </div>
