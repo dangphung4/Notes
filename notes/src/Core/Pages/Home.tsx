@@ -35,6 +35,8 @@ import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
 import { cn } from "../../lib/utils";
 import { Check } from "lucide-react";
+import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
+import { ScrollArea } from "../../components/ui/scroll-area";
 
 /**
  * Home page component that displays the landing page of the application
@@ -50,6 +52,31 @@ export default function Home() {
 
   /** Detects if user is on MacOS for keyboard shortcuts */
   const isMacOs = navigator.userAgent.includes('Mac');
+
+  const getEffectiveTheme = (mode: 'light' | 'dark' | 'system') => {
+    if (mode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return mode;
+  };
+
+  const groupThemes = () => {
+    const groups = {
+      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
+      'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
+      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
+      'Natural': ['horizon', 'palenight', 'ayu'],
+      'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
+    };
+    
+    return Object.entries(groups).map(([groupName, themeNames]) => ({
+      name: groupName,
+      themes: themeNames.map(name => ({
+        name: name as ThemeName,
+        displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
+      }))
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
@@ -622,6 +649,139 @@ export default function Home() {
               </CardDescription>
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      {/* Theme Showcase Section */}
+      <section className="container mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">Beautiful Themes</h2>
+        
+        <div className="space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">Personalize Your Experience</h3>
+              <p className="text-muted-foreground">
+                Choose from our extensive collection of carefully crafted themes. 
+                Each theme comes with both light and dark variants.
+              </p>
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                >
+                  {theme === 'light' ? (
+                    <SunIcon className="mr-2 h-4 w-4" />
+                  ) : (
+                    <MoonIcon className="mr-2 h-4 w-4" />
+                  )}
+                  Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/profile">
+                    <PaletteIcon className="mr-2 h-4 w-4" />
+                    Customize Theme
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Theme Preview</CardTitle>
+                <CardDescription>
+                  See how your content looks with different themes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="space-y-4">
+                    {groupThemes().map((group) => (
+                      <div key={group.name} className="space-y-2">
+                        <h4 className="text-sm font-medium text-muted-foreground">{group.name}</h4>
+                        {group.themes.map((themeOption) => (
+                          <Button
+                            key={themeOption.name}
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start gap-2",
+                              currentTheme === themeOption.name && "border-primary"
+                            )}
+                            onClick={() => setCurrentTheme(themeOption.name)}
+                          >
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className="flex gap-1">
+                                <div
+                                  className="h-4 w-4 rounded-full"
+                                  style={{
+                                    backgroundColor: `hsl(${themes[themeOption.name][getEffectiveTheme(theme)].primary})`,
+                                  }}
+                                />
+                                <div
+                                  className="h-4 w-4 rounded-full"
+                                  style={{
+                                    backgroundColor: `hsl(${themes[themeOption.name][getEffectiveTheme(theme)].secondary})`,
+                                  }}
+                                />
+                              </div>
+                              <span>{themeOption.displayName}</span>
+                              {currentTheme === themeOption.name && (
+                                <Check className="h-4 w-4 ml-auto" />
+                              )}
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Theme Features */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <PaletteIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>15+ Themes</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  From modern to classic, vibrant to professional - find the perfect theme for your style.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <SunIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Light & Dark</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Every theme includes carefully designed light and dark variants for comfortable viewing.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <MixIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Consistent Design</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Themes are designed to work seamlessly across all components and features.
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 

@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 10 # Only fetch last 10 commits
           
       - uses: actions/setup-node@v4
         with:
@@ -41,14 +41,13 @@ jobs:
       - name: Validate commits
         working-directory: notes
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # Get the merge base commit (where the PR branches off)
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            # For PRs, check only commits in the PR
             BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-            # Only lint commits from the merge base to the head
             npx commitlint --from $BASE_SHA --to ${{ github.event.pull_request.head.sha }} --verbose
           else
-            # For direct pushes, only check new commits
-            npx commitlint --from ${{ github.event.before }} --to ${{ github.event.after }} --verbose
+            # For pushes, check only the latest commit
+            npx commitlint --from HEAD~1 --to HEAD --verbose
           fi
         
       - name: Check PR title

@@ -1,4 +1,3 @@
- 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
@@ -246,14 +245,6 @@ export function MobileNav({ darkMode }: NavProps) {
                   <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'} />
                   <AvatarFallback>{getInitials()}</AvatarFallback>
                 </Avatar>
-              </Button>
-              <Button
-                variant="default"
-                size="icon"
-                className="rounded-full shadow-lg"
-                onClick={() => handleNavigation('/logout')}
-              >
-                <ExitIcon className="h-5 w-5" />
               </Button>
             </>
           ) : (

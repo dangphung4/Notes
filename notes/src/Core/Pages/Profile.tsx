@@ -24,6 +24,7 @@ import {
   BellIcon, 
   LockClosedIcon,
   CheckIcon,
+  ExitIcon,
 } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,26 +35,28 @@ import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
 import { Check, PaletteIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 /**
- *
+ * Profile page
+ * 
+ * @returns {JSX.Element}
  */
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  // Profile Settings
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [photoURL, setPhotoURL] = useState(user?.photoURL || "");
-  
   // Security Settings
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
-  // Notification Settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [desktopNotifications, setDesktopNotifications] = useState(true);
 
@@ -91,7 +94,6 @@ export default function Profile() {
 
   const [editorFont, setEditorFont] = useState('Monaspace Neon');
 
-  // Load user preferences
   useEffect(() => {
     const loadPreferences = async () => {
       if (!user) return;
@@ -109,13 +111,10 @@ export default function Profile() {
   }, [user]);
 
   const handleFontChange = async (newFont: string) => {
-    // Update local storage
     localStorage.setItem('editor-font', newFont);
-    
-    // Update CSS variable
+
     document.documentElement.style.setProperty('--editor-font', newFont);
     
-    // If user is logged in, update Firestore
     if (user) {
       try {
         await updateDoc(doc(firestore, 'users', user.uid), {
@@ -127,7 +126,6 @@ export default function Profile() {
     }
   };
 
-  // Add this effect to load font preference on component mount
   useEffect(() => {
     const loadFontPreference = () => {
       const savedFont = localStorage.getItem('editor-font');
@@ -161,14 +159,12 @@ export default function Profile() {
     
     try {
       setIsLoading(true);
-      
       // Update display name and photo URL
       await updateProfile(user, {
         displayName,
         photoURL,
       });
 
-      // Update email if changed
       if (newEmail !== user.email) {
         await updateEmail(user, newEmail);
       }
@@ -210,7 +206,6 @@ export default function Profile() {
         description: "Your password has been updated successfully.",
       });
       
-      // Clear password fields
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -226,7 +221,6 @@ export default function Profile() {
     }
   };
 
-  // Get initials for avatar fallback
   const getInitials = () => {
     if (user?.displayName) {
       return user.displayName
@@ -240,17 +234,32 @@ export default function Profile() {
 
   const { theme: currentMode, setTheme: setMode, currentTheme, setCurrentTheme } = useTheme();
 
-  const themePresets = Object.entries(themes).map(([name, value]) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    theme: name as ThemeName,
-    colors: {
-      background: value[currentMode as keyof typeof value]?.background,
-      foreground: value[currentMode as keyof typeof value]?.foreground,
-      primary: value[currentMode as keyof typeof value]?.primary,
-      secondary: value[currentMode as keyof typeof value]?.secondary,
-      muted: value[currentMode as keyof typeof value]?.muted,
-    },
-  }));
+  // TODO add more themes and update groupings
+  const groupThemes = () => {
+    const groups = {
+      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
+      'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
+      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
+      'Natural': ['horizon', 'palenight', 'ayu'],
+      'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
+    };
+    
+    return Object.entries(groups).map(([groupName, themeNames]) => ({
+      name: groupName,
+      themes: themeNames.map(name => ({
+        name: name as ThemeName,
+        displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
+      }))
+    }));
+  };
+
+  // Add this helper function near the top of the component
+  const getEffectiveTheme = (mode: 'light' | 'dark' | 'system') => {
+    if (mode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return mode;
+  };
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
@@ -350,6 +359,15 @@ export default function Profile() {
                 ) : (
                   "Update Profile"
                 )}
+              </Button>
+
+              <Button 
+                variant="destructive"
+                onClick={() => navigate('/logout')}
+                className="w-full mt-4"
+              >
+                <ExitIcon className="mr-2 h-4 w-4" />
+                Sign Out
               </Button>
             </CardContent>
           </Card>
@@ -495,14 +513,9 @@ export default function Profile() {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <PaletteIcon className="h-8 w-8 text-primary" />
-                  <div>
-                    <h3 className="text-2xl font-semibold">Theme</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Choose a theme that matches your style
-                    </p>
-                  </div>
+                  <h3 className="text-2xl font-semibold">Theme</h3>
                 </div>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader>
@@ -538,105 +551,129 @@ export default function Profile() {
                       <CardTitle>Theme Presets</CardTitle>
                       <CardDescription>Select a predefined color theme</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid gap-2">
-                      {themePresets.map((preset) => (
-                        <Button
-                          key={preset.theme}
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start gap-2",
-                            currentTheme === preset.theme && "border-primary"
-                          )}
-                          onClick={() => setCurrentTheme(preset.theme)}
-                        >
-                          <div className="flex items-center gap-2 flex-1">
-                            <div className="flex gap-1">
-                              <div
-                                className="h-4 w-4 rounded-full"
-                                style={{
-                                  backgroundColor: `hsl(${preset.colors.primary})`,
-                                }}
-                              />
-                              <div
-                                className="h-4 w-4 rounded-full"
-                                style={{
-                                  backgroundColor: `hsl(${preset.colors.secondary})`,
-                                }}
-                              />
+                    <CardContent>
+                      <ScrollArea className="h-[300px] pr-4">
+                        <div className="space-y-4">
+                          {groupThemes().map((group) => (
+                            <div key={group.name} className="space-y-2">
+                              <h4 className="text-sm font-medium text-muted-foreground">{group.name}</h4>
+                              {group.themes.map((theme) => (
+                                <Button
+                                  key={theme.name}
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start gap-2",
+                                    currentTheme === theme.name && "border-primary"
+                                  )}
+                                  onClick={() => setCurrentTheme(theme.name)}
+                                >
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <div className="flex gap-1">
+                                      <div
+                                        className="h-4 w-4 rounded-full"
+                                        style={{
+                                          backgroundColor: `hsl(${themes[theme.name][getEffectiveTheme(currentMode)].primary})`,
+                                        }}
+                                      />
+                                      <div
+                                        className="h-4 w-4 rounded-full"
+                                        style={{
+                                          backgroundColor: `hsl(${themes[theme.name][getEffectiveTheme(currentMode)].secondary})`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span>{theme.displayName}</span>
+                                    {currentTheme === theme.name && (
+                                      <Check className="h-4 w-4 ml-auto" />
+                                    )}
+                                  </div>
+                                </Button>
+                              ))}
                             </div>
-                            <span>{preset.name}</span>
-                            {currentTheme === preset.theme && (
-                              <Check className="h-4 w-4 ml-auto" />
-                            )}
-                          </div>
-                        </Button>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="md:col-span-2">
-                    <CardHeader>
-                      <CardTitle>Theme Preview</CardTitle>
-                      <CardDescription>
-                        See how your selected theme looks with different components
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4">
-                      <div className="grid gap-2">
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-medium">Buttons</h4>
-                          <div className="flex flex-wrap gap-2">
-                            <Button>Primary</Button>
-                            <Button variant="secondary">Secondary</Button>
-                            <Button variant="outline">Outline</Button>
-                            <Button variant="ghost">Ghost</Button>
-                            <Button variant="destructive">Destructive</Button>
-                          </div>
+                          ))}
                         </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-medium">Cards</h4>
-                          <div className="grid gap-2">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Example Card</CardTitle>
-                                <CardDescription>
-                                  This is how cards will look with this theme
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-muted-foreground">
-                                  Card content with muted text
-                                </p>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-medium">Form Elements</h4>
-                          <div className="grid gap-2">
-                            <Input placeholder="Input field" />
-                            <div className="flex items-center space-x-2">
-                              <Switch id="example-switch" />
-                              <Label htmlFor="example-switch">Switch</Label>
-                            </div>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select option" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="option1">Option 1</SelectItem>
-                                <SelectItem value="option2">Option 2</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
+                      </ScrollArea>
                     </CardContent>
                   </Card>
                 </div>
               </div>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Theme Preview</CardTitle>
+                  <CardDescription>
+                    See how your selected theme looks with different components
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="grid gap-2">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Buttons</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <Button>Primary</Button>
+                        <Button variant="secondary">Secondary</Button>
+                        <Button variant="outline">Outline</Button>
+                        <Button variant="ghost">Ghost</Button>
+                        <Button variant="destructive">Destructive</Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Cards</h4>
+                      <div className="grid gap-2">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Example Card</CardTitle>
+                            <CardDescription>
+                              This is how cards will look with this theme
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                              Card content with muted text
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Form Elements</h4>
+                      <div className="grid gap-2">
+                        <Input placeholder="Input field" />
+                        <div className="flex items-center space-x-2">
+                          <Switch id="example-switch" />
+                          <Label htmlFor="example-switch">Switch</Label>
+                        </div>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="option1">Option 1</SelectItem>
+                            <SelectItem value="option2">Option 2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Alerts and Messages</h4>
+                      <div className="grid gap-2">
+                        <div className="p-3 bg-primary/10 text-primary rounded-md">
+                          Primary Alert
+                        </div>
+                        <div className="p-3 bg-secondary/10 text-secondary rounded-md">
+                          Secondary Alert
+                        </div>
+                        <div className="p-3 bg-destructive/10 text-destructive rounded-md">
+                          Destructive Alert
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
         </TabsContent>
