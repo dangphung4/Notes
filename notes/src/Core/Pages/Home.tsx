@@ -62,6 +62,7 @@ export default function Home() {
 
   const groupThemes = () => {
     const groups = {
+      'Default': ['default'],
       'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
       'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
       'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
@@ -73,7 +74,7 @@ export default function Home() {
       name: groupName,
       themes: themeNames.map(name => ({
         name: name as ThemeName,
-        displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
+        displayName: name === 'default' ? 'Default' : name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
       }))
     }));
   };
