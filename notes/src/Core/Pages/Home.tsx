@@ -48,7 +48,7 @@ export default function Home() {
   const { user } = useAuth();
   /** Navigation hook for routing */
   const navigate = useNavigate();
-  const { theme, setTheme, currentTheme, setCurrentTheme } = useTheme();
+  const { theme, setTheme, currentTheme, setCurrentTheme, editorFont, setEditorFont } = useTheme();
 
   /** Detects if user is on MacOS for keyboard shortcuts */
   const isMacOs = navigator.userAgent.includes('Mac');
@@ -836,112 +836,206 @@ export default function Home() {
       {/* Add new Customization Showcase Section */}
       <section className="container mx-auto px-4 py-20 bg-muted/30">
         <h2 className="text-3xl font-bold text-center mb-12">Personalization</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <PaletteIcon className="h-8 w-8 text-primary" />
-              <h3 className="text-2xl font-semibold">Theme Options</h3>
-            </div>
-            <p className="text-muted-foreground">
-              Choose from multiple theme variations and switch between light and dark modes.
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <h4 className="font-medium">Mode</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    className="w-full bg-background hover:bg-background/90"
-                    onClick={() => setTheme('light')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-primary" />
-                      Light
-                    </div>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-zinc-900 text-white hover:bg-zinc-800"
-                    onClick={() => setTheme('dark')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-primary" />
-                      Dark
-                    </div>
-                  </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          {/* Theme Selection */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <PaletteIcon className="h-8 w-8 text-primary" />
+                <div>
+                  <CardTitle>Theme Options</CardTitle>
+                  <CardDescription>Choose your preferred theme and mode</CardDescription>
                 </div>
               </div>
-              <div className="space-y-4">
-                <h4 className="font-medium">Theme</h4>
-                <div className="grid grid-cols-1 gap-2">
-                  {(Object.keys(themes) as ThemeName[]).map((themeName) => (
-                    <Button
-                      key={themeName}
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start gap-2",
-                        currentTheme === themeName && "border-primary"
-                      )}
-                      onClick={() => setCurrentTheme(themeName)}
-                    >
-                      <div className="flex items-center gap-2 flex-1">
-                        <div className="flex gap-1">
-                          <div
-                            className="h-4 w-4 rounded-full"
-                            style={{
-                              backgroundColor: `hsl(${theme === 'system' ? themes[themeName].light : themes[themeName][theme].primary})`
-                            }}
-                          />
-                          <div
-                            className="h-4 w-4 rounded-full"
-                            style={{
-                              backgroundColor: `hsl(${theme === 'system' ? themes[themeName].light : themes[themeName][theme].secondary})`
-                            }}
-                          />
-                        </div>
-                        <span>{themeName.charAt(0).toUpperCase() + themeName.slice(1)}</span>
-                        {currentTheme === themeName && (
-                          <Check className="h-4 w-4 ml-auto" />
-                        )}
-                      </div>
-                    </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Mode Selection */}
+              <div className="flex gap-2">
+                <Button
+                  variant={theme === 'light' ? 'default' : 'outline'}
+                  className="flex-1"
+                  onClick={() => setTheme('light')}
+                >
+                  <SunIcon className="mr-2 h-4 w-4" />
+                  Light
+                </Button>
+                <Button
+                  variant={theme === 'dark' ? 'default' : 'outline'}
+                  className="flex-1"
+                  onClick={() => setTheme('dark')}
+                >
+                  <MoonIcon className="mr-2 h-4 w-4" />
+                  Dark
+                </Button>
+              </div>
+
+              {/* Theme Selection */}
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-4">
+                  {groupThemes().map((group) => (
+                    <div key={group.name} className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">{group.name}</h4>
+                      {group.themes.map((themeOption) => (
+                        <Button
+                          key={themeOption.name}
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start gap-2",
+                            currentTheme === themeOption.name && "border-primary"
+                          )}
+                          onClick={() => setCurrentTheme(themeOption.name)}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="flex gap-1">
+                              <div
+                                className="h-4 w-4 rounded-full"
+                                style={{
+                                  backgroundColor: `hsl(${themes[themeOption.name][getEffectiveTheme(theme)].primary})`
+                                }}
+                              />
+                              <div
+                                className="h-4 w-4 rounded-full"
+                                style={{
+                                  backgroundColor: `hsl(${themes[themeOption.name][getEffectiveTheme(theme)].secondary})`
+                                }}
+                              />
+                            </div>
+                            <span>{themeOption.displayName}</span>
+                            {currentTheme === themeOption.name && (
+                              <Check className="h-4 w-4 ml-auto" />
+                            )}
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <LigatureIcon className="h-8 w-8 text-primary" />
-              <h3 className="text-2xl font-semibold">Font Selection</h3>
-            </div>
-            <p className="text-muted-foreground">
-              Choose from a variety of premium fonts, including monospace coding fonts, elegant serifs, and playful handwriting styles.
-            </p>
-            <div className="grid grid-cols-1 gap-3">
-              <Card>
-                <CardContent className="p-4">
+          {/* Font Selection */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <LigatureIcon className="h-8 w-8 text-primary" />
+                <div>
+                  <CardTitle>Font Selection</CardTitle>
+                  <CardDescription>Choose your preferred font style</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-6">
+                  {/* Monospace Fonts */}
                   <div className="space-y-3">
-                    <div className="font-monaspace text-sm">Monaspace Neon - Perfect for coding</div>
-                    <div className="font-fira-code text-sm">Fira Code - With ligatures</div>
-                    <div className="font-merriweather text-sm">Merriweather - Elegant serif</div>
-                    <div className="font-caveat text-sm">Caveat - Handwriting style</div>
+                    <h4 className="text-sm font-medium text-muted-foreground">Monospace Fonts</h4>
+                    {[
+                      { name: 'Monaspace Neon', class: 'font-monaspace' },
+                      { name: 'JetBrains Mono', class: 'font-jetbrains' },
+                      { name: 'Fira Code', class: 'font-fira-code' }
+                    ].map(font => (
+                      <Button
+                        key={font.name}
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between",
+                          font.class,
+                          editorFont === font.name && "border-primary"
+                        )}
+                        onClick={() => setEditorFont(font.name)}
+                      >
+                        <span>The quick brown fox</span>
+                        {editorFont === font.name && <Check className="h-4 w-4" />}
+                      </Button>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+
+                  {/* Sans Serif Fonts */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-muted-foreground">Sans Serif Fonts</h4>
+                    {[
+                      { name: 'Inter', class: 'font-inter' },
+                      { name: 'Roboto', class: 'font-roboto' },
+                      { name: 'Open Sans', class: 'font-open-sans' }
+                    ].map(font => (
+                      <Button
+                        key={font.name}
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between",
+                          font.class,
+                          editorFont === font.name && "border-primary"
+                        )}
+                        onClick={() => setEditorFont(font.name)}
+                      >
+                        <span>The quick brown fox</span>
+                        {editorFont === font.name && <Check className="h-4 w-4" />}
+                      </Button>
+                    ))}
+                  </div>
+
+                  {/* Serif Fonts */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-muted-foreground">Serif Fonts</h4>
+                    {[
+                      { name: 'Merriweather', class: 'font-merriweather' },
+                      { name: 'Playfair Display', class: 'font-playfair' }
+                    ].map(font => (
+                      <Button
+                        key={font.name}
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between",
+                          font.class,
+                          editorFont === font.name && "border-primary"
+                        )}
+                        onClick={() => setEditorFont(font.name)}
+                      >
+                        <span>The quick brown fox</span>
+                        {editorFont === font.name && <Check className="h-4 w-4" />}
+                      </Button>
+                    ))}
+                  </div>
+
+                  {/* Handwriting Fonts */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-muted-foreground">Handwriting Fonts</h4>
+                    {[
+                      { name: 'Caveat', class: 'font-caveat' },
+                      { name: 'Dancing Script', class: 'font-dancing' },
+                      { name: 'Comic Neue', class: 'font-comic-neue' }
+                    ].map(font => (
+                      <Button
+                        key={font.name}
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between",
+                          font.class,
+                          editorFont === font.name && "border-primary"
+                        )}
+                        onClick={() => setEditorFont(font.name)}
+                      >
+                        <span>The quick brown fox</span>
+                        {editorFont === font.name && <Check className="h-4 w-4" />}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-muted-foreground mb-6">
-            All fonts are locally hosted and optimized for performance. Switch between them instantly in your settings.
+        <div className="mt-8 text-center">
+          <p className="text-muted-foreground mb-4">
+            All preferences are automatically saved and synced across your devices.
           </p>
           <Button variant="outline" asChild>
             <Link to="/profile">
               <TextIcon className="mr-2 h-4 w-4" />
-              Try Different Fonts
+              More Settings
             </Link>
           </Button>
         </div>
