@@ -4,7 +4,7 @@ import { SharePermission } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon } from '@radix-ui/react-icons';
+import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon, ChevronRightIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
 import { onSnapshot, collection, query, where, getDocs, documentId } from 'firebase/firestore';
@@ -31,7 +31,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "@/hooks/use-toast";
 import { XCircleIcon } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
-import { BarChart2Icon, ClockIcon, UserIcon, ActivityIcon } from 'lucide-react';
+import { BarChart2Icon, ClockIcon, UserIcon, ActivityIcon, LinkIcon } from 'lucide-react';
 
 interface StoredNotesPreferences {
   activeTab: 'my-notes' | 'shared';
@@ -48,29 +48,37 @@ const getBlockNoteContent = (jsonString: string) => {
     const blocks = JSON.parse(jsonString);
     let text = '';
     
-    // Recursively get text from blocks and their children
     const extractText = (block: any) => {
-      // Get text from content array
-      if (block.content) {
+      // Check if block has content array
+      if (Array.isArray(block.content)) {
         block.content.forEach((item: any) => {
           if (item.type === 'text') {
-            text += item.text;
+            text += item.text || '';
           }
         });
+      } else if (block.text) {
+        // Some blocks might have direct text property
+        text += block.text;
       }
       
-      // Add newline after paragraphs and list items
+      // Add newline after certain block types
       if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem'].includes(block.type)) {
         text += '\n';
       }
 
       // Process children recursively
-      if (block.children) {
+      if (Array.isArray(block.children)) {
         block.children.forEach(extractText);
       }
     };
 
-    blocks.forEach(extractText);
+    // Handle if blocks is not an array (single block)
+    if (!Array.isArray(blocks)) {
+      extractText(blocks);
+    } else {
+      blocks.forEach(extractText);
+    }
+
     return text.trim();
   } catch (error) {
     console.error('Error parsing BlockNote content:', error);
@@ -78,12 +86,49 @@ const getBlockNoteContent = (jsonString: string) => {
   }
 };
 
-const NoteCard = ({ note, shares, user, view, onClick }: { 
+const getReadingLevel = (text: string) => {
+  const words = text.split(/\s+/).filter(Boolean);
+  const sentences = text.split(/[.!?]+/).filter(Boolean);
+  const syllables = words.reduce((count, word) => {
+    return count + (word.match(/[aeiouy]{1,2}/gi)?.length || 1);
+  }, 0);
+  
+  // Flesch-Kincaid Grade Level
+  const level = 0.39 * (words.length / sentences.length) 
+    + 11.8 * (syllables / words.length) - 15.59;
+    
+  return Math.max(1, Math.min(12, Math.round(level))); // Clamp between 1-12
+};
+
+const getRelatedNotes = (notes: Note[], currentNote: Note) => {
+  if (!currentNote.tags?.length) return [];
+  
+  return notes
+    .filter(note => 
+      note.firebaseId !== currentNote.firebaseId && 
+      note.tags?.some(tag => 
+        currentNote.tags?.some(currentTag => currentTag.id === tag.id)
+      )
+    )
+    .slice(0, 3);
+};
+
+const NoteCard = ({ 
+  note, 
+  shares, 
+  user, 
+  view, 
+  onClick,
+  allNotes,
+  navigate
+}: { 
   note: Note, 
   shares: SharePermission[], 
   user: any, 
   view: 'grid' | 'list',
-  onClick: () => void 
+  onClick: () => void,
+  allNotes: Note[],
+  navigate: (path: string) => void
 }) => {
   const isOwner = note.ownerUserId === user?.uid;
   const noteShares = shares.filter(s => s.noteId === note.firebaseId);
@@ -152,179 +197,148 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                 View insights and details about this note
               </SheetDescription>
             </SheetHeader>
-            <div className="mt-6 space-y-6">
-              {/* Note Stats Section */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <BarChart2Icon className="h-4 w-4 text-primary" />
-                  Note Statistics
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="p-3">
-                    <div className="text-2xl font-bold">
-                      {getBlockNoteContent(localNote.content).length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Characters</div>
-                  </Card>
-                  <Card className="p-3">
-                    <div className="text-2xl font-bold">
-                      {getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Words</div>
-                  </Card>
-                  <Card className="p-3">
-                    <div className="text-2xl font-bold">
-                      {getBlockNoteContent(localNote.content).split('\n').filter(Boolean).length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Lines</div>
-                  </Card>
-                  <Card className="p-3">
-                    <div className="text-2xl font-bold">
-                      {Math.ceil(getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length / 200)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Min Read</div>
-                  </Card>
-                </div>
-              </div>
-
-              {/* Tags Section */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <TagIcon className="h-4 w-4 text-primary" />
-                  Tags
-                </h4>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {localNote.tags && localNote.tags.length > 0 ? (
-                      localNote.tags.map(tag => (
-                        <div
-                          key={tag.id}
-                          className="px-2 py-0.5 rounded-full text-xs"
-                          style={{
-                            backgroundColor: tag.color + '20',
-                            color: tag.color
-                          }}
-                        >
-                          {tag.name}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No tags added yet</p>
-                    )}
-                  </div>
-                  {hasEditAccess && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsEditingTags(true);
-                      }}
-                    >
-                      {localNote.tags?.length ? 'Edit Tags' : 'Add Tags'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Timeline Section */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <ClockIcon className="h-4 w-4 text-primary" />
-                  Timeline
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-1 h-1 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">Created</span>
-                    <span className="ml-auto">{formatTimeAgo(localNote.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-1 h-1 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">Last updated</span>
-                    <span className="ml-auto">{formatTimeAgo(localNote.updatedAt)}</span>
-                  </div>
-                  {localNote.lastEditedAt && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-1 h-1 rounded-full bg-primary" />
-                      <span className="text-muted-foreground">Last edited</span>
-                      <span className="ml-auto">{formatTimeAgo(localNote.lastEditedAt)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Ownership & Sharing Section */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <UserIcon className="h-4 w-4 text-primary" />
-                  Ownership & Sharing
-                </h4>
-                <Card className="p-4 space-y-4">
-                  {/* Owner Info */}
-                  <div className="flex items-center gap-3">
-                    {localNote.ownerPhotoURL ? (
-                      <img 
-                        src={localNote.ownerPhotoURL} 
-                        alt={localNote.ownerDisplayName}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                        <UserIcon className="h-4 w-4" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{localNote.ownerDisplayName}</div>
-                      <div className="text-xs text-muted-foreground truncate">{localNote.ownerEmail}</div>
-                    </div>
-                    <Badge variant="secondary">Owner</Badge>
-                  </div>
-
-                  {/* Shared Users */}
-                  {hasShares && (
-                    <div className="space-y-2 pt-2 border-t">
-                      <div className="text-sm text-muted-foreground">Shared with</div>
-                      <div className="space-y-2">
-                        {noteShares.map(share => (
-                          <div key={share.id} className="flex items-center gap-3">
-                            {share.photoURL ? (
-                              <img 
-                                src={share.photoURL} 
-                                alt={share.displayName}
-                                className="w-8 h-8 rounded-full"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                                <UserIcon className="h-4 w-4" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate">{share.displayName}</div>
-                              <div className="text-xs text-muted-foreground truncate">{share.email}</div>
-                            </div>
-                            <Badge variant="outline">{share.access}</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </Card>
-              </div>
-
-              {/* Activity Section */}
-              {localNote.lastEditedByUserId && (
+            
+            <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+              <div className="pr-4 space-y-6">
+                {/* Note Stats Section */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium flex items-center gap-2">
-                    <ActivityIcon className="h-4 w-4 text-primary" />
-                    Recent Activity
+                    <BarChart2Icon className="h-4 w-4 text-primary" />
+                    Note Statistics
                   </h4>
-                  <Card className="p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card className="p-3">
+                      <div className="text-2xl font-bold">
+                        {getBlockNoteContent(localNote.content).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Characters</div>
+                    </Card>
+                    <Card className="p-3">
+                      <div className="text-2xl font-bold">
+                        {getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Words</div>
+                    </Card>
+                    <Card className="p-3">
+                      <div className="text-2xl font-bold">
+                        {getBlockNoteContent(localNote.content).split('\n').filter(Boolean).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Lines</div>
+                    </Card>
+                    <Card className="p-3">
+                      <div className="text-2xl font-bold">
+                        {Math.ceil(getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length / 200)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Min Read</div>
+                    </Card>
+                    <Card className="p-3">
+                      <div className="text-2xl font-bold">
+                        {getBlockNoteContent(localNote.content).split('.').filter(Boolean).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Sentences</div>
+                    </Card>
+                    <Card className="p-3">
+                      <div className="text-2xl font-bold">
+                        {getBlockNoteContent(localNote.content).split(/\n\s*\n/).filter(Boolean).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Paragraphs</div>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* Reading Level Analysis */}
+                <Card className="mt-4 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium">Reading Level</div>
+                    <div className="text-2xl font-bold">
+                      Grade {getReadingLevel(getBlockNoteContent(localNote.content))}
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Based on Flesch-Kincaid Grade Level
+                  </div>
+                </Card>
+
+                {/* Tags Section */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <TagIcon className="h-4 w-4 text-primary" />
+                    Tags
+                  </h4>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {localNote.tags && localNote.tags.length > 0 ? (
+                        localNote.tags.map(tag => (
+                          <div
+                            key={tag.id}
+                            className="px-2 py-0.5 rounded-full text-xs"
+                            style={{
+                              backgroundColor: tag.color + '20',
+                              color: tag.color
+                            }}
+                          >
+                            {tag.name}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No tags added yet</p>
+                      )}
+                    </div>
+                    {hasEditAccess && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditingTags(true);
+                        }}
+                      >
+                        {localNote.tags?.length ? 'Edit Tags' : 'Add Tags'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Timeline Section */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <ClockIcon className="h-4 w-4 text-primary" />
+                    Timeline
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-1 h-1 rounded-full bg-primary" />
+                      <span className="text-muted-foreground">Created</span>
+                      <span className="ml-auto">{formatTimeAgo(localNote.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-1 h-1 rounded-full bg-primary" />
+                      <span className="text-muted-foreground">Last updated</span>
+                      <span className="ml-auto">{formatTimeAgo(localNote.updatedAt)}</span>
+                    </div>
+                    {localNote.lastEditedAt && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-1 h-1 rounded-full bg-primary" />
+                        <span className="text-muted-foreground">Last edited</span>
+                        <span className="ml-auto">{formatTimeAgo(localNote.lastEditedAt)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ownership & Sharing Section */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    Ownership & Sharing
+                  </h4>
+                  <Card className="p-4 space-y-4">
+                    {/* Owner Info */}
                     <div className="flex items-center gap-3">
-                      {localNote.lastEditedByPhotoURL ? (
+                      {localNote.ownerPhotoURL ? (
                         <img 
-                          src={localNote.lastEditedByPhotoURL} 
-                          alt={localNote.lastEditedByDisplayName}
+                          src={localNote.ownerPhotoURL} 
+                          alt={localNote.ownerDisplayName}
                           className="w-8 h-8 rounded-full"
                         />
                       ) : (
@@ -332,30 +346,133 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                           <UserIcon className="h-4 w-4" />
                         </div>
                       )}
-                      <div>
-                        <div className="text-sm">
-                          <span className="font-medium">{localNote.lastEditedByDisplayName}</span>
-                          <span className="text-muted-foreground"> edited this note</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{localNote.ownerDisplayName}</div>
+                        <div className="text-xs text-muted-foreground truncate">{localNote.ownerEmail}</div>
+                      </div>
+                      <Badge variant="secondary">Owner</Badge>
+                    </div>
+
+                    {/* Shared Users */}
+                    {hasShares && (
+                      <div className="space-y-2 pt-2 border-t">
+                        <div className="text-sm text-muted-foreground">Shared with</div>
+                        <div className="space-y-2">
+                          {noteShares.map(share => (
+                            <div key={share.id} className="flex items-center gap-3">
+                              {share.photoURL ? (
+                                <img 
+                                  src={share.photoURL} 
+                                  alt={share.displayName}
+                                  className="w-8 h-8 rounded-full"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                  <UserIcon className="h-4 w-4" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">{share.displayName}</div>
+                                <div className="text-xs text-muted-foreground truncate">{share.email}</div>
+                              </div>
+                              <Badge variant="outline">{share.access}</Badge>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
+                    )}
                   </Card>
                 </div>
-              )}
 
-              {/* Pin Status */}
-              {localNote.isPinned && note.ownerUserId === user?.uid && (
-                <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <PinIcon className="h-4 w-4" />
-                    <span>This note is pinned to the top</span>
+                {/* Activity Section */}
+                {localNote.lastEditedByUserId && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <ActivityIcon className="h-4 w-4 text-primary" />
+                      Recent Activity
+                    </h4>
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3">
+                        {localNote.lastEditedByPhotoURL ? (
+                          <img 
+                            src={localNote.lastEditedByPhotoURL} 
+                            alt={localNote.lastEditedByDisplayName}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <UserIcon className="h-4 w-4" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="text-sm">
+                            <span className="font-medium">{localNote.lastEditedByDisplayName}</span>
+                            <span className="text-muted-foreground"> edited this note</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Pin Status */}
+                {localNote.isPinned && note.ownerUserId === user?.uid && (
+                  <div className="pt-2 border-t">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <PinIcon className="h-4 w-4" />
+                      <span>This note is pinned to the top</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Related Notes Section */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4 text-primary" />
+                    Related Notes
+                  </h4>
+                  <div className="space-y-2">
+                    {getRelatedNotes(allNotes, localNote).length > 0 ? (
+                      getRelatedNotes(allNotes, localNote).map(note => (
+                        <Card 
+                          key={note.firebaseId} 
+                          className="p-3 cursor-pointer hover:bg-muted/50"
+                          onClick={() => navigate(`/notes/${note.firebaseId}`)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <div className="font-medium truncate">{note.title || 'Untitled'}</div>
+                              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-1">
+                                {note.tags?.map(tag => (
+                                  <span
+                                    key={tag.id}
+                                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
+                                    style={{
+                                      backgroundColor: tag.color + '20',
+                                      color: tag.color
+                                    }}
+                                  >
+                                    {tag.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </Card>
+                      ))
+                    ) : (
+                      <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg text-center">
+                        No related notes found based on tags
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </ScrollArea>
 
             {/* Add Tag Editor Dialog */}
             <Dialog open={isEditingTags} onOpenChange={setIsEditingTags}>
@@ -1334,6 +1451,8 @@ export default function Notes() {
                 user={user} 
                 view={view}
                 onClick={() => navigate(`/notes/${note.firebaseId}`)}
+                allNotes={notes}
+                navigate={navigate}
               />
             ))}
           </div>
