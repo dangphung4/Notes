@@ -12,7 +12,6 @@ import debounce from "lodash/debounce";
 import { useAuth } from '../Auth/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
-import { useTheme } from '../Theme/ThemeProvider';
 import { cn } from '@/lib/utils';
 
 import "@fontsource/monaspace-neon/400.css";
@@ -79,7 +78,6 @@ export default function Editor({
   editorRef,
 }: EditorProps) {
   const { user } = useAuth();
-  const { currentTheme } = useTheme();
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.classList.contains("dark")
   );

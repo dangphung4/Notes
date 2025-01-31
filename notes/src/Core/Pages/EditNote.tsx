@@ -54,9 +54,7 @@ export default function EditNote() {
   const [isLoading, setIsLoading] = useState(true);
   const [note, setNote] = useState<Note | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchStartX, setTouchStartX] = useState(0);
+  const [isRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const editorRef = useRef<BlockNoteEditor | null>(null);
   const [activeStyles, setActiveStyles] = useState({
@@ -349,43 +347,6 @@ export default function EditNote() {
     
     html += '</body></html>';
     return html;
-  };
-
-  // Update the touch handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setTouchStart(touch.clientY);
-    setTouchStartX(touch.clientX);
-  };
-
-  const handleTouchMove = async (e: React.TouchEvent) => {
-    if (!touchStart) return;
-    
-    const touch = e.touches[0];
-    const diffY = touch.clientY - touchStart;
-    const scrollTop = e.currentTarget.scrollTop;
-    
-    // Only allow pull-to-refresh when at the top of the content
-    if (diffY > 50 && scrollTop === 0 && !isRefreshing) {
-      setIsRefreshing(true);
-      try {
-        await db.syncNote(note!);
-        toast({
-          title: "Note refreshed",
-          description: "Latest changes have been loaded",
-        });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        toast({
-          title: "Error refreshing",
-          description: "Failed to load latest changes",
-          variant: "destructive",
-        });
-      } finally {
-        setIsRefreshing(false);
-        setTouchStart(null);
-      }
-    }
   };
 
 
