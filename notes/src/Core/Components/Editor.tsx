@@ -249,8 +249,8 @@ export default function Editor({
         className={cn(
           "flex-1 h-full overflow-y-auto mobile-editor relative",
           "[&_.ProseMirror]:min-h-[calc(100vh-8rem)] [&_.ProseMirror]:p-4",
-          //  styling - larger on mobile, normal on sm and up
-          "[&_.ProseMirror]:text-xl [&_.ProseMirror]:sm:text-base",
+          //  (desktop) size is smaller, mobile is slightly larger
+          "[&_.ProseMirror]:text-base [&_.ProseMirror]:max-sm:text-lg",
         )}
       />
     </div>
