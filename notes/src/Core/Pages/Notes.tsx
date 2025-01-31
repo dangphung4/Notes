@@ -44,6 +44,18 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
   const hasShares = noteShares.length > 0;
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Tags[]>(note.tags || []);
+  const [localNote, setLocalNote] = useState(note);
+
+  // Add this to check for edit permissions
+  const hasEditAccess = isOwner || noteShares.some(share => 
+    share.email === user?.email && share.access === 'edit'
+  );
+
+  // Update local state when note prop changes
+  useEffect(() => {
+    setLocalNote(note);
+    setSelectedTags(note.tags || []);
+  }, [note]);
 
   const handlePinClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -56,7 +68,7 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
 
   return (
     <Card className={`group hover:shadow-lg transition-all relative
-      ${note.isPinned ? 'border-primary/50' : ''}`}
+      ${localNote.isPinned ? 'border-primary/50' : ''}`}
     >
       {/* Action buttons - position absolute */}
       <div className="absolute right-2 top-2 z-10 flex gap-2">
@@ -71,7 +83,7 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
             }}
           >
             <PinIcon 
-              className={`h-4 w-4 ${note.isPinned ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`h-4 w-4 ${localNote.isPinned ? 'text-primary' : 'text-muted-foreground'}`}
             />
           </Button>
         )}
@@ -98,7 +110,7 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium">Tags</h4>
-                  {isOwner && (
+                  {hasEditAccess && (
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -107,13 +119,13 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                         setIsEditingTags(true);
                       }}
                     >
-                      {note.tags?.length ? 'Edit Tags' : 'Add Tags'}
+                      {localNote.tags?.length ? 'Edit Tags' : 'Add Tags'}
                     </Button>
                   )}
                 </div>
-                {note.tags && note.tags.length > 0 ? (
+                {localNote.tags && localNote.tags.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
-                    {note.tags.map(tag => (
+                    {localNote.tags.map(tag => (
                       <div
                         key={tag.id}
                         className="px-2 py-0.5 rounded-full text-xs"
@@ -135,9 +147,9 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Basic Information</h4>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p>Created {formatTimeAgo(note.createdAt)}</p>
-                  <p>Last updated {formatTimeAgo(note.updatedAt)}</p>
-                  {note.isPinned && <p>📌 Pinned note</p>}
+                  <p>Created {formatTimeAgo(localNote.createdAt)}</p>
+                  <p>Last updated {formatTimeAgo(localNote.updatedAt)}</p>
+                  {localNote.isPinned && <p>📌 Pinned note</p>}
                 </div>
               </div>
 
@@ -145,18 +157,18 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Owner</h4>
                 <div className="flex items-center gap-2">
-                  {note.ownerPhotoURL ? (
+                  {localNote.ownerPhotoURL ? (
                     <img 
-                      src={note.ownerPhotoURL} 
-                      alt={note.ownerDisplayName}
+                      src={localNote.ownerPhotoURL} 
+                      alt={localNote.ownerDisplayName}
                       className="w-8 h-8 rounded-full"
                     />
                   ) : (
                     <AvatarIcon className="w-8 h-8" />
                   )}
                   <div className="text-sm">
-                    <p>{note.ownerDisplayName}</p>
-                    <p className="text-muted-foreground">{note.ownerEmail}</p>
+                    <p>{localNote.ownerDisplayName}</p>
+                    <p className="text-muted-foreground">{localNote.ownerEmail}</p>
                   </div>
                 </div>
               </div>
@@ -180,21 +192,21 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
               )}
 
               {/* Edit History */}
-              {note.lastEditedByUserId && (
+              {localNote.lastEditedByUserId && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">Last Edit</h4>
                   <div className="flex items-center gap-2">
-                    {note.lastEditedByPhotoURL && (
+                    {localNote.lastEditedByPhotoURL && (
                       <img 
-                        src={note.lastEditedByPhotoURL} 
-                        alt={note.lastEditedByDisplayName}
+                        src={localNote.lastEditedByPhotoURL} 
+                        alt={localNote.lastEditedByDisplayName}
                         className="w-8 h-8 rounded-full"
                       />
                     )}
                     <div className="text-sm">
-                      <p>{note.lastEditedByDisplayName}</p>
+                      <p>{localNote.lastEditedByDisplayName}</p>
                       <p className="text-muted-foreground">
-                        {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
+                        {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
                       </p>
                     </div>
                   </div>
@@ -215,9 +227,14 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                   <TagSelector
                     selectedTags={selectedTags}
                     onTagsChange={async (tags) => {
-                      setSelectedTags(tags);
                       try {
                         await db.updateNoteTags(note.firebaseId!, tags);
+                        // Update local state immediately
+                        setLocalNote(prev => ({
+                          ...prev,
+                          tags: tags
+                        }));
+                        setSelectedTags(tags);
                         toast({
                           title: "Tags updated",
                           description: "Note tags have been updated successfully"
@@ -265,7 +282,7 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                {note.title || 'Untitled'}
+                {localNote.title || 'Untitled'}
               </h3>
               {hasShares && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
@@ -283,17 +300,17 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
             {/* Owner Info - Updated layout */}
             <div className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-2">
-                {note.ownerPhotoURL ? (
+                {localNote.ownerPhotoURL ? (
                   <img 
-                    src={note.ownerPhotoURL} 
-                    alt={note.ownerDisplayName}
+                    src={localNote.ownerPhotoURL} 
+                    alt={localNote.ownerDisplayName}
                     className="w-6 h-6 rounded-full"
                   />
                 ) : (
                   <AvatarIcon className="w-5 h-5" />
                 )}
                 <span className="text-sm text-muted-foreground">
-                  {isOwner ? 'You' : note.ownerDisplayName}
+                  {isOwner ? 'You' : localNote.ownerDisplayName}
                 </span>
               </div>
             </div>
@@ -301,11 +318,11 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
             {/* Preview - Different styling for list view */}
             {view === 'list' ? (
               <div className="text-sm text-muted-foreground line-clamp-1">
-                {getPreviewText(note.content, 100).split('\n')[0]}
+                {getPreviewText(localNote.content, 100).split('\n')[0]}
               </div>
             ) : (
               <div className="text-sm text-muted-foreground space-y-1 line-clamp-4">
-                {getPreviewText(note.content, 150).split('\n').map((line, i) => (
+                {getPreviewText(localNote.content, 150).split('\n').map((line, i) => (
                   line && (
                     <div 
                       key={i} 
@@ -324,9 +341,9 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
             )}
 
             {/* Add tags display */}
-            {note.tags && note.tags.length > 0 && (
+            {localNote.tags && localNote.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
-                {note.tags.map(tag => (
+                {localNote.tags.map(tag => (
                   <div
                     key={tag.id}
                     className="px-2 py-0.5 rounded-full text-xs"
@@ -349,13 +366,13 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                 {/* commented because its overlapped with the pin and info icon */}
                 {/* Created {formatTimeAgo(note.createdAt)} */}
               </div>
-              {note.lastEditedByUserId && (
+              {localNote.lastEditedByUserId && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span>Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}</span>
-                  {note.lastEditedByPhotoURL && (
+                  <span>Edited {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}</span>
+                  {localNote.lastEditedByPhotoURL && (
                     <img 
-                      src={note.lastEditedByPhotoURL} 
-                      alt={note.lastEditedByDisplayName}
+                      src={localNote.lastEditedByPhotoURL} 
+                      alt={localNote.lastEditedByDisplayName}
                       className="w-4 h-4 rounded-full"
                     />
                   )}
@@ -368,19 +385,19 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
           {view === 'grid' && (
             <div className="mt-auto pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
-                <span>Created {formatTimeAgo(note.createdAt)}</span>
+                <span>Created {formatTimeAgo(localNote.createdAt)}</span>
               </div>
-              {note.lastEditedByUserId && (
+              {localNote.lastEditedByUserId && (
                 <div className="flex items-center gap-2">
-                  {note.lastEditedByPhotoURL && (
+                  {localNote.lastEditedByPhotoURL && (
                     <img 
-                      src={note.lastEditedByPhotoURL} 
-                      alt={note.lastEditedByDisplayName}
+                      src={localNote.lastEditedByPhotoURL} 
+                      alt={localNote.lastEditedByDisplayName}
                       className="w-5 h-5 rounded-full"
                     />
                   )}
                   <span>
-                    Edited {formatTimeAgo(note.lastEditedAt || note.updatedAt)}
+                    Edited {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
                   </span>
                 </div>
               )}

@@ -48,6 +48,7 @@ export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSele
   const [isCreating, setIsCreating] = useState(false);
   const [existingTags, setExistingTags] = useState<Tags[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [newTag, setNewTag] = useState({
     name: '',
     color: '#3b82f6',
@@ -98,17 +99,20 @@ export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSele
         ))}
       </div>
 
-      {/* Search/Create input */}
       <div className="relative">
         <Input
           placeholder="Search or create tag..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => {
+            // Delay hiding the dropdown to allow for clicking
+            setTimeout(() => setIsSearchFocused(false), 200);
+          }}
           className="h-8 text-sm"
         />
         
-        {/* Dropdown for existing tags */}
-        {searchTerm && filteredTags.length > 0 && !isCreating && (
+        {(isSearchFocused || searchTerm) && !isCreating && filteredTags.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-md">
             <ScrollArea className="max-h-[200px]">
               {filteredTags.map(tag => (
@@ -131,7 +135,6 @@ export function TagSelector({ selectedTags, onTagsChange, onCreateTag }: TagSele
           </div>
         )}
 
-        {/* Create new tag option */}
         {searchTerm && !filteredTags.length && !isCreating && (
           <button
             className="absolute z-10 w-full mt-1 px-2 py-1.5 text-sm text-left bg-popover border rounded-md hover:bg-muted"

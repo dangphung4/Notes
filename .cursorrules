@@ -1,0 +1,261 @@
+# Cursor AI Assistant Rules for Notes PWA
+
+You are an expert in React, TypeScript, Vite, .NET, and modern web development practices. Your primary focus is helping build a robust, offline-first PWA for note-taking.
+
+## Core Competencies
+
+- React + TypeScript with Vite
+- .NET 9.0 and Aspire
+- PWA development and offline-first architecture
+- Firebase (Authentication, Firestore)
+- IndexedDB with Dexie.js
+- Tailwind CSS and shadcn/ui
+
+## Key Principles
+
+- Write clean, maintainable TypeScript code with comprehensive type definitions
+- Implement offline-first architecture patterns
+- Focus on performance and PWA best practices
+- Use functional programming patterns; avoid classes
+- Prefer composition over inheritance
+- Follow SOLID principles
+- Write unit tests for critical functionality
+
+## Code Structure
+
+### Directory Organization
+
+```md
+/src
+  /components
+    /[feature]
+      /ui           # Reusable UI components
+      /hooks        # Custom hooks
+      /utils        # Helper functions
+      /types        # TypeScript interfaces
+  /lib             # Core utilities and configurations
+  /stores          # State management
+  /styles          # Global styles and Tailwind config
+  /pages           # Route components
+  /api             # API integration layer
+```
+
+### File Naming Conventions
+
+- Use kebab-case for directories and files: `note-editor/`
+- Component files: PascalCase with `.tsx` extension: `NoteEditor.tsx`
+- Utility files: camelCase with `.ts` extension: `noteUtils.ts`
+- Test files: Same name as source + `.test.ts(x)`: `NoteEditor.test.tsx`
+
+## TypeScript Guidelines
+
+- Use TypeScript for all code files
+- Prefer interfaces over types for object definitions
+- Use strict type checking
+- Define explicit return types for functions
+- Use generics appropriately
+- Example:
+
+```typescript
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tags?: string[];
+}
+
+interface NoteEditorProps {
+  note: Note;
+  onSave: (note: Note) => Promise<void>;
+  isReadOnly?: boolean;
+}
+```
+
+## React Patterns
+
+### Component Structure
+
+```typescript
+import { useState, useEffect } from 'react';
+import type { Note } from '@/types';
+
+export interface NoteEditorProps {
+  // ... props interface
+}
+
+export const NoteEditor = ({ note, onSave }: NoteEditorProps) => {
+  // 1. Hooks
+  const [content, setContent] = useState(note.content);
+  
+  // 2. Derived state
+  const hasChanges = content !== note.content;
+  
+  // 3. Event handlers
+  const handleSave = async () => {
+    // Implementation
+  };
+  
+  // 4. Render
+  return (
+    <div>
+      {/* Component JSX */}
+    </div>
+  );
+};
+```
+
+### Hook Guidelines
+
+- Create custom hooks for reusable logic
+- Keep hooks focused and single-purpose
+- Use appropriate effect dependencies
+- Example:
+
+```typescript
+const useNoteSync = (noteId: string) => {
+  const [note, setNote] = useState<Note | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Implementation
+  
+  return { note, isLoading, error };
+};
+```
+
+## State Management
+
+- Use React Query for server state
+- Use Zustand for client state
+- Implement optimistic updates
+- Handle offline state appropriately
+
+## Offline-First Patterns
+
+- Use Service Workers effectively
+- Implement proper caching strategies
+- Handle sync conflicts appropriately
+- Example:
+
+```typescript
+interface SyncQueue {
+  id: string;
+  operation: 'create' | 'update' | 'delete';
+  data: any;
+  timestamp: number;
+}
+
+const syncNote = async (queue: SyncQueue) => {
+  // Implementation
+};
+```
+
+## Testing
+
+- Write unit tests for critical functionality
+- Use React Testing Library for component tests
+- Mock Firebase and IndexedDB appropriately
+- Example:
+
+```typescript
+describe('NoteEditor', () => {
+  it('should save changes when clicking save button', async () => {
+    // Test implementation
+  });
+});
+```
+
+## Performance Optimization
+
+- Use React.memo() for expensive renders
+- Implement proper code splitting
+- Optimize images and assets
+- Monitor and optimize bundle size
+
+## Error Handling
+
+- Implement proper error boundaries
+- Use consistent error handling patterns
+- Log errors appropriately
+- Example:
+
+```typescript
+const handleError = (error: Error) => {
+  // Log to monitoring service
+  console.error('[NoteSync]', error);
+  
+  // Update UI state
+  setError(error);
+  
+  // Queue for retry if appropriate
+  if (isRetryable(error)) {
+    queueForRetry();
+  }
+};
+```
+
+## API Integration
+
+- Use consistent error handling
+- Implement proper retry logic
+- Handle offline scenarios
+- Example:
+
+```typescript
+const api = {
+  async saveNote(note: Note): Promise<Note> {
+    try {
+      // Implementation
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  }
+};
+```
+
+## UI/UX Guidelines
+
+- Follow Material Design principles
+- Implement responsive design
+- Use proper loading states
+- Handle offline indicators
+- Example:
+
+```typescript
+<Button
+  variant="primary"
+  disabled={!hasChanges || isLoading}
+  onClick={handleSave}
+>
+  {isLoading ? 'Saving...' : 'Save'}
+</Button>
+```
+
+## Security
+
+- Implement proper authentication flows
+- Sanitize user input
+- Follow OWASP guidelines
+- Use proper CORS policies
+
+## Documentation
+
+- Document complex logic
+- Add JSDoc comments for public APIs
+- Keep README up to date
+- Example:
+
+```typescript
+/**
+ * Synchronizes local notes with the remote server.
+ * Handles conflict resolution and retry logic.
+ * @param noteId - The ID of the note to sync
+ * @returns Promise that resolves when sync is complete
+ */
+async function syncNote(noteId: string): Promise<void> {
+  // Implementation
+}
+```

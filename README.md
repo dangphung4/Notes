@@ -54,15 +54,17 @@ dotnet watch
 ```
 
 This will:
+
 - Start the Aspire dashboard
 - Build and run the React app
 - Start the API server
 - Enable real-time updates for React changes
 
 Visit:
-- Dashboard: https://localhost:15039
-- Web App: https://localhost:3001
-- API: https://localhost:7041
+
+- Dashboard: <https://localhost:15039>
+- Web App: <https://localhost:3001>
+- API: <https://localhost:7041>
 
 ---
 
@@ -119,7 +121,8 @@ npm run build
 
 #### UI/UX Improvements
 
-- [ ] Custom fonts & color themes
+- [X] Custom fonts
+- [ ] Color themes
 - [ ] Desktop toolbar enhancement
 - [ ] Mobile toolbar positioning fix
 - [ ] Preview images for notes
@@ -131,7 +134,7 @@ npm run build
 
 #### Core Features
 
-- [ ] Command palette with note search
+- [X] Command palette with note search
 - [ ] Enhanced calendar integration
   - [ ] Note-calendar event linking
   - [ ] In-note deadline commands (e.g., `$calendar 12/9/2025 1330`)
