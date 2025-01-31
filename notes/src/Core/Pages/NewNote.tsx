@@ -123,6 +123,16 @@ export default function NewNote() {
     }));
   };
 
+  // Update the content change handler to prevent focus loss
+  const handleContentChange = useCallback((content: any[]) => {
+    const contentStr = JSON.stringify(content);
+    // Use functional update to prevent unnecessary re-renders
+    setNote(prev => ({
+      ...prev,
+      content: contentStr
+    }));
+  }, []);
+
   // Save new note to Firebase directly
   const saveNote = useCallback(async () => {
     if (!user) return;
@@ -537,10 +547,7 @@ export default function NewNote() {
         <Editor
           key={note.content}
           content={note.content}
-          onChange={(content) => {
-            const contentStr = JSON.stringify(content);
-            setNote({ ...note, content: contentStr });
-          }}
+          onChange={handleContentChange}
           editorRef={editorRef}
         />
       </div>
