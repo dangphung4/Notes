@@ -331,7 +331,7 @@ class NotesDB extends Dexie {
     if (!user) return;
 
     try {
-      // Get note from Firebase to check ownership
+      // Get note from Firebase to check permissions
       const noteRef = doc(firestore, "notes", noteId);
       const noteDoc = await getDoc(noteRef);
 
@@ -340,11 +340,25 @@ class NotesDB extends Dexie {
       }
 
       const noteData = noteDoc.data();
-      if (noteData.ownerUserId !== user.uid) {
-        throw new Error("Only the owner can share this note");
+      
+      // Check if user is owner or has edit permissions
+      const sharesRef = collection(firestore, "shares");
+      const userShareQuery = query(
+        sharesRef,
+        where("noteId", "==", noteId),
+        where("email", "==", user.email),
+        where("access", "==", "edit")
+      );
+      const userShareSnapshot = await getDocs(userShareQuery);
+      
+      const isOwner = noteData.ownerUserId === user.uid;
+      const hasEditAccess = !userShareSnapshot.empty;
+
+      if (!isOwner && !hasEditAccess) {
+        throw new Error("You don't have permission to share this note");
       }
 
-      const sharesRef = collection(firestore, "shares");
+      // Check if recipient already has access
       const existingShares = await getDocs(
         query(
           sharesRef,

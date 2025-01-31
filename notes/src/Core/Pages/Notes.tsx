@@ -4,10 +4,10 @@ import { SharePermission } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon, ChevronRightIcon, TrashIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
-import { onSnapshot, collection, query, where, getDocs, documentId } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, getDocs, documentId, deleteDoc, doc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
@@ -32,6 +32,7 @@ import { toast } from "@/hooks/use-toast";
 import { XCircleIcon } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { BarChart2Icon, ClockIcon, UserIcon, ActivityIcon, LinkIcon } from 'lucide-react';
+import ShareDialog from '../Components/ShareDialog';
 
 interface StoredNotesPreferences {
   activeTab: 'my-notes' | 'shared';
@@ -113,6 +114,16 @@ const getRelatedNotes = (notes: Note[], currentNote: Note) => {
     .slice(0, 3);
 };
 
+const hasEditAccess = (note: Note, user: any, shares: SharePermission[]) => {
+  if (!user) return false;
+  if (note.ownerUserId === user.uid) return true;
+  return shares.some(share => 
+    share.noteId === note.firebaseId && 
+    share.email === user.email && 
+    share.access === 'edit'
+  );
+};
+
 const NoteCard = ({ 
   note, 
   shares, 
@@ -136,11 +147,6 @@ const NoteCard = ({
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Tags[]>(note.tags || []);
   const [localNote, setLocalNote] = useState(note);
-
-  // Add this to check for edit permissions
-  const hasEditAccess = isOwner || noteShares.some(share => 
-    share.email === user?.email && share.access === 'edit'
-  );
 
   // Update local state when note prop changes
   useEffect(() => {
@@ -289,7 +295,7 @@ const NoteCard = ({
                         <p className="text-sm text-muted-foreground">No tags added yet</p>
                       )}
                     </div>
-                    {hasEditAccess && (
+                    {hasEditAccess(note, user, shares) && (
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -358,8 +364,31 @@ const NoteCard = ({
                       <Badge variant="secondary">Owner</Badge>
                     </div>
 
-                    {/* Shared Users */}
-                    {hasShares && (
+                    {/* Share Button - for owners and users with edit permissions */}
+                    {hasEditAccess(note, user, shares) && (
+                      <div className="flex justify-between items-center pt-2">
+                        <span className="text-sm text-muted-foreground">Share this note</span>
+                        <ShareDialog 
+                          note={note}
+                          onShare={() => {
+                            toast({
+                              title: "Note shared",
+                              description: "The note has been shared successfully"
+                            });
+                          }}
+                          onError={(error) => {
+                            toast({
+                              title: "Error sharing note",
+                              description: error,
+                              variant: "destructive"
+                            });
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Shared Users List */}
+                    {noteShares.length > 0 && (
                       <div className="space-y-2 pt-2 border-t">
                         <div className="text-sm text-muted-foreground">Shared with</div>
                         <div className="space-y-2">
@@ -381,6 +410,32 @@ const NoteCard = ({
                                 <div className="text-xs text-muted-foreground truncate">{share.email}</div>
                               </div>
                               <Badge variant="outline">{share.access}</Badge>
+                              {/* Only owner can remove shares */}
+                              {note.ownerUserId === user?.uid && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      await deleteDoc(doc(firestore, 'shares', share.id!));
+                                      toast({
+                                        title: "Share removed",
+                                        description: "User's access has been removed"
+                                      });
+                                    } catch (error) {
+                                      console.error('Error removing share:', error);
+                                      toast({
+                                        title: "Error",
+                                        description: "Failed to remove share",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <TrashIcon className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              )}
                             </div>
                           ))}
                         </div>
