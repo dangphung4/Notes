@@ -209,8 +209,8 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <div className="min-h-screen flex flex-col bg-background text-foreground">
-          <DesktopNav />
-          <MobileNav />
+          <DesktopNav darkMode={false} toggleDarkMode={() => {}} />
+          <MobileNav darkMode={false} toggleDarkMode={() => {}} />
           <AppRoutes />
           <Footer />
           <PWABadge />

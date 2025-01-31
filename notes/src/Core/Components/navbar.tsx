@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
@@ -41,7 +42,7 @@ interface NavProps {
  * @param root0.darkMode
  * @param root0.toggleDarkMode
  */
-export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
+export function DesktopNav({ darkMode }: NavProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -165,7 +166,7 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
  * @param root0.darkMode
  * @param root0.toggleDarkMode
  */
-export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
+export function MobileNav({ darkMode }: NavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();

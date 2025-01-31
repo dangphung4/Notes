@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { themes, ThemeName, ThemeColors } from './themes';
+import { themes, ThemeName } from './themes';
 import { useAuth } from '../Auth/AuthContext';
 import { db } from '../Database/db';
 import { doc, getDoc } from 'firebase/firestore';

@@ -30,7 +30,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db as firestore } from '../Auth/firebase';
-import { db } from '../Database/db';
 import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
 import { Check, PaletteIcon } from "lucide-react";
@@ -241,15 +240,15 @@ export default function Profile() {
 
   const { theme: currentMode, setTheme: setMode, currentTheme, setCurrentTheme } = useTheme();
 
-  const themePresets: ThemePreview[] = Object.entries(themes).map(([name, value]) => ({
+  const themePresets = Object.entries(themes).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     theme: name as ThemeName,
     colors: {
-      background: value[currentMode].background,
-      foreground: value[currentMode].foreground,
-      primary: value[currentMode].primary,
-      secondary: value[currentMode].secondary,
-      muted: value[currentMode].muted,
+      background: value[currentMode as keyof typeof value]?.background,
+      foreground: value[currentMode as keyof typeof value]?.foreground,
+      primary: value[currentMode as keyof typeof value]?.primary,
+      secondary: value[currentMode as keyof typeof value]?.secondary,
+      muted: value[currentMode as keyof typeof value]?.muted,
     },
   }));
 

@@ -51,19 +51,6 @@ export default function Home() {
   /** Detects if user is on MacOS for keyboard shortcuts */
   const isMacOs = navigator.userAgent.includes('Mac');
 
-  const handleThemeChange = (theme: 'light' | 'dark') => {
-    // Save current scroll position
-    const scrollPos = window.scrollY;
-    
-    // Change theme
-    setTheme(theme);
-    
-    // Restore scroll position after a brief delay to ensure theme change is complete
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollPos);
-    });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
       {/* Hero Section */}
@@ -741,13 +728,13 @@ export default function Home() {
                           <div
                             className="h-4 w-4 rounded-full"
                             style={{
-                              backgroundColor: `hsl(${themes[themeName][theme].primary})`
+                              backgroundColor: `hsl(${theme === 'system' ? themes[themeName].light : themes[themeName][theme].primary})`
                             }}
                           />
                           <div
                             className="h-4 w-4 rounded-full"
                             style={{
-                              backgroundColor: `hsl(${themes[themeName][theme].secondary})`
+                              backgroundColor: `hsl(${theme === 'system' ? themes[themeName].light : themes[themeName][theme].secondary})`
                             }}
                           />
                         </div>

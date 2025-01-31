@@ -82,7 +82,7 @@ export default function Editor({
   );
 
   // Load font preference on mount and store it in state
-  const [editorFont, setEditorFont] = useState<string>(() => {
+  const [, setEditorFont] = useState<string>(() => {
     return localStorage.getItem('editor-font') || "Monaspace Neon";
   });
 

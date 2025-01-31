@@ -1127,9 +1127,8 @@ class NotesDB extends Dexie {
       });
 
       // Update local IndexedDB
-      await this.users?.update(userId, {
-        preferences: preferences,
-        updatedAt: new Date()
+      await this.users?.update(userId, (user: User) => {
+        user.preferences = preferences;
       });
 
       return true;
@@ -1140,6 +1139,9 @@ class NotesDB extends Dexie {
   }
 
   // Find the syncNoteWithFirebase method and update it to filter out undefined values
+  /**
+   *
+   */
   async syncNoteWithFirebase(note: Note) {
     if (!auth.currentUser) return;
 
