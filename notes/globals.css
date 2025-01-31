@@ -679,3 +679,33 @@ html {
   opacity: 1;
   transition: opacity 0.2s ease-in-out;
 }
+
+
+/* Improve mobile editor experience */
+.mobile-editor {
+    /* Prevent iOS zoom on input focus */
+    @media screen and (max-width: 768px) {
+      font-size: 16px !important;
+    }
+  
+    /* Fix iOS keyboard issues */
+    @supports (-webkit-touch-callout: none) {
+      /* iOS-specific fixes */
+      min-height: -webkit-fill-available;
+      padding-bottom: 50vh; /* Add padding for keyboard */
+    }
+  }
+  
+  /* Ensure proper touch handling */
+  .mobile-editor [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Improve input handling on iOS */
+  input, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-tap-highlight-color: transparent;
+  } 

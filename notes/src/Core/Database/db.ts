@@ -271,7 +271,7 @@ class NotesDB extends Dexie {
         throw new Error("No permission to edit this note");
       }
 
-      // Create cleaned note data object
+      // Only include isPinned in the update if the user is the owner
       const noteData = {
         title: note.title,
         content: note.content || "",
@@ -281,8 +281,8 @@ class NotesDB extends Dexie {
         lastEditedByDisplayName: user.displayName || "Unknown",
         lastEditedByPhotoURL: user.photoURL,
         lastEditedAt: new Date(),
-        // Only include isPinned if it's explicitly boolean
-        ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned })
+        // Only include isPinned if user is the owner
+        ...(note.ownerUserId === user.uid && typeof note.isPinned === 'boolean' && { isPinned: note.isPinned })
       };
 
       // Remove any undefined or null values
@@ -331,7 +331,7 @@ class NotesDB extends Dexie {
     if (!user) return;
 
     try {
-      // Get note from Firebase to check ownership
+      // Get note from Firebase to check permissions
       const noteRef = doc(firestore, "notes", noteId);
       const noteDoc = await getDoc(noteRef);
 
@@ -340,11 +340,25 @@ class NotesDB extends Dexie {
       }
 
       const noteData = noteDoc.data();
-      if (noteData.ownerUserId !== user.uid) {
-        throw new Error("Only the owner can share this note");
+      
+      // Check if user is owner or has edit permissions
+      const sharesRef = collection(firestore, "shares");
+      const userShareQuery = query(
+        sharesRef,
+        where("noteId", "==", noteId),
+        where("email", "==", user.email),
+        where("access", "==", "edit")
+      );
+      const userShareSnapshot = await getDocs(userShareQuery);
+      
+      const isOwner = noteData.ownerUserId === user.uid;
+      const hasEditAccess = !userShareSnapshot.empty;
+
+      if (!isOwner && !hasEditAccess) {
+        throw new Error("You don't have permission to share this note");
       }
 
-      const sharesRef = collection(firestore, "shares");
+      // Check if recipient already has access
       const existingShares = await getDocs(
         query(
           sharesRef,
@@ -491,7 +505,7 @@ class NotesDB extends Dexie {
    */
   async toggleNotePin(noteId: string, isPinned: boolean) {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) throw new Error("User not authenticated");
 
     try {
       const noteRef = doc(firestore, "notes", noteId);
@@ -502,6 +516,8 @@ class NotesDB extends Dexie {
       }
 
       const noteData = noteDoc.data();
+      
+      // Strict ownership check
       if (noteData.ownerUserId !== user.uid) {
         throw new Error("Only the owner can pin/unpin notes");
       }
@@ -509,6 +525,11 @@ class NotesDB extends Dexie {
       await updateDoc(noteRef, {
         isPinned,
         updatedAt: new Date(),
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || "",
+        lastEditedByPhotoURL: user.photoURL || "",
+        lastEditedAt: new Date(),
       });
 
       await this.loadFromFirebase();
@@ -1165,7 +1186,10 @@ class NotesDB extends Dexie {
 
       // Update local IndexedDB
       await this.users?.update(userId, (user: User) => {
-        user.preferences = preferences;
+        user.preferences = {
+          ...user.preferences,
+          ...preferences
+        };
       });
 
       return true;

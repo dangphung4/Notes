@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Editor from '../Components/Editor';
@@ -46,9 +47,14 @@ export default function NewNote() {
     if (savedNote) {
       return JSON.parse(savedNote);
     }
+    
+    // Initialize with blank template content
+    const blankContent = noteTemplates.blank.content;
     return {
       title: '',
-      content: JSON.stringify(noteTemplates.blank.content),
+      content: typeof blankContent === 'string' 
+        ? blankContent 
+        : JSON.stringify(blankContent),
       updatedAt: new Date(),
       createdAt: new Date(),
       ownerUserId: user?.uid || '',
@@ -74,17 +80,58 @@ export default function NewNote() {
     };
   }, [isSaving]);
 
-  // Update the useEffect for title input focus
+  // Add a ref to track if initial focus has been set
+  const initialFocusRef = useRef(false);
+
+  // Update the editor initialization and focus handling
   useEffect(() => {
-    // Short timeout to ensure input is mounted and iOS keyboard shows up
+    const editor = editorRef.current;
+    if (!editor || initialFocusRef.current) return;
+
+    // Function to focus editor and show keyboard
+    const focusEditor = () => {
+      // First focus the title input
+      if (titleInputRef.current) {
+        titleInputRef.current.focus();
+        titleInputRef.current.click();
+      }
+
+      // Then set up a delayed focus for the editor
+      setTimeout(() => {
+        if (editor) {
+          editor.focus();
+        }
+      }, 300); // Delay to ensure proper focus order
+    };
+
+    // Set initial focus after a short delay
+    const timer = setTimeout(focusEditor, 100);
+    initialFocusRef.current = true;
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Update title input focus handling
+  useEffect(() => {
+    if (initialFocusRef.current) return;
+
     const timer = setTimeout(() => {
       if (titleInputRef.current) {
         titleInputRef.current.focus();
         // Force keyboard to show on iOS
-        (titleInputRef.current as HTMLInputElement).click();
+        titleInputRef.current.click();
       }
     }, 100);
+    
     return () => clearTimeout(timer);
+  }, []);
+
+  // Add touch event handlers for iOS
+  const handleTouchStart = useCallback(() => {
+    const editor = editorRef.current;
+    if (editor && !editor.isFocused) {
+      editor.focus();
+    }
   }, []);
 
   // Add effect to track active styles
@@ -113,21 +160,46 @@ export default function NewNote() {
     updateActiveStyles();
   }, [editorRef.current]);
 
-  // Handle template selection
+  // Update the template selection handler
   const handleTemplateSelect = (template: NoteTemplate) => {
-    console.log('Selected template:', template); // Debug log
+    console.log('Selected template:', template); // Keep debug log
+    
+    // Get the editor instance
+    const editor = editorRef.current;
+    if (!editor) {
+      console.warn('Editor not initialized');
+      return;
+    }
+
+    // Update note state with template title
     setNote(prev => ({
       ...prev,
       title: template.title || 'Untitled',
-      content: JSON.stringify(template.content)
     }));
+
+    try {
+      // Parse the template content and apply it to the editor
+      const content = typeof template.content === 'string' 
+        ? JSON.parse(template.content)
+        : template.content;
+        
+      // Replace the editor content with template content
+      editor.replaceBlocks(editor.document, content);
+      
+      // Save to localStorage after template is applied
+      localStorage.setItem('draft-note', JSON.stringify({
+        ...note,
+        title: template.title || 'Untitled',
+        content: JSON.stringify(content)
+      }));
+    } catch (error) {
+      console.error('Error applying template:', error);
+    }
   };
 
-  // Update the content change handler to prevent focus loss
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Update the content change handler
   const handleContentChange = useCallback((content: any[]) => {
     const contentStr = JSON.stringify(content);
-    // Use functional update to prevent unnecessary re-renders
     setNote(prev => ({
       ...prev,
       content: contentStr
@@ -544,7 +616,10 @@ export default function NewNote() {
       </div>
 
       {/* Editor Container - remove padding on mobile */}
-      <div className="flex-1 overflow-hidden">
+      <div 
+        className="flex-1 overflow-hidden"
+        onTouchStart={handleTouchStart}
+      >
         <Editor
           content={note.content}
           onChange={handleContentChange}

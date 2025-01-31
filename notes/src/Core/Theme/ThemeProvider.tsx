@@ -12,6 +12,8 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
   currentTheme: ThemeName;
   setCurrentTheme: (theme: ThemeName) => void;
+  editorFont: string;
+  setEditorFont: (font: string) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -63,6 +65,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return saved || 'default';
   });
 
+  const [editorFont, setEditorFont] = useState<string>(() => {
+    const savedFont = localStorage.getItem('editor-font');
+    return savedFont || 'Monaspace Neon';
+  });
+
   // Load user preferences from database
   useEffect(() => {
     const loadPreferences = async () => {
@@ -76,8 +83,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (preferences?.colorMode && ['light', 'dark', 'system'].includes(preferences.colorMode)) {
           setTheme(preferences.colorMode as Theme);
         }
+        if (preferences?.editorFont) {
+          setEditorFont(preferences.editorFont);
+          document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
+        }
       } catch (error) {
-        console.error('Error loading theme preferences:', error);
+        console.error('Error loading preferences:', error);
       }
     };
     
@@ -85,24 +96,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // Save theme preferences to database
-  const updateThemePreferences = async (newTheme: Theme, newCurrentTheme: ThemeName) => {
+  const updatePreferences = async (newTheme: Theme, newCurrentTheme: ThemeName, newEditorFont: string) => {
     if (!user) return;
     try {
       await db.updateUserPreferences(user.uid, {
         theme: newCurrentTheme,
-        colorMode: newTheme
+        colorMode: newTheme,
+        editorFont: newEditorFont
       });
     } catch (error) {
-      console.error('Error saving theme preferences:', error);
+      console.error('Error saving preferences:', error);
     }
   };
 
   useEffect(() => {
     localStorage.setItem('theme', theme);
     localStorage.setItem('currentTheme', currentTheme);
+    localStorage.setItem('editor-font', editorFont);
     
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
+    root.style.setProperty('--editor-font', editorFont);
 
     let effectiveTheme = theme;
     if (theme === 'system') {
@@ -110,14 +124,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     root.classList.add(effectiveTheme);
     
-    // Apply theme colors with the effective theme
     applyThemeColors(currentTheme, effectiveTheme);
     
-    // Save to database if user exists
     if (user) {
-      updateThemePreferences(theme, currentTheme);
+      updatePreferences(theme, currentTheme, editorFont);
     }
-  }, [theme, currentTheme, user]);
+  }, [theme, currentTheme, editorFont, user]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -139,7 +151,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     theme,
     setTheme,
     currentTheme,
-    setCurrentTheme
+    setCurrentTheme,
+    editorFont,
+    setEditorFont
   };
 
   return (

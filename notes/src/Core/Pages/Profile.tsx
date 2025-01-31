@@ -29,8 +29,6 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db as firestore } from '../Auth/firebase';
 import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
 import { Check, PaletteIcon } from "lucide-react";
@@ -92,38 +90,10 @@ export default function Profile() {
     { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' }
   ];
 
-  const [editorFont, setEditorFont] = useState('Monaspace Neon');
-
-  useEffect(() => {
-    const loadPreferences = async () => {
-      if (!user) return;
-      try {
-        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
-        const preferences = userDoc.data()?.preferences;
-        if (preferences?.editorFont) {
-          setEditorFont(preferences.editorFont);
-        }
-      } catch (error) {
-        console.error('Error loading preferences:', error);
-      }
-    };
-    loadPreferences();
-  }, [user]);
+  const { editorFont, setEditorFont } = useTheme();
 
   const handleFontChange = async (newFont: string) => {
-    localStorage.setItem('editor-font', newFont);
-
-    document.documentElement.style.setProperty('--editor-font', newFont);
-    
-    if (user) {
-      try {
-        await updateDoc(doc(firestore, 'users', user.uid), {
-          'preferences.editorFont': newFont
-        });
-      } catch (error) {
-        console.error('Error updating font preference:', error);
-      }
-    }
+    setEditorFont(newFont);
   };
 
   useEffect(() => {
@@ -237,6 +207,7 @@ export default function Profile() {
   // TODO add more themes and update groupings
   const groupThemes = () => {
     const groups = {
+      'Default': ['default'],
       'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
       'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
       'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
@@ -248,7 +219,7 @@ export default function Profile() {
       name: groupName,
       themes: themeNames.map(name => ({
         name: name as ThemeName,
-        displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
+        displayName: name === 'default' ? 'Default' : name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
       }))
     }));
   };

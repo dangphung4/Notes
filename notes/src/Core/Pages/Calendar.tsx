@@ -31,6 +31,12 @@ import { EventInvitations } from '../Components/Calendar/EventInvitations';
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
+interface StoredCalendarPreferences {
+  view: 'week' | 'day' | 'agenda';
+  selectedDate: string; // ISO string
+  currentWeek: string; // ISO string
+}
+
 const scrollToCurrentTime = (containerRef: React.RefObject<HTMLDivElement>, dayElement?: HTMLElement | null) => {
   if (!containerRef.current) return;
   
@@ -838,9 +844,44 @@ const EventSearch = ({
  *
  */
 export default function Calendar() {
+  // Load preferences from localStorage
+  const [view, setView] = useState<'week' | 'day' | 'agenda'>(() => {
+    const stored = localStorage.getItem('calendar-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredCalendarPreferences;
+      return preferences.view;
+    }
+    return 'week';
+  });
+
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const stored = localStorage.getItem('calendar-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredCalendarPreferences;
+      return new Date(preferences.selectedDate);
+    }
+    return new Date();
+  });
+
+  const [currentWeek, setCurrentWeek] = useState<Date>(() => {
+    const stored = localStorage.getItem('calendar-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredCalendarPreferences;
+      return new Date(preferences.currentWeek);
+    }
+    return new Date();
+  });
+
+  useEffect(() => {
+    const preferences: StoredCalendarPreferences = {
+      view,
+      selectedDate: selectedDate.toISOString(),
+      currentWeek: currentWeek.toISOString(),
+    };
+    localStorage.setItem('calendar-preferences', JSON.stringify(preferences));
+  }, [view, selectedDate, currentWeek]);
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [currentWeek, setCurrentWeek] = useState<Date>(new Date());
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -999,8 +1040,6 @@ export default function Calendar() {
     setIsCreateEventOpen(true);
   };
 
-
-  const [view, setView] = useState<'week' | 'day' | 'agenda'>('week');
 
   const weekViewRef = useRef<HTMLDivElement>(null);
   const dayViewRef = useRef<HTMLDivElement>(null);
