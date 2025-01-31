@@ -169,7 +169,7 @@ const NoteCard = ({
         createdAt: doc.data().createdAt?.toDate() || new Date(),
       }));
       
-      setNoteShares(sharesList);
+      setNoteShares(sharesList as SharePermission[]);
     } catch (error) {
       console.error('Error loading shares:', error);
     } finally {

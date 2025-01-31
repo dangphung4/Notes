@@ -29,8 +29,6 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db as firestore } from '../Auth/firebase';
 import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
 import { Check, PaletteIcon } from "lucide-react";
