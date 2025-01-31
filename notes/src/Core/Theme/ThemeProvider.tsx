@@ -5,7 +5,7 @@ import { db } from '../Database/db';
 import { doc, getDoc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
@@ -22,33 +22,35 @@ const applyThemeColors = (themeName: ThemeName, mode: Theme) => {
   // Remove any existing theme
   root.removeAttribute('data-theme');
   
-  // Only apply theme colors if not using default theme
-  if (themeName !== 'default') {
-    const themeColors = themes[themeName][mode];
-    root.setAttribute('data-theme', themeName);
-    
-    Object.entries(themeColors).forEach(([key, value]) => {
-      root.style.setProperty(`--${key}`, value);
-    });
+  // Only apply theme colors if not using default theme and theme exists
+  if (themeName !== 'default' && themes[themeName]) {
+    const themeColors = themes[themeName][mode === 'system' ? 'light' : mode];
+    if (themeColors) {
+      root.setAttribute('data-theme', themeName);
+      
+      Object.entries(themeColors).forEach(([key, value]) => {
+        root.style.setProperty(`--${key}`, value);
+      });
+    }
   } else {
-    // Clear any custom theme colors
-    Object.keys(themes.default[mode]).forEach((key) => {
-      root.style.removeProperty(`--${key}`);
-    });
+    // Clear any custom theme colors if theme doesn't exist
+    const defaultColors = themes.default[mode === 'system' ? 'light' : mode];
+    if (defaultColors) {
+      Object.keys(defaultColors).forEach((key) => {
+        root.style.removeProperty(`--${key}`);
+      });
+    }
   }
 };
 
-/**
- *
- * @param root0
- * @param root0.children
- */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
+      return savedTheme;
+    }
+    return 'system';
   });
 
   const [currentTheme, setCurrentTheme] = useState<ThemeName>(() => {
@@ -66,7 +68,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (preferences?.theme) {
           setCurrentTheme(preferences.theme as ThemeName);
         }
-        if (preferences?.colorMode) {
+        if (preferences?.colorMode && ['light', 'dark', 'system'].includes(preferences.colorMode)) {
           setTheme(preferences.colorMode as Theme);
         }
       } catch (error) {
@@ -94,14 +96,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('theme', theme);
     localStorage.setItem('currentTheme', currentTheme);
     
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+
+    let effectiveTheme = theme;
+    if (theme === 'system') {
+      effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
+    root.classList.add(effectiveTheme);
     
-    // Apply theme colors
-    applyThemeColors(currentTheme, theme);
+    // Apply theme colors with the effective theme
+    applyThemeColors(currentTheme, effectiveTheme);
     
     // Save to database if user exists
     if (user) {
@@ -109,31 +114,36 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme, currentTheme, user]);
 
-  const handleSetTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-  };
+  // Listen for system theme changes
+  useEffect(() => {
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(newTheme);
+        applyThemeColors(currentTheme, newTheme);
+      };
 
-  const handleSetCurrentTheme = (newTheme: ThemeName) => {
-    setCurrentTheme(newTheme);
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [theme, currentTheme]);
+
+  const value = {
+    theme,
+    setTheme,
+    currentTheme,
+    setCurrentTheme
   };
 
   return (
-    <ThemeContext.Provider 
-      value={{ 
-        theme, 
-        setTheme: handleSetTheme, 
-        currentTheme, 
-        setCurrentTheme: handleSetCurrentTheme 
-      }}
-    >
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-/**
- *
- */
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {

@@ -664,3 +664,18 @@ body {
 .font-indie-flower {
     font-family: "Indie Flower" !important;
 }
+
+/* Ensure the font is applied immediately on page load */
+html {
+  font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
+}
+
+/* Add this to prevent FOUC (Flash of Unstyled Content) */
+.font-loading {
+  opacity: 0;
+}
+
+.font-loaded {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}

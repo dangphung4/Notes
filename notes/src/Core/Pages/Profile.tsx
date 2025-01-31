@@ -28,7 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db as firestore } from '../Auth/firebase';
 import { db } from '../Database/db';
 import { useTheme } from "../Theme/ThemeProvider";
@@ -109,39 +109,22 @@ export default function Profile() {
     loadPreferences();
   }, [user]);
 
-  const handleFontChange = async (value: string) => {
-    try {
-      setIsLoading(true);
-      if (user) {
-        await db.updateUserPreferences(user.uid, {
-          editorFont: value
+  const handleFontChange = async (newFont: string) => {
+    // Update local storage
+    localStorage.setItem('editor-font', newFont);
+    
+    // Update CSS variable
+    document.documentElement.style.setProperty('--editor-font', newFont);
+    
+    // If user is logged in, update Firestore
+    if (user) {
+      try {
+        await updateDoc(doc(firestore, 'users', user.uid), {
+          'preferences.editorFont': newFont
         });
-        setEditorFont(value);
-        
-        // Update both the CSS variable and the body class
-        document.documentElement.style.setProperty('--editor-font', `"${value}"`);
-        document.body.className = document.body.className
-          .split(' ')
-          .filter(c => !c.startsWith('font-'))
-          .concat(`font-${value.toLowerCase().replace(/\s+/g, '-')}`)
-          .join(' ');
-        
-        localStorage.setItem('editor-font', value);
-        
-        toast({
-          title: "Font updated",
-          description: "Font preference has been saved and applied"
-        });
+      } catch (error) {
+        console.error('Error updating font preference:', error);
       }
-    } catch (error) {
-      console.error('Error updating font:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update font preference",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -151,7 +134,7 @@ export default function Profile() {
       const savedFont = localStorage.getItem('editor-font');
       if (savedFont) {
         setEditorFont(savedFont);
-        document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
+        document.documentElement.style.setProperty('--editor-font', savedFont);
       }
     };
     

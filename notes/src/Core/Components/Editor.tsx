@@ -81,6 +81,11 @@ export default function Editor({
     document.documentElement.classList.contains("dark")
   );
 
+  // Load font preference on mount and store it in state
+  const [editorFont, setEditorFont] = useState<string>(() => {
+    return localStorage.getItem('editor-font') || "Monaspace Neon";
+  });
+
   // Create editor instance
   const editor = useCreateBlockNote({
     initialContent: useMemo(
@@ -96,12 +101,79 @@ export default function Editor({
       [content]
     ),
   });
+
   // Set editor reference if provided
   useEffect(() => {
     if (editorRef) {
       editorRef.current = editor;
     }
   }, [editor, editorRef]);
+
+  // Load user's font preference and sync with localStorage
+  useEffect(() => {
+    const loadFontPreference = async () => {
+      if (!user) {
+        // If no user, use localStorage preference
+        const savedFont = localStorage.getItem('editor-font');
+        if (savedFont) {
+          document.documentElement.style.setProperty('--editor-font', savedFont);
+          setEditorFont(savedFont);
+        }
+        return;
+      }
+      
+      try {
+        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+        const preferences = userDoc.data()?.preferences;
+        if (preferences?.editorFont) {
+          document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
+          localStorage.setItem('editor-font', preferences.editorFont);
+          setEditorFont(preferences.editorFont);
+        }
+      } catch (error) {
+        console.error('Error loading font preference:', error);
+        // Fallback to localStorage if Firestore fails
+        const savedFont = localStorage.getItem('editor-font');
+        if (savedFont) {
+          document.documentElement.style.setProperty('--editor-font', savedFont);
+          setEditorFont(savedFont);
+        }
+      }
+    };
+
+    loadFontPreference();
+  }, [user]);
+
+  // Watch for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          const isDark = document.documentElement.classList.contains("dark");
+          setIsDarkMode(isDark);
+          localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    // Set initial theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('color-theme');
+    if (savedTheme) {
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+      setIsDarkMode(savedTheme === 'dark');
+    } else {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', systemDark);
+      setIsDarkMode(systemDark);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Debounced save function
   const debouncedSave = useCallback(
@@ -116,51 +188,6 @@ export default function Editor({
     }, 500),
     [onChange, onSave]
   );
-
-  // Watch for theme changes
-  useEffect(() => {
-    // Set initial theme
-    setIsDarkMode(document.documentElement.classList.contains("dark"));
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          setIsDarkMode(document.documentElement.classList.contains("dark"));
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []); // Empty dependency array since we only want to set this up once
-
-  // Force theme update when component mounts
-  useEffect(() => {
-    setIsDarkMode(document.documentElement.classList.contains("dark"));
-  }, []);
-
-  // Load user's font preference
-  useEffect(() => {
-    const loadFontPreference = async () => {
-      if (!user) return;
-      
-      try {
-        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
-        const preferences = userDoc.data()?.preferences;
-        if (preferences?.editorFont) {
-          document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
-        }
-      } catch (error) {
-        console.error('Error loading font preference:', error);
-      }
-    };
-
-    loadFontPreference();
-  }, [user]);
 
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-background overflow-hidden">
