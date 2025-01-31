@@ -29,7 +29,7 @@ import agendaview from "../../assets/agendaview.png";
 import dayview from "../../assets/dayview.png";
 import weekview from "../../assets/weekview.png";
 import logo from "../../assets/note.svg";
-import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon, PaletteIcon, LigatureIcon, TextIcon } from "lucide-react";
+import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon, PaletteIcon, LigatureIcon, TextIcon, LinkIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
@@ -234,6 +234,62 @@ export default function Home() {
       {/* Features Section */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-12">Key Features</h2>
+        
+        {/* Theme & Font Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <PaletteIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Beautiful Themes</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <CardDescription>
+                Choose from over 15 carefully crafted themes, each with light and dark variants. From modern to classic, find the perfect look for your notes.
+              </CardDescription>
+              <div className="flex flex-wrap gap-2">
+                {['primary', 'secondary', 'accent', 'muted'].map((color) => (
+                  <div
+                    key={color}
+                    className={`w-6 h-6 rounded-full bg-${color}`}
+                    title={`${color} color`}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>• Light & Dark modes</span>
+                <span>• Custom color schemes</span>
+                <span>• Synced preferences</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <LigatureIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Typography Excellence</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <CardDescription>
+                Express yourself with a wide selection of premium fonts. From coding-optimized monospace to elegant serifs and playful handwriting styles.
+              </CardDescription>
+              <div className="space-y-2">
+                <p className="font-monaspace text-sm">Monaspace Neon for clean code</p>
+                <p className="font-merriweather text-sm">Merriweather for elegant reading</p>
+                <p className="font-caveat text-sm">Caveat for personal touch</p>
+              </div>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>• Multiple font families</span>
+                <span>• Optimized readability</span>
+                <span>• Custom styles</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
@@ -308,13 +364,13 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <PaletteIcon className="h-6 w-6 text-primary" />
-                <CardTitle>Themes & Fonts</CardTitle>
+                <LinkIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Linked Notes</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Personalize your experience with custom themes and a wide selection of carefully curated fonts.
+                Connect your notes together seamlessly, just like in Obsidian. Create a network of linked ideas and references.
               </CardDescription>
             </CardContent>
           </Card>
@@ -653,191 +709,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Theme Showcase Section */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">Beautiful Themes</h2>
-        
-        <div className="space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-semibold">Personalize Your Experience</h3>
-              <p className="text-muted-foreground">
-                Choose from our extensive collection of carefully crafted themes. 
-                Each theme comes with both light and dark variants.
-              </p>
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                >
-                  {theme === 'light' ? (
-                    <SunIcon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <MoonIcon className="mr-2 h-4 w-4" />
-                  )}
-                  Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link to="/profile">
-                    <PaletteIcon className="mr-2 h-4 w-4" />
-                    Customize Theme
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Theme Preview</CardTitle>
-                <CardDescription>
-                  See how your content looks with different themes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[300px] pr-4">
-                  <div className="space-y-4">
-                    {groupThemes().map((group) => (
-                      <div key={group.name} className="space-y-2">
-                        <h4 className="text-sm font-medium text-muted-foreground">{group.name}</h4>
-                        {group.themes.map((themeOption) => (
-                          <Button
-                            key={themeOption.name}
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start gap-2",
-                              currentTheme === themeOption.name && "border-primary"
-                            )}
-                            onClick={() => setCurrentTheme(themeOption.name)}
-                          >
-                            <div className="flex items-center gap-2 flex-1">
-                              <div className="flex gap-1">
-                                <div
-                                  className="h-4 w-4 rounded-full"
-                                  style={{
-                                    backgroundColor: `hsl(${themes[themeOption.name][getEffectiveTheme(theme)].primary})`,
-                                  }}
-                                />
-                                <div
-                                  className="h-4 w-4 rounded-full"
-                                  style={{
-                                    backgroundColor: `hsl(${themes[themeOption.name][getEffectiveTheme(theme)].secondary})`,
-                                  }}
-                                />
-                              </div>
-                              <span>{themeOption.displayName}</span>
-                              {currentTheme === themeOption.name && (
-                                <Check className="h-4 w-4 ml-auto" />
-                              )}
-                            </div>
-                          </Button>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Theme Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <PaletteIcon className="h-6 w-6 text-primary" />
-                  <CardTitle>15+ Themes</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  From modern to classic, vibrant to professional - find the perfect theme for your style.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <SunIcon className="h-6 w-6 text-primary" />
-                  <CardTitle>Light & Dark</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Every theme includes carefully designed light and dark variants for comfortable viewing.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <MixIcon className="h-6 w-6 text-primary" />
-                  <CardTitle>Consistent Design</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Themes are designed to work seamlessly across all components and features.
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Tech Stack Section */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Built With Modern Tech
-        </h2>
-        <div className="flex flex-wrap justify-center gap-8 items-center max-w-3xl mx-auto">
-          <div className="text-center p-4">
-            <CodeIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <p className="font-semibold">React</p>
-          </div>
-          <div className="text-center p-4">
-            <LightningBoltIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <p className="font-semibold">TypeScript</p>
-          </div>
-          <div className="text-center p-4">
-            <MixIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <p className="font-semibold">Tailwind CSS</p>
-          </div>
-          <div className="text-center p-4">
-            <VercelLogoIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <p className="font-semibold">Firebase & Vercel</p>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="bg-background py-20">
-        <div className="container mx-auto px-4 text-center max-w-2xl">
-          <h2 className="text-3xl font-bold mb-6">About This Project</h2>
-          <p className="text-muted-foreground mb-4">
-            I built this app because I'm tired of apple notes, so im gonna make
-            it better for what i want.
-          </p>
-          <p className="bg-muted/30 rounded-lg p-4 mb-4">
-            When its done, i will make it open source and free to use.
-          </p>
-          <Button
-            variant="outline"
-            onClick={() =>
-              window.open("https://github.com/dangphung4/notes", "_blank")
-            }
-          >
-            <GitHubLogoIcon className="mr-2 h-4 w-4" /> View on GitHub
-          </Button>
-        </div>
-      </section>
-
-      {/* Add new Customization Showcase Section */}
+      {/* Customization Showcase Section */}
       <section className="container mx-auto px-4 py-20 bg-muted/30">
         <h2 className="text-3xl font-bold text-center mb-12">Personalization</h2>
+        
+        {/* Theme & Font Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Theme Selection */}
+          {/* Theme Card */}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -914,7 +792,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          {/* Font Selection */}
+          {/* Font Card */}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -928,100 +806,59 @@ export default function Home() {
             <CardContent>
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-6">
-                  {/* Monospace Fonts */}
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-muted-foreground">Monospace Fonts</h4>
-                    {[
-                      { name: 'Monaspace Neon', class: 'font-monaspace' },
-                      { name: 'JetBrains Mono', class: 'font-jetbrains' },
-                      { name: 'Fira Code', class: 'font-fira-code' }
-                    ].map(font => (
-                      <Button
-                        key={font.name}
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-between",
-                          font.class,
-                          editorFont === font.name && "border-primary"
-                        )}
-                        onClick={() => setEditorFont(font.name)}
-                      >
-                        <span>The quick brown fox</span>
-                        {editorFont === font.name && <Check className="h-4 w-4" />}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Sans Serif Fonts */}
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-muted-foreground">Sans Serif Fonts</h4>
-                    {[
-                      { name: 'Inter', class: 'font-inter' },
-                      { name: 'Roboto', class: 'font-roboto' },
-                      { name: 'Open Sans', class: 'font-open-sans' }
-                    ].map(font => (
-                      <Button
-                        key={font.name}
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-between",
-                          font.class,
-                          editorFont === font.name && "border-primary"
-                        )}
-                        onClick={() => setEditorFont(font.name)}
-                      >
-                        <span>The quick brown fox</span>
-                        {editorFont === font.name && <Check className="h-4 w-4" />}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Serif Fonts */}
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-muted-foreground">Serif Fonts</h4>
-                    {[
-                      { name: 'Merriweather', class: 'font-merriweather' },
-                      { name: 'Playfair Display', class: 'font-playfair' }
-                    ].map(font => (
-                      <Button
-                        key={font.name}
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-between",
-                          font.class,
-                          editorFont === font.name && "border-primary"
-                        )}
-                        onClick={() => setEditorFont(font.name)}
-                      >
-                        <span>The quick brown fox</span>
-                        {editorFont === font.name && <Check className="h-4 w-4" />}
-                      </Button>
-                    ))}
-                  </div>
-
-                  {/* Handwriting Fonts */}
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-muted-foreground">Handwriting Fonts</h4>
-                    {[
-                      { name: 'Caveat', class: 'font-caveat' },
-                      { name: 'Dancing Script', class: 'font-dancing' },
-                      { name: 'Comic Neue', class: 'font-comic-neue' }
-                    ].map(font => (
-                      <Button
-                        key={font.name}
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-between",
-                          font.class,
-                          editorFont === font.name && "border-primary"
-                        )}
-                        onClick={() => setEditorFont(font.name)}
-                      >
-                        <span>The quick brown fox</span>
-                        {editorFont === font.name && <Check className="h-4 w-4" />}
-                      </Button>
-                    ))}
-                  </div>
+                  {/* Font categories and their options */}
+                  {[
+                    {
+                      category: 'Monospace Fonts',
+                      fonts: [
+                        { name: 'Monaspace Neon', class: 'font-monaspace' },
+                        { name: 'JetBrains Mono', class: 'font-jetbrains' },
+                        { name: 'Fira Code', class: 'font-fira-code' }
+                      ]
+                    },
+                    {
+                      category: 'Sans Serif Fonts',
+                      fonts: [
+                        { name: 'Inter', class: 'font-inter' },
+                        { name: 'Roboto', class: 'font-roboto' },
+                        { name: 'Open Sans', class: 'font-open-sans' }
+                      ]
+                    },
+                    {
+                      category: 'Serif Fonts',
+                      fonts: [
+                        { name: 'Merriweather', class: 'font-merriweather' },
+                        { name: 'Playfair Display', class: 'font-playfair' }
+                      ]
+                    },
+                    {
+                      category: 'Handwriting Fonts',
+                      fonts: [
+                        { name: 'Caveat', class: 'font-caveat' },
+                        { name: 'Dancing Script', class: 'font-dancing' },
+                        { name: 'Comic Neue', class: 'font-comic-neue' }
+                      ]
+                    }
+                  ].map(({ category, fonts }) => (
+                    <div key={category} className="space-y-3">
+                      <h4 className="text-sm font-medium text-muted-foreground">{category}</h4>
+                      {fonts.map(font => (
+                        <Button
+                          key={font.name}
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-between",
+                            font.class,
+                            editorFont === font.name && "border-primary"
+                          )}
+                          onClick={() => setEditorFont(font.name)}
+                        >
+                          <span>The quick brown fox</span>
+                          {editorFont === font.name && <Check className="h-4 w-4" />}
+                        </Button>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </ScrollArea>
             </CardContent>
@@ -1037,6 +874,53 @@ export default function Home() {
               <TextIcon className="mr-2 h-4 w-4" />
               More Settings
             </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section className="container mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Built With Modern Tech
+        </h2>
+        <div className="flex flex-wrap justify-center gap-8 items-center max-w-3xl mx-auto">
+          <div className="text-center p-4">
+            <CodeIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
+            <p className="font-semibold">React</p>
+          </div>
+          <div className="text-center p-4">
+            <LightningBoltIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
+            <p className="font-semibold">TypeScript</p>
+          </div>
+          <div className="text-center p-4">
+            <MixIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
+            <p className="font-semibold">Tailwind CSS</p>
+          </div>
+          <div className="text-center p-4">
+            <VercelLogoIcon className="h-8 w-8 mx-auto mb-2 text-primary" />
+            <p className="font-semibold">Firebase & Vercel</p>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="bg-background py-20">
+        <div className="container mx-auto px-4 text-center max-w-2xl">
+          <h2 className="text-3xl font-bold mb-6">About This Project</h2>
+          <p className="text-muted-foreground mb-4">
+            I built this app because I'm tired of apple notes, so im gonna make
+            it better for what i want.
+          </p>
+          <p className="bg-muted/30 rounded-lg p-4 mb-4">
+            The code base is public, so you can see how its made. Feel free to help me out and contribute lol.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() =>
+              window.open("https://github.com/dangphung4/notes", "_blank")
+            }
+          >
+            <GitHubLogoIcon className="mr-2 h-4 w-4" /> View on GitHub
           </Button>
         </div>
       </section>
