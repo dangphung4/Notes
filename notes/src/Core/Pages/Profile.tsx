@@ -107,8 +107,11 @@ export default function Profile() {
           editorFont: value
         });
         setEditorFont(value);
-        // Update CSS variable immediately
-        document.documentElement.style.setProperty('--editor-font', value);
+        
+        // Update CSS variable and persist to localStorage
+        document.documentElement.style.setProperty('--editor-font', `"${value}"`);
+        localStorage.setItem('editor-font', value);
+        
         toast({
           title: "Font updated",
           description: "Font preference has been saved and applied"
@@ -125,6 +128,19 @@ export default function Profile() {
       setIsLoading(false);
     }
   };
+
+  // Add this effect to load font preference on component mount
+  useEffect(() => {
+    const loadFontPreference = () => {
+      const savedFont = localStorage.getItem('editor-font');
+      if (savedFont) {
+        setEditorFont(savedFont);
+        document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
+      }
+    };
+    
+    loadFontPreference();
+  }, []);
 
   const updateProfileInfo = async () => {
     if (!user) return;

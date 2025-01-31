@@ -235,6 +235,13 @@ function App() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  useEffect(() => {
+    const savedFont = localStorage.getItem('editor-font');
+    if (savedFont) {
+      document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
+    }
+  }, []);
+
   /**
    *
    * @param root0
