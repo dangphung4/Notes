@@ -12,6 +12,8 @@ import debounce from "lodash/debounce";
 import { useAuth } from '../Auth/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
+import { useTheme } from '../Theme/ThemeProvider';
+import { cn } from '@/lib/utils';
 
 import "@fontsource/monaspace-neon/400.css";
 import "@fontsource/monaspace-neon/500.css";
@@ -77,6 +79,7 @@ export default function Editor({
   editorRef,
 }: EditorProps) {
   const { user } = useAuth();
+  const { currentTheme } = useTheme();
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.classList.contains("dark")
   );
@@ -195,10 +198,17 @@ export default function Editor({
         editor={editor}
         theme={isDarkMode ? "dark" : "light"}
         onChange={() => debouncedSave(editor)}
-        className="flex-1 h-full bg-background overflow-y-auto mobile-editor relative
-          [&_.ProseMirror]:text-xl
-          [&_.ProseMirror]:sm:text-2xl
-          [&_.ProseMirror]:font-[var(--editor-font)]"
+        className={cn(
+          "flex-1 h-full bg-background overflow-y-auto mobile-editor relative",
+          "[&_.ProseMirror]:text-xl",
+          "[&_.ProseMirror]:sm:text-2xl",
+          "[&_.ProseMirror]:font-[var(--editor-font)]",
+          "[&_.ProseMirror]:text-foreground",
+          "[&_.ProseMirror_a]:text-primary",
+          "[&_.ProseMirror_blockquote]:border-l-primary",
+          "[&_.ProseMirror_pre]:bg-muted",
+          "[&_.ProseMirror_hr]:border-border"
+        )}
       />
     </div>
   );

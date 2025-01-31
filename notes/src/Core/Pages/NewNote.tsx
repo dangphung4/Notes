@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Editor from '../Components/Editor';
 import { db } from '../Database/db';
@@ -16,6 +16,7 @@ import { SaveIcon, LayoutTemplateIcon } from 'lucide-react';
 export default function NewNote() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const titleInputRef = useRef<HTMLInputElement>(null);
   
   // Store editor content in localStorage to prevent loss
   const [note, setNote] = useState<Note>(() => {
@@ -50,6 +51,15 @@ export default function NewNote() {
       }
     };
   }, [isSaving]);
+
+  // Add effect to focus title input on mount
+  useEffect(() => {
+    // Short timeout to ensure input is mounted
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Handle template selection
   const handleTemplateSelect = (template: NoteTemplate) => {
@@ -88,6 +98,7 @@ export default function NewNote() {
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Input
+            ref={titleInputRef}
             type="text"
             value={note.title}
             onChange={(e) => setNote({ ...note, title: e.target.value })}
