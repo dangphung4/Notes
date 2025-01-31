@@ -143,374 +143,390 @@ export default function NewNote() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b shrink-0">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Input
-            ref={titleInputRef}
-            type="text"
-            value={note.title}
-            onChange={(e) => setNote({ ...note, title: e.target.value })}
-            className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none min-w-0 flex-1"
-            placeholder="Untitled"
-          />
-          {/* Desktop buttons */}
-          <div className="hidden md:flex items-center gap-2">
-            <TemplateDialog onSelectTemplate={handleTemplateSelect}>
-              <Button variant="outline">Choose Template</Button>
-            </TemplateDialog>
-            <Button 
-              onClick={saveNote}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : 'Save Note'}
-            </Button>
-          </div>
-          {/* Mobile buttons */}
-          <div className="flex md:hidden items-center gap-2">
-            <TemplateDialog onSelectTemplate={handleTemplateSelect}>
-              <Button variant="default" size="icon" className="h-9 w-9">
-                <LayoutTemplateIcon className="h-5 w-5" />
+      {/* Fixed header section - only add top spacing on desktop */}
+      <div className="sticky top-0 md:top-16 left-0 right-0 z-40 bg-background">
+        {/* Title bar */}
+        <div className="flex items-center justify-between p-4 border-b shrink-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Input
+              ref={titleInputRef}
+              type="text"
+              value={note.title}
+              onChange={(e) => setNote({ ...note, title: e.target.value })}
+              className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none min-w-0 flex-1"
+              placeholder="Untitled"
+            />
+            {/* Desktop buttons */}
+            <div className="hidden md:flex items-center gap-2">
+              <TemplateDialog onSelectTemplate={handleTemplateSelect}>
+                <Button variant="outline">Choose Template</Button>
+              </TemplateDialog>
+              <Button 
+                onClick={saveNote}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Saving...' : 'Save Note'}
               </Button>
-            </TemplateDialog>
-            <Button 
-              variant="secondary"
-              size="icon"
-              onClick={saveNote}
-              disabled={isSaving}
-              className="h-9 w-9"
-            >
-              <SaveIcon className="h-5 w-5" />
-            </Button>
+            </div>
+            {/* Mobile buttons */}
+            <div className="flex md:hidden items-center gap-2">
+              <TemplateDialog onSelectTemplate={handleTemplateSelect}>
+                <Button variant="default" size="icon" className="h-9 w-9">
+                  <LayoutTemplateIcon className="h-5 w-5" />
+                </Button>
+              </TemplateDialog>
+              <Button 
+                variant="secondary"
+                size="icon"
+                onClick={saveNote}
+                disabled={isSaving}
+                className="h-9 w-9"
+              >
+                <SaveIcon className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
+        </div>
+
+        {/* Desktop Toolbar */}
+        <div className="hidden sm:flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b shrink-0">
+          <Button 
+            variant={activeStyles.bold ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.bold && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ bold: true });
+              }
+            }}
+          >
+            <BoldIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={activeStyles.italic ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.italic && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ italic: true });
+              }
+            }}
+          >
+            <ItalicIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={activeStyles.underline ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.underline && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ underline: true });
+              }
+            }}
+          >
+            <UnderlineIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={activeStyles.strikethrough ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.strikethrough && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ strike: true });
+              }
+            }}
+          >
+            <StrikethroughIcon className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-4 bg-border mx-1" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "heading", props: { level: 1 } }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <Heading1Icon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "heading", props: { level: 2 } }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <Heading2Icon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "heading", props: { level: 3 } }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <Heading3Icon className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-4 bg-border mx-1" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "bulletListItem" }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <ListIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "checkListItem", props: { checked: false } }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <CheckSquareIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "codeBlock", props: {} }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+            className="shrink-0"
+          >
+            <CodeIcon className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-4 bg-border mx-1" />
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => {
+              const editorContainer = document.querySelector('.bn-editor');
+              if (editorContainer) {
+                editorContainer.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="shrink-0"
+          >
+            <ArrowUpIcon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Mobile Toolbar */}
+        <div className="sm:hidden flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b shrink-0">
+          <Button 
+            variant={activeStyles.bold ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.bold && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ bold: true });
+              }
+            }}
+          >
+            <BoldIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={activeStyles.italic ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.italic && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ italic: true });
+              }
+            }}
+          >
+            <ItalicIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={activeStyles.underline ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.underline && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ underline: true });
+              }
+            }}
+          >
+            <UnderlineIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant={activeStyles.strikethrough ? "default" : "ghost"}
+            size="sm" 
+            className={cn(
+              "shrink-0 transition-colors",
+              activeStyles.strikethrough && "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.toggleStyles({ strike: true });
+              }
+            }}
+          >
+            <StrikethroughIcon className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-4 bg-border mx-1" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "heading", props: { level: 1 } }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <Heading1Icon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "bulletListItem" }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <ListIcon className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="shrink-0"
+            onClick={() => {
+              const editor = editorRef.current;
+              if (editor) {
+                editor.focus();
+                editor.insertBlocks(
+                  [{ type: "checkListItem", props: { checked: false } }],
+                  editor.getTextCursorPosition().block,
+                  'after'
+                );
+              }
+            }}
+          >
+            <CheckSquareIcon className="h-4 w-4" />
+          </Button>
+          <div className="w-px h-4 bg-border mx-1" />
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => {
+              const editorContainer = document.querySelector('.bn-editor');
+              if (editorContainer) {
+                editorContainer.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="shrink-0"
+          >
+            <ArrowUpIcon className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Desktop Toolbar */}
-      <div className="hidden sm:flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b shrink-0">
-        <Button 
-          variant={activeStyles.bold ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.bold && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ bold: true });
-            }
-          }}
-        >
-          <BoldIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant={activeStyles.italic ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.italic && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ italic: true });
-            }
-          }}
-        >
-          <ItalicIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant={activeStyles.underline ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.underline && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ underline: true });
-            }
-          }}
-        >
-          <UnderlineIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant={activeStyles.strikethrough ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.strikethrough && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ strike: true });
-            }
-          }}
-        >
-          <StrikethroughIcon className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-4 bg-border mx-1" />
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "heading", props: { level: 1 } }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <Heading1Icon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "heading", props: { level: 2 } }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <Heading2Icon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "heading", props: { level: 3 } }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <Heading3Icon className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-4 bg-border mx-1" />
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "bulletListItem" }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <ListIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "checkListItem", props: { checked: false } }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <CheckSquareIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "codeBlock", props: {} }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-          className="shrink-0"
-        >
-          <CodeIcon className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-4 bg-border mx-1" />
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              const editorElement = editor.domElement;
-              editorElement?.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          className="shrink-0"
-        >
-          <ArrowUpIcon className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Mobile Toolbar */}
-      <div className="sm:hidden flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b shrink-0">
-        <Button 
-          variant={activeStyles.bold ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.bold && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ bold: true });
-            }
-          }}
-        >
-          <BoldIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant={activeStyles.italic ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.italic && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ italic: true });
-            }
-          }}
-        >
-          <ItalicIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant={activeStyles.underline ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.underline && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ underline: true });
-            }
-          }}
-        >
-          <UnderlineIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant={activeStyles.strikethrough ? "default" : "ghost"}
-          size="sm" 
-          className={cn(
-            "shrink-0 transition-colors",
-            activeStyles.strikethrough && "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.toggleStyles({ strike: true });
-            }
-          }}
-        >
-          <StrikethroughIcon className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-4 bg-border mx-1" />
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "heading", props: { level: 1 } }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <Heading1Icon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "bulletListItem" }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <ListIcon className="h-4 w-4" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="shrink-0"
-          onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              editor.focus();
-              editor.insertBlocks(
-                [{ type: "checkListItem", props: { checked: false } }],
-                editor.getTextCursorPosition().block,
-                'after'
-              );
-            }
-          }}
-        >
-          <CheckSquareIcon className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Editor Container */}
+      {/* Editor Container - remove padding on mobile */}
       <div className="flex-1 overflow-hidden">
         <Editor
           key={note.content}
