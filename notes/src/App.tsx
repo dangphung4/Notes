@@ -235,6 +235,30 @@ function App() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  useEffect(() => {
+    const savedFont = localStorage.getItem('editor-font');
+    if (savedFont) {
+      document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadFonts = async () => {
+      try {
+        await document.fonts.ready;
+        const loadedFonts = Array.from(document.fonts).map(f => f.family);
+        console.log('Loaded fonts:', loadedFonts);
+        
+        // Add a class to body when fonts are loaded
+        document.body.classList.add('fonts-loaded');
+      } catch (error) {
+        console.error('Font loading error:', error);
+      }
+    };
+
+    loadFonts();
+  }, []);
+
   /**
    *
    * @param root0

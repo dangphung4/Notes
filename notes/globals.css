@@ -2,6 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Google Fonts imports */
+/* @import url('https://fonts.googleapis.com/css2?family=...'); */
+
+/* NPM package fonts */
+@import '@fontsource/monaspace-neon/400.css';
+@import '@fontsource/monaspace-neon/500.css';
+@import '@fontsource/monaspace-neon/700.css';
+
+@import '@fontsource/fira-code/400.css';
+@import '@fontsource/fira-code/500.css';
+@import '@fontsource/fira-code/700.css';
+
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+@import '@fontsource/caveat/400.css';
+@import '@fontsource/caveat/500.css';
+@import '@fontsource/caveat/700.css';
+
+@import '@fontsource/dancing-script/400.css';
+@import '@fontsource/dancing-script/500.css';
+@import '@fontsource/dancing-script/700.css';
+
+/* SF Mono system font */
+@font-face {
+  font-family: 'SF Mono';
+  src: local('SF Mono'),
+       local('.SFNSMono-Regular'),
+       local('SFMono-Regular'),
+       local('Menlo');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: local('SF Mono Bold'),
+       local('.SFNSMono-Bold'),
+       local('SFMono-Bold'),
+       local('Menlo-Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
     :root {
         --background: 252 62% 99%;
@@ -29,6 +76,7 @@
         --chart-4: 72 11% 38%;
         --chart-5: 252 14% 35%;
         --radius: 0.5rem;
+        --editor-font: "Monaspace Neon";
       }
   
     .dark {
@@ -71,6 +119,11 @@
     select,
     a {
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Apply font globally */
+    html {
+      font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
     }
   }
   
@@ -444,4 +497,175 @@
     line-height: 1.75rem;
     padding: 0.5rem 0;
   }
+}
+
+/* Apply editor font globally */
+.ProseMirror, 
+.bn-container {
+  font-family: var(--editor-font), monospace !important;
+}
+
+/* Update font classes with proper weights */
+.font-monaspace { font-family: "Monaspace Neon" !important; }
+.font-jetbrains { font-family: "JetBrains Mono" !important; }
+.font-fira-code { font-family: "Fira Code" !important; }
+.font-ubuntu-mono { font-family: "Ubuntu Mono" !important; }
+.font-inconsolata { font-family: "Inconsolata" !important; }
+.font-dm-mono { font-family: "DM Mono" !important; }
+.font-space-mono { font-family: "Space Mono" !important; }
+
+/* Font classes for sans-serif fonts */
+.font-inter { font-family: "Inter" !important; }
+.font-roboto { font-family: "Roboto" !important; }
+.font-open-sans { font-family: "Open Sans" !important; }
+.font-source-sans { font-family: "Source Sans 3" !important; }
+
+/* Font classes for serif fonts */
+.font-merriweather { font-family: "Merriweather" !important; }
+.font-playfair { font-family: "Playfair Display" !important; }
+
+.font-fira-code { 
+  font-family: "Fira Code", ui-monospace, monospace !important;
+  font-weight: 400;
+}
+
+.font-jetbrains { 
+  font-family: "JetBrains Mono", ui-monospace, monospace !important;
+  font-weight: 400;
+}
+
+.font-roboto { 
+  font-family: "Roboto", ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 400;
+}
+
+.font-open-sans { 
+  font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 400;
+}
+
+.font-source-sans { 
+  font-family: "Source Sans Pro", ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 400;
+}
+
+.font-merriweather { 
+  font-family: "Merriweather", ui-serif, serif !important;
+  font-weight: 400;
+}
+
+.font-playfair { 
+  font-family: "Playfair Display", ui-serif, serif !important;
+  font-weight: 400;
+}
+
+.font-caveat { 
+  font-family: "Caveat", cursive !important;
+  font-weight: 400;
+}
+
+.font-dancing { 
+  font-family: "Dancing Script", cursive !important;
+  font-weight: 400;
+}
+
+.font-comic-neue { 
+  font-family: "Comic Neue", cursive !important;
+  font-weight: 400;
+}
+
+.font-permanent-marker { 
+  font-family: "Permanent Marker", cursive !important;
+  font-weight: 400;
+}
+
+/* Apply font to specific elements */
+.ProseMirror,
+.bn-container,
+.title-input,
+.card-title,
+.heading-text,
+button,
+input,
+select,
+textarea {
+  font-family: var(--editor-font), system-ui, -apple-system, sans-serif !important;
+}
+
+/* Preview text styles */
+.preview-text {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Add font smoothing */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 2dppx) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Ensure font loading doesn't cause layout shifts */
+html {
+  font-display: swap;
+}
+
+/* Add preload hints for critical fonts */
+@layer base {
+  /* Add font loading status classes */
+  .fonts-loading {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+
+  .fonts-loaded {
+    opacity: 1;
+  }
+}
+
+/* Add this to ensure fonts are applied to the editor content */
+.ProseMirror {
+  font-family: inherit !important;
+}
+
+.bn-container {
+  font-family: inherit !important;
+}
+
+/* Update the root variable */
+:root {
+  --editor-font: "Monaspace Neon";
+}
+
+/* Apply the font through body */
+body {
+  font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
+}
+
+/* Add these with your other font classes */
+.font-anonymous-pro {
+  font-family: "Anonymous Pro" !important;
+}
+
+.font-overpass-mono {
+  font-family: "Overpass Mono" !important;
+}
+
+/* Handwriting alternatives */
+.font-handlee {
+  font-family: "Handlee" !important;
+}
+
+.font-patrick-hand {
+  font-family: "Patrick Hand" !important;
+}
+
+.font-kalam {
+  font-family: "Kalam" !important;
+}
+
+.font-indie-flower {
+  font-family: "Indie Flower" !important;
 }

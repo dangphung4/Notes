@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/AuthContext";
 import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,10 @@ import {
 } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
+import { doc, getDoc } from "firebase/firestore";
+import { db as firestore } from '../Auth/firebase';
+import { db } from '../Database/db';
 
 /**
  *
@@ -51,8 +55,120 @@ export default function Profile() {
   const [desktopNotifications, setDesktopNotifications] = useState(true);
 
   // App Settings
-  const [autoSave, setAutoSave] = useState(true);
-  const [spellCheck, setSpellCheck] = useState(true);
+
+  const FONT_OPTIONS = [
+    // Monospace fonts
+    { value: 'Monaspace Neon', label: 'Monaspace Neon', class: 'font-monaspace', category: 'Monospace' },
+    { value: 'JetBrains Mono', label: 'JetBrains Mono', class: 'font-jetbrains', category: 'Monospace' },
+    { value: 'Fira Code', label: 'Fira Code', class: 'font-fira-code', category: 'Monospace' },
+    { value: 'Ubuntu Mono', label: 'Ubuntu Mono', class: 'font-ubuntu-mono', category: 'Monospace' },
+    { value: 'Inconsolata', label: 'Inconsolata', class: 'font-inconsolata', category: 'Monospace' },
+    { value: 'DM Mono', label: 'DM Mono', class: 'font-dm-mono', category: 'Monospace' },
+    { value: 'Space Mono', label: 'Space Mono', class: 'font-space-mono', category: 'Monospace' },
+    
+    // Sans Serif fonts
+    { value: 'Inter', label: 'Inter', class: 'font-inter', category: 'Sans Serif' },
+    { value: 'Roboto', label: 'Roboto', class: 'font-roboto', category: 'Sans Serif' },
+    { value: 'Open Sans', label: 'Open Sans', class: 'font-open-sans', category: 'Sans Serif' },
+    { value: 'Source Sans 3', label: 'Source Sans', class: 'font-source-sans', category: 'Sans Serif' },
+    
+    // Serif fonts
+    { value: 'Merriweather', label: 'Merriweather', class: 'font-merriweather', category: 'Serif' },
+    { value: 'Playfair Display', label: 'Playfair Display', class: 'font-playfair', category: 'Serif' },
+    
+    // Handwriting fonts
+    { value: 'Handlee', label: 'Handlee', class: 'font-handlee', category: 'Handwriting' },
+    { value: 'Patrick Hand', label: 'Patrick Hand', class: 'font-patrick-hand', category: 'Handwriting' },
+    { value: 'Kalam', label: 'Kalam', class: 'font-kalam', category: 'Handwriting' },
+    { value: 'Indie Flower', label: 'Indie Flower', class: 'font-indie-flower', category: 'Handwriting' },
+    { value: 'Caveat', label: 'Caveat', class: 'font-caveat', category: 'Handwriting' },
+    { value: 'Dancing Script', label: 'Dancing Script', class: 'font-dancing', category: 'Handwriting' },
+    { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' }
+  ];
+
+  const [editorFont, setEditorFont] = useState('Monaspace Neon');
+
+  // Load user preferences
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (!user) return;
+      try {
+        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+        const preferences = userDoc.data()?.preferences;
+        if (preferences?.editorFont) {
+          setEditorFont(preferences.editorFont);
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      }
+    };
+    loadPreferences();
+  }, [user]);
+
+  const handleFontChange = async (value: string) => {
+    try {
+      setIsLoading(true);
+      if (user) {
+        await db.updateUserPreferences(user.uid, {
+          editorFont: value
+        });
+        setEditorFont(value);
+        
+        // Update both the CSS variable and the body class
+        document.documentElement.style.setProperty('--editor-font', `"${value}"`);
+        document.body.className = document.body.className
+          .split(' ')
+          .filter(c => !c.startsWith('font-'))
+          .concat(`font-${value.toLowerCase().replace(/\s+/g, '-')}`)
+          .join(' ');
+        
+        localStorage.setItem('editor-font', value);
+        
+        toast({
+          title: "Font updated",
+          description: "Font preference has been saved and applied"
+        });
+      }
+    } catch (error) {
+      console.error('Error updating font:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update font preference",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Add this effect to load font preference on component mount
+  useEffect(() => {
+    const loadFontPreference = () => {
+      const savedFont = localStorage.getItem('editor-font');
+      if (savedFont) {
+        setEditorFont(savedFont);
+        document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
+      }
+    };
+    
+    loadFontPreference();
+  }, []);
+
+  // Add this near your other useEffects
+  useEffect(() => {
+    // Test font loading
+    const testFontLoading = async () => {
+      try {
+        await document.fonts.ready;
+        const fonts = document.fonts;
+        console.log('Loaded fonts:', Array.from(fonts).map(f => f.family));
+      } catch (error) {
+        console.error('Font loading error:', error);
+      }
+    };
+    
+    testFontLoading();
+  }, []);
 
   const updateProfileInfo = async () => {
     if (!user) return;
@@ -336,7 +452,7 @@ export default function Profile() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label>Auto Save</Label>
                   <p className="text-sm text-muted-foreground">
@@ -360,6 +476,46 @@ export default function Profile() {
                   checked={spellCheck}
                   onCheckedChange={setSpellCheck}
                 />
+              </div> */}
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label>App Font</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Choose your preferred font for the app
+                  </p>
+                </div>
+                <Select
+                  value={editorFont}
+                  onValueChange={handleFontChange}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(
+                      FONT_OPTIONS.reduce((acc, font) => {
+                        if (!acc[font.category]) acc[font.category] = [];
+                        acc[font.category].push(font);
+                        return acc;
+                      }, {} as Record<string, typeof FONT_OPTIONS>)
+                    ).map(([category, fonts]) => (
+                      <SelectGroup key={category}>
+                        <SelectLabel className="px-2 py-1.5 text-sm font-semibold">{category}</SelectLabel>
+                        {fonts.map(font => (
+                          <SelectItem 
+                            key={font.value} 
+                            value={font.value}
+                            className={font.class}
+                          >
+                            {font.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
