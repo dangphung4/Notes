@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Editor from '../Components/Editor';
@@ -46,9 +47,14 @@ export default function NewNote() {
     if (savedNote) {
       return JSON.parse(savedNote);
     }
+    
+    // Initialize with blank template content
+    const blankContent = noteTemplates.blank.content;
     return {
       title: '',
-      content: JSON.stringify(noteTemplates.blank.content),
+      content: typeof blankContent === 'string' 
+        ? blankContent 
+        : JSON.stringify(blankContent),
       updatedAt: new Date(),
       createdAt: new Date(),
       ownerUserId: user?.uid || '',
@@ -113,21 +119,46 @@ export default function NewNote() {
     updateActiveStyles();
   }, [editorRef.current]);
 
-  // Handle template selection
+  // Update the template selection handler
   const handleTemplateSelect = (template: NoteTemplate) => {
-    console.log('Selected template:', template); // Debug log
+    console.log('Selected template:', template); // Keep debug log
+    
+    // Get the editor instance
+    const editor = editorRef.current;
+    if (!editor) {
+      console.warn('Editor not initialized');
+      return;
+    }
+
+    // Update note state with template title
     setNote(prev => ({
       ...prev,
       title: template.title || 'Untitled',
-      content: JSON.stringify(template.content)
     }));
+
+    try {
+      // Parse the template content and apply it to the editor
+      const content = typeof template.content === 'string' 
+        ? JSON.parse(template.content)
+        : template.content;
+        
+      // Replace the editor content with template content
+      editor.replaceBlocks(editor.topLevelBlocks, content);
+      
+      // Save to localStorage after template is applied
+      localStorage.setItem('draft-note', JSON.stringify({
+        ...note,
+        title: template.title || 'Untitled',
+        content: JSON.stringify(content)
+      }));
+    } catch (error) {
+      console.error('Error applying template:', error);
+    }
   };
 
-  // Update the content change handler to prevent focus loss
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Update the content change handler
   const handleContentChange = useCallback((content: any[]) => {
     const contentStr = JSON.stringify(content);
-    // Use functional update to prevent unnecessary re-renders
     setNote(prev => ({
       ...prev,
       content: contentStr
