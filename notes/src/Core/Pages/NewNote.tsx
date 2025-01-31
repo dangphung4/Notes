@@ -80,17 +80,58 @@ export default function NewNote() {
     };
   }, [isSaving]);
 
-  // Update the useEffect for title input focus
+  // Add a ref to track if initial focus has been set
+  const initialFocusRef = useRef(false);
+
+  // Update the editor initialization and focus handling
   useEffect(() => {
-    // Short timeout to ensure input is mounted and iOS keyboard shows up
+    const editor = editorRef.current;
+    if (!editor || initialFocusRef.current) return;
+
+    // Function to focus editor and show keyboard
+    const focusEditor = () => {
+      // First focus the title input
+      if (titleInputRef.current) {
+        titleInputRef.current.focus();
+        titleInputRef.current.click();
+      }
+
+      // Then set up a delayed focus for the editor
+      setTimeout(() => {
+        if (editor) {
+          editor.focus();
+        }
+      }, 300); // Delay to ensure proper focus order
+    };
+
+    // Set initial focus after a short delay
+    const timer = setTimeout(focusEditor, 100);
+    initialFocusRef.current = true;
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Update title input focus handling
+  useEffect(() => {
+    if (initialFocusRef.current) return;
+
     const timer = setTimeout(() => {
       if (titleInputRef.current) {
         titleInputRef.current.focus();
         // Force keyboard to show on iOS
-        (titleInputRef.current as HTMLInputElement).click();
+        titleInputRef.current.click();
       }
     }, 100);
+    
     return () => clearTimeout(timer);
+  }, []);
+
+  // Add touch event handlers for iOS
+  const handleTouchStart = useCallback(() => {
+    const editor = editorRef.current;
+    if (editor && !editor.isFocused) {
+      editor.focus();
+    }
   }, []);
 
   // Add effect to track active styles
@@ -143,7 +184,7 @@ export default function NewNote() {
         : template.content;
         
       // Replace the editor content with template content
-      editor.replaceBlocks(editor.topLevelBlocks, content);
+      editor.replaceBlocks(editor.document, content);
       
       // Save to localStorage after template is applied
       localStorage.setItem('draft-note', JSON.stringify({
@@ -575,7 +616,10 @@ export default function NewNote() {
       </div>
 
       {/* Editor Container - remove padding on mobile */}
-      <div className="flex-1 overflow-hidden">
+      <div 
+        className="flex-1 overflow-hidden"
+        onTouchStart={handleTouchStart}
+      >
         <Editor
           content={note.content}
           onChange={handleContentChange}
