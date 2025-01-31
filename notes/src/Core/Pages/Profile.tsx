@@ -55,8 +55,6 @@ export default function Profile() {
   const [desktopNotifications, setDesktopNotifications] = useState(true);
 
   // App Settings
-  const [autoSave, setAutoSave] = useState(true);
-  const [spellCheck, setSpellCheck] = useState(true);
 
   const FONT_OPTIONS = [
     // Monospace fonts

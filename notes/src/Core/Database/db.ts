@@ -1115,7 +1115,7 @@ class NotesDB extends Dexie {
       });
 
       // Update CSS variable for global font change
-      if (preferences.editorFont) {
+      if (preferences?.editorFont) {
         document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
         // Force re-render of editor if needed
         document.documentElement.classList.add('font-updated');
