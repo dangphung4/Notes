@@ -32,6 +32,16 @@ import { toast } from "@/hooks/use-toast";
 import { XCircleIcon } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 
+interface StoredNotesPreferences {
+  activeTab: 'my-notes' | 'shared';
+  view: 'grid' | 'list';
+  sortBy: 'updated' | 'created' | 'title';
+  selectedTags: string[];
+  selectedTagFilters: Tags[];
+  searchQuery: string;
+  dateFilter?: string; // Store as ISO string
+}
+
 const NoteCard = ({ note, shares, user, view, onClick }: { 
   note: Note, 
   shares: SharePermission[], 
@@ -586,15 +596,55 @@ export default function Notes() {
   const [shares, setShares] = useState<SharePermission[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'my-notes' | 'shared'>('my-notes');
+  const [activeTab, setActiveTab] = useState<'my-notes' | 'shared'>(() => {
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.activeTab;
+    }
+    return 'my-notes';
+  });
   const [view, setView] = useState<'grid' | 'list'>(() => {
-    return localStorage.getItem('notes-view') as 'grid' | 'list' || 'grid';
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.view;
+    }
+    return 'grid';
   });
   const [showViewOptions, setShowViewOptions] = useState(false);
-  const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>('updated');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [dateFilter, setDateFilter] = useState<Date | undefined>();
-  const [selectedTagFilters, setSelectedTagFilters] = useState<Tags[]>([]);
+  const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>(() => {
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.sortBy;
+    }
+    return 'updated';
+  });
+  const [selectedTags, setSelectedTags] = useState<string[]>(() => {
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.selectedTags;
+    }
+    return [];
+  });
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(() => {
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.dateFilter ? new Date(preferences.dateFilter) : undefined;
+    }
+    return undefined;
+  });
+  const [selectedTagFilters, setSelectedTagFilters] = useState<Tags[]>(() => {
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.selectedTagFilters;
+    }
+    return [];
+  });
   const [allTags, setAllTags] = useState<Tags[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -860,6 +910,20 @@ export default function Notes() {
     });
   }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters, user?.uid]);
 
+  // Add effect to save preferences whenever they change
+  useEffect(() => {
+    const preferences: StoredNotesPreferences = {
+      activeTab,
+      view,
+      sortBy,
+      selectedTags,
+      selectedTagFilters,
+      searchQuery,
+      dateFilter: dateFilter?.toISOString(),
+    };
+    localStorage.setItem('notes-preferences', JSON.stringify(preferences));
+  }, [activeTab, view, sortBy, selectedTags, selectedTagFilters, searchQuery, dateFilter]);
+
   /**
    *
    */
@@ -869,6 +933,18 @@ export default function Notes() {
     setDateFilter(undefined);
     setSelectedTagFilters([]);
     setSortBy('updated');
+    
+    // Update localStorage with cleared filters
+    const preferences: StoredNotesPreferences = {
+      activeTab,
+      view,
+      sortBy: 'updated',
+      selectedTags: [],
+      selectedTagFilters: [],
+      searchQuery: '',
+      dateFilter: undefined,
+    };
+    localStorage.setItem('notes-preferences', JSON.stringify(preferences));
   }
 
   return (
