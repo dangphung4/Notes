@@ -24,6 +24,7 @@ import {
   BellIcon, 
   LockClosedIcon,
   CheckIcon,
+  ExitIcon,
 } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,26 +35,27 @@ import { useTheme } from "../Theme/ThemeProvider";
 import { themes, ThemeName } from "../Theme/themes";
 import { Check, PaletteIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 /**
- *
+ * Profile page
+ * 
+ * @returns {JSX.Element}
  */
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   
-  // Profile Settings
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [photoURL, setPhotoURL] = useState(user?.photoURL || "");
-  
   // Security Settings
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
-  // Notification Settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [desktopNotifications, setDesktopNotifications] = useState(true);
 
@@ -91,7 +93,6 @@ export default function Profile() {
 
   const [editorFont, setEditorFont] = useState('Monaspace Neon');
 
-  // Load user preferences
   useEffect(() => {
     const loadPreferences = async () => {
       if (!user) return;
@@ -109,13 +110,10 @@ export default function Profile() {
   }, [user]);
 
   const handleFontChange = async (newFont: string) => {
-    // Update local storage
     localStorage.setItem('editor-font', newFont);
-    
-    // Update CSS variable
+
     document.documentElement.style.setProperty('--editor-font', newFont);
     
-    // If user is logged in, update Firestore
     if (user) {
       try {
         await updateDoc(doc(firestore, 'users', user.uid), {
@@ -127,7 +125,6 @@ export default function Profile() {
     }
   };
 
-  // Add this effect to load font preference on component mount
   useEffect(() => {
     const loadFontPreference = () => {
       const savedFont = localStorage.getItem('editor-font');
@@ -161,14 +158,12 @@ export default function Profile() {
     
     try {
       setIsLoading(true);
-      
       // Update display name and photo URL
       await updateProfile(user, {
         displayName,
         photoURL,
       });
 
-      // Update email if changed
       if (newEmail !== user.email) {
         await updateEmail(user, newEmail);
       }
@@ -210,7 +205,6 @@ export default function Profile() {
         description: "Your password has been updated successfully.",
       });
       
-      // Clear password fields
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -226,7 +220,6 @@ export default function Profile() {
     }
   };
 
-  // Get initials for avatar fallback
   const getInitials = () => {
     if (user?.displayName) {
       return user.displayName
@@ -350,6 +343,15 @@ export default function Profile() {
                 ) : (
                   "Update Profile"
                 )}
+              </Button>
+
+              <Button 
+                variant="destructive"
+                onClick={() => navigate('/logout')}
+                className="w-full mt-4"
+              >
+                <ExitIcon className="mr-2 h-4 w-4" />
+                Sign Out
               </Button>
             </CardContent>
           </Card>
