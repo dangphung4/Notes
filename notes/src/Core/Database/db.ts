@@ -1097,6 +1097,11 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param userId
+   * @param preferences
+   */
   async updateUserPreferences(userId: string, preferences: Partial<User['preferences']>) {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
