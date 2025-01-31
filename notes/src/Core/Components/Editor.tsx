@@ -1,9 +1,12 @@
 import "@blocknote/core/fonts/inter.css";
 // TODO: eventually move to shadcn instead of mantime,  @blocknote/shadcn
 // TODO: although this means we will have to edit styles again of editor component
-import { BlockNoteView } from "@blocknote/mantine";
+// import { BlockNoteView } from "@blocknote/mantine";
+import { BlockNoteView } from "@blocknote/shadcn";
+
 // this will use shadcn styles ex: @blocknote/shadcn/style.css
-import "@blocknote/mantine/style.css";
+// import "@blocknote/mantine/style.css";
+import "@blocknote/shadcn/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
