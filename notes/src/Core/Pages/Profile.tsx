@@ -69,7 +69,7 @@ export default function Profile() {
     { value: 'Inter', label: 'Inter', class: 'font-inter', category: 'Sans Serif' },
     { value: 'Roboto', label: 'Roboto', class: 'font-roboto', category: 'Sans Serif' },
     { value: 'Open Sans', label: 'Open Sans', class: 'font-open-sans', category: 'Sans Serif' },
-    { value: 'Source Sans Pro', label: 'Source Sans Pro', class: 'font-source-sans', category: 'Sans Serif' },
+    { value: 'Source Sans 3', label: 'Source Sans', class: 'font-source-sans', category: 'Sans Serif' },
     
     // Serif fonts
     { value: 'Merriweather', label: 'Merriweather', class: 'font-merriweather', category: 'Serif' },
@@ -108,8 +108,14 @@ export default function Profile() {
         });
         setEditorFont(value);
         
-        // Update CSS variable and persist to localStorage
+        // Update both the CSS variable and the body class
         document.documentElement.style.setProperty('--editor-font', `"${value}"`);
+        document.body.className = document.body.className
+          .split(' ')
+          .filter(c => !c.startsWith('font-'))
+          .concat(`font-${value.toLowerCase().replace(/\s+/g, '-')}`)
+          .join(' ');
+        
         localStorage.setItem('editor-font', value);
         
         toast({
@@ -140,6 +146,22 @@ export default function Profile() {
     };
     
     loadFontPreference();
+  }, []);
+
+  // Add this near your other useEffects
+  useEffect(() => {
+    // Test font loading
+    const testFontLoading = async () => {
+      try {
+        await document.fonts.ready;
+        const fonts = document.fonts;
+        console.log('Loaded fonts:', Array.from(fonts).map(f => f.family));
+      } catch (error) {
+        console.error('Font loading error:', error);
+      }
+    };
+    
+    testFontLoading();
   }, []);
 
   const updateProfileInfo = async () => {

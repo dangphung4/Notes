@@ -2,24 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Monaspace+Neon:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=SF+Mono:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&display=swap');
+/* Google Fonts imports */
+/* @import url('https://fonts.googleapis.com/css2?family=...'); */
 
-/* SF Mono is system font on macOS */
+/* NPM package fonts */
+@import '@fontsource/monaspace-neon/400.css';
+@import '@fontsource/monaspace-neon/500.css';
+@import '@fontsource/monaspace-neon/700.css';
+
+@import '@fontsource/fira-code/400.css';
+@import '@fontsource/fira-code/500.css';
+@import '@fontsource/fira-code/700.css';
+
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+@import '@fontsource/caveat/400.css';
+@import '@fontsource/caveat/500.css';
+@import '@fontsource/caveat/700.css';
+
+@import '@fontsource/dancing-script/400.css';
+@import '@fontsource/dancing-script/500.css';
+@import '@fontsource/dancing-script/700.css';
+
+/* SF Mono system font */
 @font-face {
   font-family: 'SF Mono';
-  src: local('SF Mono');
+  src: local('SF Mono'),
+       local('.SFNSMono-Regular'),
+       local('SFMono-Regular'),
+       local('Menlo');
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: local('SF Mono Bold'),
+       local('.SFNSMono-Bold'),
+       local('SFMono-Bold'),
+       local('Menlo-Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
 @layer base {
@@ -49,7 +76,7 @@
         --chart-4: 72 11% 38%;
         --chart-5: 252 14% 35%;
         --radius: 0.5rem;
-        --editor-font: "Monaspace Neon", ui-monospace, monospace;
+        --editor-font: "Monaspace Neon";
       }
   
     .dark {
@@ -478,21 +505,54 @@
   font-family: var(--editor-font), monospace !important;
 }
 
-/* Font classes for preview in settings */
-.font-monaspace { font-family: "Monaspace Neon", ui-monospace, monospace !important; }
-.font-inter { font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important; }
-.font-sf-mono { font-family: "SF Mono", ui-monospace, monospace !important; }
-.font-fira-code { font-family: "Fira Code", ui-monospace, monospace !important; }
-.font-jetbrains { font-family: "JetBrains Mono", ui-monospace, monospace !important; }
+/* Update font classes with proper weights */
+.font-monaspace { 
+  font-family: "Monaspace Neon" !important;
+}
 
-/* Font classes for the entire app */
-.font-roboto { font-family: "Roboto", ui-sans-serif, system-ui, sans-serif !important; }
-.font-open-sans { font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif !important; }
-.font-source-sans { font-family: "Source Sans Pro", ui-sans-serif, system-ui, sans-serif !important; }
-.font-merriweather { font-family: "Merriweather", ui-serif, serif !important; }
-.font-playfair { font-family: "Playfair Display", ui-serif, serif !important; }
-.font-caveat { font-family: "Caveat", cursive !important; }
-.font-dancing { font-family: "Dancing Script", cursive !important; }
+.font-inter { 
+  font-family: "Inter" !important;
+}
+
+.font-sf-mono { 
+  font-family: "SF Mono" !important;
+}
+
+.font-fira-code { 
+  font-family: "Fira Code" !important;
+}
+
+.font-jetbrains { 
+  font-family: "JetBrains Mono" !important;
+}
+
+.font-roboto { 
+  font-family: "Roboto" !important;
+}
+
+.font-open-sans { 
+  font-family: "Open Sans" !important;
+}
+
+.font-source-sans { 
+  font-family: "Source Sans 3" !important;
+}
+
+.font-merriweather { 
+  font-family: "Merriweather" !important;
+}
+
+.font-playfair { 
+  font-family: "Playfair Display" !important;
+}
+
+.font-caveat { 
+  font-family: "Caveat" !important;
+}
+
+.font-dancing { 
+  font-family: "Dancing Script" !important;
+}
 
 /* Apply font to specific elements */
 .ProseMirror,
@@ -525,4 +585,36 @@ textarea {
 /* Ensure font loading doesn't cause layout shifts */
 html {
   font-display: swap;
+}
+
+/* Add preload hints for critical fonts */
+@layer base {
+  /* Add font loading status classes */
+  .fonts-loading {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+
+  .fonts-loaded {
+    opacity: 1;
+  }
+}
+
+/* Add this to ensure fonts are applied to the editor content */
+.ProseMirror {
+  font-family: inherit !important;
+}
+
+.bn-container {
+  font-family: inherit !important;
+}
+
+/* Update the root variable */
+:root {
+  --editor-font: "Monaspace Neon";
+}
+
+/* Apply the font through body */
+body {
+  font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
 }

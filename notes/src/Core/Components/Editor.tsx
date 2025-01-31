@@ -17,6 +17,30 @@ import "@fontsource/monaspace-neon/400.css";
 import "@fontsource/monaspace-neon/500.css";
 import "@fontsource/monaspace-neon/700.css";
 
+// Add all font imports
+import "@fontsource/fira-code";
+import "@fontsource/fira-code/500.css";
+import "@fontsource/fira-code/700.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import "@fontsource/jetbrains-mono/700.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/open-sans/400.css";
+import "@fontsource/source-sans-3/400.css";
+import "@fontsource/merriweather/400.css";
+import "@fontsource/playfair-display/400.css";
+import "@fontsource/playfair-display/500.css";
+import "@fontsource/playfair-display/700.css";
+import "@fontsource/caveat/400.css";
+import "@fontsource/caveat/500.css";
+import "@fontsource/caveat/700.css";
+import "@fontsource/dancing-script/400.css";
+import "@fontsource/dancing-script/500.css";
+import "@fontsource/dancing-script/700.css";
+
 interface EditorProps {
   content: string; // Change to expect string since that's how it's stored
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
