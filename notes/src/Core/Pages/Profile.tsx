@@ -36,6 +36,7 @@ import { themes, ThemeName } from "../Theme/themes";
 import { Check, PaletteIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 /**
  * Profile page
@@ -244,6 +245,25 @@ export default function Profile() {
       muted: value[currentMode as keyof typeof value]?.muted,
     },
   }));
+
+  // Add this helper function to group themes
+  const groupThemes = () => {
+    const groups = {
+      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin'],
+      'Classic': ['solarized', 'gruvbox', 'oneDark'],
+      'Vibrant': ['synthwave', 'cyberpunk', 'horizon'],
+      'Natural': ['rosePine', 'palenight', 'ayu'],
+      'Professional': ['github', 'nord', 'cobalt']
+    };
+    
+    return Object.entries(groups).map(([groupName, themeNames]) => ({
+      name: groupName,
+      themes: themeNames.map(name => ({
+        name: name as ThemeName,
+        displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
+      }))
+    }));
+  };
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
@@ -497,14 +517,9 @@ export default function Profile() {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <PaletteIcon className="h-8 w-8 text-primary" />
-                  <div>
-                    <h3 className="text-2xl font-semibold">Theme</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Choose a theme that matches your style
-                    </p>
-                  </div>
+                  <h3 className="text-2xl font-semibold">Theme</h3>
                 </div>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader>
@@ -540,101 +555,48 @@ export default function Profile() {
                       <CardTitle>Theme Presets</CardTitle>
                       <CardDescription>Select a predefined color theme</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid gap-2">
-                      {themePresets.map((preset) => (
-                        <Button
-                          key={preset.theme}
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start gap-2",
-                            currentTheme === preset.theme && "border-primary"
-                          )}
-                          onClick={() => setCurrentTheme(preset.theme)}
-                        >
-                          <div className="flex items-center gap-2 flex-1">
-                            <div className="flex gap-1">
-                              <div
-                                className="h-4 w-4 rounded-full"
-                                style={{
-                                  backgroundColor: `hsl(${preset.colors.primary})`,
-                                }}
-                              />
-                              <div
-                                className="h-4 w-4 rounded-full"
-                                style={{
-                                  backgroundColor: `hsl(${preset.colors.secondary})`,
-                                }}
-                              />
+                    <CardContent>
+                      <ScrollArea className="h-[300px] pr-4">
+                        <div className="space-y-4">
+                          {groupThemes().map((group) => (
+                            <div key={group.name} className="space-y-2">
+                              <h4 className="text-sm font-medium text-muted-foreground">{group.name}</h4>
+                              {group.themes.map((theme) => (
+                                <Button
+                                  key={theme.name}
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start gap-2",
+                                    currentTheme === theme.name && "border-primary"
+                                  )}
+                                  onClick={() => setCurrentTheme(theme.name)}
+                                >
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <div className="flex gap-1">
+                                      <div
+                                        className="h-4 w-4 rounded-full"
+                                        style={{
+                                          backgroundColor: `hsl(${themes[theme.name][currentMode].primary})`,
+                                        }}
+                                      />
+                                      <div
+                                        className="h-4 w-4 rounded-full"
+                                        style={{
+                                          backgroundColor: `hsl(${themes[theme.name][currentMode].secondary})`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span>{theme.displayName}</span>
+                                    {currentTheme === theme.name && (
+                                      <Check className="h-4 w-4 ml-auto" />
+                                    )}
+                                  </div>
+                                </Button>
+                              ))}
                             </div>
-                            <span>{preset.name}</span>
-                            {currentTheme === preset.theme && (
-                              <Check className="h-4 w-4 ml-auto" />
-                            )}
-                          </div>
-                        </Button>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="md:col-span-2">
-                    <CardHeader>
-                      <CardTitle>Theme Preview</CardTitle>
-                      <CardDescription>
-                        See how your selected theme looks with different components
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4">
-                      <div className="grid gap-2">
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-medium">Buttons</h4>
-                          <div className="flex flex-wrap gap-2">
-                            <Button>Primary</Button>
-                            <Button variant="secondary">Secondary</Button>
-                            <Button variant="outline">Outline</Button>
-                            <Button variant="ghost">Ghost</Button>
-                            <Button variant="destructive">Destructive</Button>
-                          </div>
+                          ))}
                         </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-medium">Cards</h4>
-                          <div className="grid gap-2">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>Example Card</CardTitle>
-                                <CardDescription>
-                                  This is how cards will look with this theme
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-sm text-muted-foreground">
-                                  Card content with muted text
-                                </p>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-medium">Form Elements</h4>
-                          <div className="grid gap-2">
-                            <Input placeholder="Input field" />
-                            <div className="flex items-center space-x-2">
-                              <Switch id="example-switch" />
-                              <Label htmlFor="example-switch">Switch</Label>
-                            </div>
-                            <Select>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select option" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="option1">Option 1</SelectItem>
-                                <SelectItem value="option2">Option 2</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
+                      </ScrollArea>
                     </CardContent>
                   </Card>
                 </div>
