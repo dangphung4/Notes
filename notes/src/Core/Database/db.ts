@@ -1015,16 +1015,51 @@ class NotesDB extends Dexie {
     if (!user) throw new Error("User not authenticated");
 
     try {
-      // Update in Firebase
-      await updateDoc(doc(firestore, "notes", noteId), {
+      // Get the note to check permissions
+      const noteRef = doc(firestore, "notes", noteId);
+      const noteDoc = await getDoc(noteRef);
+      
+      if (!noteDoc.exists()) {
+        throw new Error("Note not found");
+      }
+
+      const noteData = noteDoc.data();
+      const isOwner = noteData.ownerUserId === user.uid;
+
+      // Check for edit permissions in shares collection if not owner
+      if (!isOwner) {
+        const sharesRef = collection(firestore, "shares");
+        const shareQuery = query(
+          sharesRef,
+          where("noteId", "==", noteId),
+          where("email", "==", user.email),
+          where("access", "==", "edit")
+        );
+        const shareSnapshot = await getDocs(shareQuery);
+        
+        if (shareSnapshot.empty) {
+          throw new Error("No permission to edit tags on this note");
+        }
+      }
+
+      // Update tags in Firebase
+      await updateDoc(noteRef, {
         tags: tags,
         lastModifiedBy: user.email,
         lastModifiedAt: new Date(),
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || "",
+        lastEditedByPhotoURL: user.photoURL || "",
+        lastEditedAt: new Date(),
       });
-      const noteIdNumber = parseInt(noteId, 10);
 
-      // Update locally
-      await this.notes.update(noteIdNumber, { tags });
+      // Update locally if using IndexedDB
+      const noteIdNumber = parseInt(noteId, 10);
+      if (!isNaN(noteIdNumber)) {
+        await this.notes.update(noteIdNumber, { tags });
+      }
+
     } catch (error) {
       console.error("Error updating note tags:", error);
       throw error;
