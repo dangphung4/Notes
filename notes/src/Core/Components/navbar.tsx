@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "../Theme/ThemeProvider";
+import { PenSquareIcon } from "lucide-react";
 
 interface NavProps {
   darkMode: boolean;
@@ -265,6 +266,17 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
             </Button>
           )}
         </div>
+      )}
+      {/* another button to quickly open a new note on mobile on top of hamburger menu */}
+      { user && (
+      <Button
+        variant="default"
+        size="icon"
+        className="h-12 w-12 rounded-full shadow-lg"
+        onClick={() => handleNavigation('/notes/new')}
+      >
+          <PenSquareIcon className="h-6 w-6" />
+        </Button>
       )}
       <Button
         variant="default"

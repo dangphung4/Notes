@@ -271,37 +271,40 @@ class NotesDB extends Dexie {
         throw new Error("No permission to edit this note");
       }
 
+      // Create cleaned note data object
+      const noteData = {
+        title: note.title,
+        content: note.content || "",
+        updatedAt: new Date(),
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || "Unknown",
+        lastEditedByPhotoURL: user.photoURL,
+        lastEditedAt: new Date(),
+        // Only include isPinned if it's explicitly boolean
+        ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned })
+      };
+
+      // Remove any undefined or null values
+      const cleanedNoteData = Object.fromEntries(
+        Object.entries(noteData).filter(([_, value]) => value !== undefined && value !== null)
+      );
+
       if (note.firebaseId) {
-        await updateDoc(doc(firestore, "notes", note.firebaseId), {
-          title: note.title,
-          content: note.content || "",
-          updatedAt: new Date(),
-          lastEditedByUserId: user.uid,
-          lastEditedByEmail: user.email,
-          lastEditedByDisplayName: user.displayName || "Unknown",
-          lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date(),
-          isPinned: note.isPinned,
-        });
+        await updateDoc(doc(firestore, "notes", note.firebaseId), cleanedNoteData);
       } else {
-        const docRef = await addDoc(collection(firestore, "notes"), {
-          title: note.title,
-          content: note.content || "",
+        const newNoteData = {
+          ...cleanedNoteData,
           createdAt: new Date(),
-          updatedAt: new Date(),
           ownerUserId: user.uid,
           ownerEmail: user.email,
           ownerDisplayName: user.displayName || "Unknown",
           ownerPhotoURL: user.photoURL,
-          lastEditedByUserId: user.uid,
-          lastEditedByEmail: user.email,
-          lastEditedByDisplayName: user.displayName || "Unknown",
-          lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date(),
           tags: [],
           isPinned: false,
           isArchived: false,
-        });
+        };
+        const docRef = await addDoc(collection(firestore, "notes"), newNoteData);
         await this.notes.update(note.id!, { firebaseId: docRef.id });
       }
 
@@ -1132,6 +1135,52 @@ class NotesDB extends Dexie {
       return true;
     } catch (error) {
       console.error('Error updating preferences:', error);
+      throw error;
+    }
+  }
+
+  // Find the syncNoteWithFirebase method and update it to filter out undefined values
+  async syncNoteWithFirebase(note: Note) {
+    if (!auth.currentUser) return;
+
+    try {
+      const noteData = {
+        title: note.title,
+        content: note.content,
+        updatedAt: note.updatedAt,
+        createdAt: note.createdAt,
+        ownerUserId: note.ownerUserId,
+        ownerEmail: note.ownerEmail,
+        ownerDisplayName: note.ownerDisplayName,
+        ownerPhotoURL: note.ownerPhotoURL,
+        lastEditedByUserId: note.lastEditedByUserId,
+        lastEditedByEmail: note.lastEditedByEmail,
+        lastEditedByDisplayName: note.lastEditedByDisplayName,
+        lastEditedByPhotoURL: note.lastEditedByPhotoURL,
+        lastEditedAt: note.lastEditedAt,
+        tags: note.tags || [],
+        // Only include these fields if they are explicitly set to true or false
+        ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned }),
+        ...(typeof note.isArchived === 'boolean' && { isArchived: note.isArchived })
+      };
+
+      // Remove any undefined or null values
+      const cleanedNoteData = Object.fromEntries(
+        Object.entries(noteData).filter(([_, value]) => value !== undefined && value !== null)
+      );
+
+      if (note.firebaseId) {
+        // Update existing document
+        const noteRef = doc(firestore, 'notes', note.firebaseId);
+        await updateDoc(noteRef, cleanedNoteData);
+      } else {
+        // Create new document
+        const docRef = await addDoc(collection(firestore, 'notes'), cleanedNoteData);
+        note.firebaseId = docRef.id;
+        await this.notes.update(note.id!, { firebaseId: docRef.id });
+      }
+    } catch (error) {
+      console.error('Error syncing with Firebase:', error);
       throw error;
     }
   }
