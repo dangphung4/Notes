@@ -52,7 +52,7 @@ export default function NewNote() {
     };
   }, [isSaving]);
 
-  // Add effect to focus title input on mount
+  // focus title input on mount
   useEffect(() => {
     // Short timeout to ensure input is mounted
     const timer = setTimeout(() => {
@@ -94,7 +94,7 @@ export default function NewNote() {
   }, [note, user, navigate]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="flex flex-col min-h-[100dvh] h-full">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Input
@@ -136,9 +136,9 @@ export default function NewNote() {
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-[100dvh] h-full">
         <Editor
-          key={note.content} // Add key to force re-render when content changes
+          key={note.content}
           content={note.content}
           onChange={(content) => {
             const contentStr = JSON.stringify(content);

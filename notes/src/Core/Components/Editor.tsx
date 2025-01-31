@@ -207,7 +207,10 @@ export default function Editor({
           "[&_.ProseMirror_a]:text-primary",
           "[&_.ProseMirror_blockquote]:border-l-primary",
           "[&_.ProseMirror_pre]:bg-muted",
-          "[&_.ProseMirror_hr]:border-border"
+          "[&_.ProseMirror_hr]:border-border",
+          "[&_.bn-container]:h-full",
+          "[&_.ProseMirror]:h-full",
+          "[&_.ProseMirror]:min-h-[calc(100vh-8rem)]"
         )}
       />
     </div>

@@ -458,33 +458,25 @@ export default function EditNote() {
   }
 
   return (
-    <div 
-      className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden relative"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="flex flex-col min-h-[100dvh] h-full">
       {/* Pull to refresh indicator */}
       {isRefreshing && (
         <div className="absolute top-0 left-0 right-0 flex justify-center py-2 bg-background/80 backdrop-blur z-50">
           <Loader2Icon className="h-4 w-4 animate-spin" />
         </div>
       )}
-      {/* Header Bar */}
-      <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        {/* Main Header */}
-        <div className="flex items-center justify-between p-4">
-          {/* Left Section: Back Button + Title */}
+      <div className="flex items-center justify-between p-4 border-b">
+        {/* Left Section: Back Button + Title */}
         <div className="flex-1 flex items-center gap-4 min-w-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/notes')}
-              className="hidden sm:flex items-center gap-1 text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-              <span>Back</span>
-            </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/notes')}
+            className="hidden sm:flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
           <Input
             type="text"
             value={title}
@@ -492,114 +484,113 @@ export default function EditNote() {
               setTitle(e.target.value);
               debouncedSaveTitle(e.target.value);
             }}
-              className="text-xl sm:text-2xl font-semibold bg-transparent border-0 p-0 focus:outline-none focus-visible:ring-0 w-full truncate placeholder:text-muted-foreground/50 placeholder:font-normal"
+            className="text-xl sm:text-2xl font-semibold bg-transparent border-0 p-0 focus:outline-none focus-visible:ring-0 w-full truncate placeholder:text-muted-foreground/50 placeholder:font-normal"
             placeholder="Untitled"
           />
         </div>
 
-          {/* Right Section: Status + Actions */}
-          <div className="flex items-center gap-3">
-            {/* Save Status */}
-            <div className={cn(
-              "hidden sm:flex items-center gap-2 text-sm",
-              saveStatus === 'saving' && "text-muted-foreground",
-              saveStatus === 'saved' && "text-green-500",
-              saveStatus === 'error' && "text-destructive"
-            )}>
-              {saveStatus === 'saving' && <Loader2Icon className="h-3 w-3 animate-spin" />}
-              {saveStatus === 'saved' && <CheckIcon className="h-3 w-3" />}
-              {saveStatus === 'error' && <XIcon className="h-3 w-3" />}
-              <span className="hidden md:inline">
-            {saveStatus === 'saving' && 'Saving...'}
-            {saveStatus === 'saved' && 'All changes saved'}
-            {saveStatus === 'error' && 'Error saving'}
-          </span>
+        {/* Right Section: Status + Actions */}
+        <div className="flex items-center gap-3">
+          {/* Save Status */}
+          <div className={cn(
+            "hidden sm:flex items-center gap-2 text-sm",
+            saveStatus === 'saving' && "text-muted-foreground",
+            saveStatus === 'saved' && "text-green-500",
+            saveStatus === 'error' && "text-destructive"
+          )}>
+            {saveStatus === 'saving' && <Loader2Icon className="h-3 w-3 animate-spin" />}
+            {saveStatus === 'saved' && <CheckIcon className="h-3 w-3" />}
+            {saveStatus === 'error' && <XIcon className="h-3 w-3" />}
+            <span className="hidden md:inline">
+              {saveStatus === 'saving' && 'Saving...'}
+              {saveStatus === 'saved' && 'All changes saved'}
+              {saveStatus === 'error' && 'Error saving'}
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1.5">
+            {/* Mobile Save Status - Shown inline on mobile */}
+            <div className="sm:hidden">
+              {saveStatus === 'saving' && (
+                <Button variant="ghost" size="icon" className="pointer-events-none">
+                  <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                </Button>
+              )}
+              {saveStatus === 'saved' && (
+                <Button variant="ghost" size="icon" className="pointer-events-none">
+                  <CheckIcon className="h-4 w-4 text-green-500" />
+                </Button>
+              )}
+              {saveStatus === 'error' && (
+                <Button variant="ghost" size="icon" className="pointer-events-none">
+                  <XIcon className="h-4 w-4 text-destructive" />
+                </Button>
+              )}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1.5">
-              {/* Mobile Save Status - Shown inline on mobile */}
-              <div className="sm:hidden">
-                {saveStatus === 'saving' && (
-                  <Button variant="ghost" size="icon" className="pointer-events-none">
-                    <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
-                  </Button>
-                )}
-                {saveStatus === 'saved' && (
-                  <Button variant="ghost" size="icon" className="pointer-events-none">
-                    <CheckIcon className="h-4 w-4 text-green-500" />
-                  </Button>
-                )}
-                {saveStatus === 'error' && (
-                  <Button variant="ghost" size="icon" className="pointer-events-none">
-                    <XIcon className="h-4 w-4 text-destructive" />
-                  </Button>
-                )}
-              </div>
+            <ShareDialog 
+              note={note} 
+              onShare={() => {
+                toast({
+                  title: "Note shared",
+                  description: "The note has been shared successfully.",
+                });
+              }}
+              onError={(error) => {
+                toast({
+                  title: "Error sharing note",
+                  description: error,
+                  variant: "destructive",
+                });
+              }}
+            />
+            
+            {/* More Actions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVerticalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.print()}>
+                  <PrinterIcon className="h-4 w-4 mr-2" />
+                  Print
+                </DropdownMenuItem>
+                
+                {/* Export Sub-menu */}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <DownloadIcon className="h-4 w-4 mr-2" />
+                    Export as...
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => handleExport('markdown')}>
+                      <FileTextIcon className="h-4 w-4 mr-2" />
+                      Markdown (.md)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('txt')}>
+                      <FileIcon className="h-4 w-4 mr-2" />
+                      Plain Text (.txt)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('html')}>
+                      <CodeIcon className="h-4 w-4 mr-2" />
+                      HTML
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
 
-              <ShareDialog 
-                note={note} 
-                onShare={() => {
-                  toast({
-                    title: "Note shared",
-                    description: "The note has been shared successfully.",
-                  });
-                }}
-                onError={(error) => {
-                  toast({
-                    title: "Error sharing note",
-                    description: error,
-                    variant: "destructive",
-                  });
-                }}
-              />
-              
-              {/* More Actions Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVerticalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => window.print()}>
-                    <PrinterIcon className="h-4 w-4 mr-2" />
-                    Print
-                  </DropdownMenuItem>
-                  
-                  {/* Export Sub-menu */}
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <DownloadIcon className="h-4 w-4 mr-2" />
-                      Export as...
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => handleExport('markdown')}>
-                        <FileTextIcon className="h-4 w-4 mr-2" />
-                        Markdown (.md)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport('txt')}>
-                        <FileIcon className="h-4 w-4 mr-2" />
-                        Plain Text (.txt)
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport('html')}>
-                        <CodeIcon className="h-4 w-4 mr-2" />
-                        HTML
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleDelete}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <TrashIcon className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -948,9 +939,9 @@ export default function EditNote() {
       </div>
 
       {/* Editor */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden h-[calc(100dvh-8rem)]">
         <Editor
-          content={content}
+          content={note.content}
           onChange={handleContentChange}
           editorRef={editorRef}
         />
