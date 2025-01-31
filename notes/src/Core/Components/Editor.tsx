@@ -16,6 +16,8 @@ import { useAuth } from '../Auth/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { cn } from '@/lib/utils';
+import { useTheme } from "../Theme/ThemeProvider";
+import { themes, ThemeName } from "../Theme/themes";
 
 import "@fontsource/monaspace-neon/400.css";
 import "@fontsource/monaspace-neon/500.css";
@@ -58,6 +60,21 @@ import "@fontsource/dm-mono/500.css";
 import "@fontsource/overpass-mono/400.css";
 import "@fontsource/overpass-mono/700.css";
 
+// Import shadcn components
+import * as Button from "@/components/ui/button";
+import * as Select from "@/components/ui/select";
+import * as DropdownMenu from "@/components/ui/dropdown-menu";
+import * as Popover from "@/components/ui/popover";
+import * as Toggle from "@/components/ui/toggle";
+import * as Form from "@/components/ui/form";
+import * as Input from "@/components/ui/input";
+import * as Label from "@/components/ui/label";
+import * as Card from "@/components/ui/card";
+import * as Tabs from "@/components/ui/tabs";
+import * as Badge from "@/components/ui/badge";
+
+import "@/styles/editor.css";
+
 interface EditorProps {
   content: string; // Change to expect string since that's how it's stored
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,6 +91,83 @@ interface EditorProps {
  * @param root0.onSave
  * @param root0.editorRef
  */
+
+// First, let's define a proper type for the BlockNote theme
+type BlockNoteTheme = {
+  colors: {
+    editor: {
+      text: string;
+      background: string;
+    };
+    menu: {
+      text: string;
+      background: string;
+    };
+    tooltip: {
+      text: string;
+      background: string;
+    };
+    hovered: {
+      text: string;
+      background: string;
+    };
+    selected: {
+      text: string;
+      background: string;
+    };
+    disabled: {
+      text: string;
+      background: string;
+    };
+    shadow: string;
+    border: string;
+  };
+  borderRadius: number;
+  fontFamily: string;
+};
+
+// Then update the createBlockNoteTheme function
+const createBlockNoteTheme = (mode: 'light' | 'dark', currentTheme: string): "light" | "dark" | BlockNoteTheme => {
+  // First try using the basic theme
+  if (mode === 'light' || mode === 'dark') {
+    return mode;
+  }
+
+  // If that doesn't work, create a custom theme
+  return {
+    colors: {
+      editor: {
+        text: `hsl(${themes[currentTheme][mode].foreground})`,
+        background: `hsl(${themes[currentTheme][mode].background})`,
+      },
+      menu: {
+        text: `hsl(${themes[currentTheme][mode].popoverForeground})`,
+        background: `hsl(${themes[currentTheme][mode].popover})`,
+      },
+      tooltip: {
+        text: `hsl(${themes[currentTheme][mode].popoverForeground})`,
+        background: `hsl(${themes[currentTheme][mode].popover})`,
+      },
+      hovered: {
+        text: `hsl(${themes[currentTheme][mode].accent})`,
+        background: `hsl(${themes[currentTheme][mode].accent}/10)`,
+      },
+      selected: {
+        text: `hsl(${themes[currentTheme][mode].primary})`,
+        background: `hsl(${themes[currentTheme][mode].primary}/10)`,
+      },
+      disabled: {
+        text: `hsl(${themes[currentTheme][mode].mutedForeground})`,
+        background: `hsl(${themes[currentTheme][mode].muted})`,
+      },
+      shadow: `hsl(${themes[currentTheme][mode].border})`,
+      border: `hsl(${themes[currentTheme][mode].border})`,
+    },
+    borderRadius: 4,
+    fontFamily: 'var(--editor-font)',
+  };
+};
+
 export default function Editor({
   content,
   onChange,
@@ -81,14 +175,14 @@ export default function Editor({
   editorRef,
 }: EditorProps) {
   const { user } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(
-    document.documentElement.classList.contains("dark")
-  );
-
-  // Load font preference on mount and store it in state
-  const [, setEditorFont] = useState<string>(() => {
-    return localStorage.getItem('editor-font') || "Monaspace Neon";
-  });
+  const { theme } = useTheme();
+  
+  const getEffectiveTheme = useCallback(() => {
+    if (theme === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return theme as 'light' | 'dark';
+  }, [theme]);
 
   // Create editor instance
   const editor = useCreateBlockNote({
@@ -96,12 +190,7 @@ export default function Editor({
       () =>
         content
           ? JSON.parse(content)
-          : [
-              {
-                type: "paragraph",
-                content: [],
-              },
-            ],
+          : [{ type: "paragraph", content: [] }],
       [content]
     ),
   });
@@ -121,7 +210,6 @@ export default function Editor({
         const savedFont = localStorage.getItem('editor-font');
         if (savedFont) {
           document.documentElement.style.setProperty('--editor-font', savedFont);
-          setEditorFont(savedFont);
         }
         return;
       }
@@ -132,7 +220,6 @@ export default function Editor({
         if (preferences?.editorFont) {
           document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
           localStorage.setItem('editor-font', preferences.editorFont);
-          setEditorFont(preferences.editorFont);
         }
       } catch (error) {
         console.error('Error loading font preference:', error);
@@ -140,44 +227,12 @@ export default function Editor({
         const savedFont = localStorage.getItem('editor-font');
         if (savedFont) {
           document.documentElement.style.setProperty('--editor-font', savedFont);
-          setEditorFont(savedFont);
         }
       }
     };
 
     loadFontPreference();
   }, [user]);
-
-  // Watch for theme changes
-  useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          const isDark = document.documentElement.classList.contains("dark");
-          setIsDarkMode(isDark);
-          localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    // Set initial theme from localStorage or system preference
-    const savedTheme = localStorage.getItem('color-theme');
-    if (savedTheme) {
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-      setIsDarkMode(savedTheme === 'dark');
-    } else {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', systemDark);
-      setIsDarkMode(systemDark);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   // Debounced save function
   const debouncedSave = useCallback(
@@ -197,21 +252,56 @@ export default function Editor({
     <div className="flex flex-col flex-1 h-full w-full bg-background overflow-hidden">
       <BlockNoteView
         editor={editor}
-        theme={isDarkMode ? "dark" : "light"}
+        theme={getEffectiveTheme()}
         onChange={() => debouncedSave(editor)}
+        shadCNComponents={{
+          Button,
+          Select,
+          DropdownMenu,
+          Popover,
+          Toggle,
+          Form,
+          Input,
+          Label,
+          Card,
+          Tabs,
+          Badge
+        }}
         className={cn(
-          "flex-1 h-full bg-background overflow-y-auto mobile-editor relative",
-          "[&_.ProseMirror]:text-xl",
-          "[&_.ProseMirror]:sm:text-2xl",
+          "flex-1 h-full overflow-y-auto mobile-editor relative",
+          // Base styles
+          "bg-background text-foreground",
+          // Editor specific styles
+          "[&_.bn-container]:h-full [&_.bn-container]:bg-background",
+          "[&_.ProseMirror]:min-h-[calc(100vh-8rem)] [&_.ProseMirror]:p-4",
+          "[&_.ProseMirror]:text-xl [&_.ProseMirror]:sm:text-2xl",
           "[&_.ProseMirror]:font-[var(--editor-font)]",
-          "[&_.ProseMirror]:text-foreground",
-          "[&_.ProseMirror_a]:text-primary",
-          "[&_.ProseMirror_blockquote]:border-l-primary",
+          // Content styling
+          "[&_.ProseMirror_a]:text-primary hover:[&_.ProseMirror_a]:text-primary/80",
+          "[&_.ProseMirror_blockquote]:border-l-primary [&_.ProseMirror_blockquote]:bg-muted/50",
           "[&_.ProseMirror_pre]:bg-muted",
           "[&_.ProseMirror_hr]:border-border",
-          "[&_.bn-container]:h-full",
-          "[&_.ProseMirror]:h-full",
-          "[&_.ProseMirror]:min-h-[calc(100vh-8rem)]"
+          // Toolbar styling
+          "[&_.bn-toolbar]:bg-background [&_.bn-toolbar]:border-border",
+          "[&_.bn-toolbar-button]:text-muted-foreground",
+          "[&_.bn-toolbar-button:hover]:bg-accent hover:[&_.bn-toolbar-button]:text-accent-foreground",
+          "[&_.bn-toolbar-button.active]:bg-primary [&_.bn-toolbar-button.active]:text-primary-foreground",
+          // Menu styling
+          "[&_.bn-menu]:bg-popover [&_.bn-menu]:border-border [&_.bn-menu]:text-popover-foreground",
+          "[&_.bn-menu-item]:text-sm [&_.bn-menu-item]:leading-none",
+          "[&_.bn-menu-item:hover]:bg-accent [&_.bn-menu-item:hover]:text-accent-foreground",
+          // Button styling
+          "[&_.bn-button]:bg-background [&_.bn-button]:text-foreground",
+          "[&_.bn-button]:border-input hover:[&_.bn-button]:bg-accent",
+          "[&_.bn-button]:rounded-md [&_.bn-button]:px-3 [&_.bn-button]:py-2",
+          // Dark mode overrides
+          "dark:[&_.ProseMirror]:bg-background dark:[&_.ProseMirror]:text-foreground",
+          "dark:[&_.bn-toolbar]:bg-background/95 dark:[&_.bn-toolbar]:backdrop-blur",
+          "dark:[&_.bn-menu]:bg-popover dark:[&_.bn-menu]:text-popover-foreground",
+          "dark:[&_.bn-button]:bg-background dark:[&_.bn-button]:text-foreground",
+          // Prose styles
+          "prose dark:prose-invert prose-headings:font-[var(--editor-font)]",
+          "prose-p:my-2 prose-headings:my-4"
         )}
       />
     </div>
