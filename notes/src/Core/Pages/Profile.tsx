@@ -63,12 +63,9 @@ export default function Profile() {
     { value: 'Monaspace Neon', label: 'Monaspace Neon', class: 'font-monaspace', category: 'Monospace' },
     { value: 'JetBrains Mono', label: 'JetBrains Mono', class: 'font-jetbrains', category: 'Monospace' },
     { value: 'Fira Code', label: 'Fira Code', class: 'font-fira-code', category: 'Monospace' },
-    { value: 'Anonymous Pro', label: 'Anonymous Pro', class: 'font-anonymous-pro', category: 'Monospace' },
     { value: 'Ubuntu Mono', label: 'Ubuntu Mono', class: 'font-ubuntu-mono', category: 'Monospace' },
     { value: 'Inconsolata', label: 'Inconsolata', class: 'font-inconsolata', category: 'Monospace' },
     { value: 'DM Mono', label: 'DM Mono', class: 'font-dm-mono', category: 'Monospace' },
-    { value: 'Overpass Mono', label: 'Overpass Mono', class: 'font-overpass-mono', category: 'Monospace' },
-    { value: 'IBM Plex Mono', label: 'IBM Plex Mono', class: 'font-ibm-plex', category: 'Monospace' },
     { value: 'Space Mono', label: 'Space Mono', class: 'font-space-mono', category: 'Monospace' },
     
     // Sans Serif fonts
@@ -88,8 +85,7 @@ export default function Profile() {
     { value: 'Indie Flower', label: 'Indie Flower', class: 'font-indie-flower', category: 'Handwriting' },
     { value: 'Caveat', label: 'Caveat', class: 'font-caveat', category: 'Handwriting' },
     { value: 'Dancing Script', label: 'Dancing Script', class: 'font-dancing', category: 'Handwriting' },
-    { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' },
-    { value: 'Permanent Marker', label: 'Permanent Marker', class: 'font-permanent-marker', category: 'Handwriting' },
+    { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' }
   ];
 
   const [editorFont, setEditorFont] = useState('Monaspace Neon');
@@ -458,7 +454,7 @@ export default function Profile() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label>Auto Save</Label>
                   <p className="text-sm text-muted-foreground">
@@ -482,13 +478,13 @@ export default function Profile() {
                   checked={spellCheck}
                   onCheckedChange={setSpellCheck}
                 />
-              </div>
+              </div> */}
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label>Editor Font</Label>
+                  <Label>App Font</Label>
                   <p className="text-sm text-muted-foreground">
-                    Choose your preferred font for the editor
+                    Choose your preferred font for the app
                   </p>
                 </div>
                 <Select

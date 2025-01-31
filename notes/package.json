@@ -78,7 +78,9 @@
     "@fontsource/kalam": "^5.0.8",
     "@fontsource/indie-flower": "^5.0.8",
     "@fontsource/dm-mono": "^5.0.8",
-    "@fontsource/overpass-mono": "^5.0.8"
+    "@fontsource/overpass-mono": "^5.0.8",
+    "@fontsource/space-mono": "^5.0.8",
+    "@fontsource/comic-neue": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
