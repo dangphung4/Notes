@@ -22,6 +22,8 @@ export interface User {
   lastLoginAt: Date;
   preferences?: {
     editorFont?: string;
+    theme?: string;        // for storing theme name (default, forest, ocean)
+    colorMode?: string;    // for storing light/dark preference
   };
 }
 
@@ -101,6 +103,13 @@ export interface CalendarEvent {
   tags?: Tags[];
 }
 
+// Add to your existing interface for user preferences
+interface UserPreferences {
+  editorFont?: string;
+  theme?: string;        // for storing theme name (default, forest, ocean)
+  colorMode?: string;    // for storing light/dark preference
+}
+
 /**
  *
  */
@@ -108,6 +117,7 @@ class NotesDB extends Dexie {
   notes: Dexie.Table<Note, number>;
   calendarEvents!: Dexie.Table<CalendarEvent, number>;
   tags: Dexie.Table<Tags, string>;
+  users?: Dexie.Table<User, string>;
 
   /**
    *
@@ -118,9 +128,11 @@ class NotesDB extends Dexie {
       notes: "++id, firebaseId, title, updatedAt",
       calendarEvents: "++id, firebaseId, startDate, endDate, ownerUserId",
       tags: "++id, name, group",
+      users: "++userId, email, displayName, photoURL, lastLoginAt, preferences",
     });
     this.notes = this.table("notes");
     this.tags = this.table("tags");
+    this.users = this.table("users");
   }
 
   // Load notes from Firebase
@@ -810,11 +822,13 @@ class NotesDB extends Dexie {
           });
         } else {
           // update existing local event
-          await this.calendarEvents.update(existingLocalEvent.id, {
-            sharedWith: updatedShares,
-            lastModifiedAt: new Date(),
-            lastModifiedBy: user.email,
-          } as Partial<CalendarEvent>);
+          await this.calendarEvents.update(existingLocalEvent.id, (obj) => {
+            Object.assign(obj, {
+              ...eventData,
+              id: existingLocalEvent.id,
+              sharedWith: updatedShares,
+            });
+          });
         }
       } else if (status === "declined" && localEvent) {
         // remove from local DB if declined
@@ -1098,38 +1112,26 @@ class NotesDB extends Dexie {
   }
 
   /**
-   *
-   * @param userId
-   * @param preferences
+   * Updates user preferences in both Firestore and IndexedDB
    */
-  async updateUserPreferences(userId: string, preferences: Partial<User['preferences']>) {
-    const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated");
-
+  async updateUserPreferences(userId: string, preferences: Partial<UserPreferences>) {
     try {
+      // Update Firestore
       const userRef = doc(firestore, 'users', userId);
-      const userDoc = await getDoc(userRef);
-      const currentPreferences = userDoc.data()?.preferences || {};
-      
       await updateDoc(userRef, {
-        preferences: {
-          ...currentPreferences,
-          ...preferences
-        },
+        preferences: preferences,
         updatedAt: new Date()
       });
 
-      // Update CSS variable for global font change
-      if (preferences?.editorFont) {
-        document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
-        // Force re-render of editor if needed
-        document.documentElement.classList.add('font-updated');
-        setTimeout(() => {
-          document.documentElement.classList.remove('font-updated');
-        }, 100);
-      }
+      // Update local IndexedDB
+      await this.users?.update(userId, {
+        preferences: preferences,
+        updatedAt: new Date()
+      });
+
+      return true;
     } catch (error) {
-      console.error('Error updating user preferences:', error);
+      console.error('Error updating preferences:', error);
       throw error;
     }
   }

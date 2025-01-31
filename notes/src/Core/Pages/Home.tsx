@@ -32,6 +32,9 @@ import logo from "../../assets/note.svg";
 import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon, PaletteIcon, LigatureIcon, TextIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../Theme/ThemeProvider";
+import { themes, ThemeName } from "../Theme/themes";
+import { cn } from "../../lib/utils";
+import { Check } from "lucide-react";
 
 /**
  * Home page component that displays the landing page of the application
@@ -43,7 +46,7 @@ export default function Home() {
   const { user } = useAuth();
   /** Navigation hook for routing */
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
+  const { theme, setTheme, currentTheme, setCurrentTheme } = useTheme();
 
   /** Detects if user is on MacOS for keyboard shortcuts */
   const isMacOs = navigator.userAgent.includes('Mac');
@@ -692,29 +695,71 @@ export default function Home() {
               <h3 className="text-2xl font-semibold">Theme Options</h3>
             </div>
             <p className="text-muted-foreground">
-              Switch seamlessly between light and dark modes. Our themes are designed to reduce eye strain and enhance readability.
+              Choose from multiple theme variations and switch between light and dark modes.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                className="w-full bg-background hover:bg-background/90"
-                onClick={() => handleThemeChange('light')}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded-full bg-primary" />
-                  Light Mode
+              <div className="space-y-4">
+                <h4 className="font-medium">Mode</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-background hover:bg-background/90"
+                    onClick={() => setTheme('light')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-primary" />
+                      Light
+                    </div>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full bg-zinc-900 text-white hover:bg-zinc-800"
+                    onClick={() => setTheme('dark')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full bg-primary" />
+                      Dark
+                    </div>
+                  </Button>
                 </div>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full bg-zinc-900 text-white hover:bg-zinc-800"
-                onClick={() => handleThemeChange('dark')}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 rounded-full bg-primary" />
-                  Dark Mode
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-medium">Theme</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {(Object.keys(themes) as ThemeName[]).map((themeName) => (
+                    <Button
+                      key={themeName}
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start gap-2",
+                        currentTheme === themeName && "border-primary"
+                      )}
+                      onClick={() => setCurrentTheme(themeName)}
+                    >
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="flex gap-1">
+                          <div
+                            className="h-4 w-4 rounded-full"
+                            style={{
+                              backgroundColor: `hsl(${themes[themeName][theme].primary})`
+                            }}
+                          />
+                          <div
+                            className="h-4 w-4 rounded-full"
+                            style={{
+                              backgroundColor: `hsl(${themes[themeName][theme].secondary})`
+                            }}
+                          />
+                        </div>
+                        <span>{themeName.charAt(0).toUpperCase() + themeName.slice(1)}</span>
+                        {currentTheme === themeName && (
+                          <Check className="h-4 w-4 ml-auto" />
+                        )}
+                      </div>
+                    </Button>
+                  ))}
                 </div>
-              </Button>
+              </div>
             </div>
           </div>
 

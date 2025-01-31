@@ -205,155 +205,15 @@ function CommandPalette() {
  *
  */
 function App() {
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme !== null) {
-      return savedTheme === 'dark';
-    }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-    
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('theme')) {
-        setDarkMode(e.matches);
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  useEffect(() => {
-    const savedFont = localStorage.getItem('editor-font');
-    if (savedFont) {
-      document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
-    }
-  }, []);
-
-  useEffect(() => {
-    const loadFonts = async () => {
-      try {
-        await document.fonts.ready;
-        const loadedFonts = Array.from(document.fonts).map(f => f.family);
-        console.log('Loaded fonts:', loadedFonts);
-        
-        // Add a class to body when fonts are loaded
-        document.body.classList.add('fonts-loaded');
-      } catch (error) {
-        console.error('Font loading error:', error);
-      }
-    };
-
-    loadFonts();
-  }, []);
-
-  /**
-   *
-   * @param root0
-   * @param root0.children
-   */
-  function PrivateRoute({ children }: { children: React.ReactNode }) {
-    const { user, loading } = useAuth();
-
-    if (loading) return <div>Loading...</div>;
-    if (!user) return <Navigate to="/auth" />;
-
-    return <>{children}</>;
-  }
-
-  // Routes configuration component
-  /**
-   *
-   */
-  function AppRoutes() {
-    return (
-      <>
-        <CommandPalette />
-        <Layout>
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/notes"
-                element={
-                  <PrivateRoute>
-                    <Notes />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/notes/new"
-                element={
-                  <PrivateRoute>
-                    <NewNote />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/calendar"
-                element={
-                  <PrivateRoute>
-                    <Calendar />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/notes/:id"
-                element={
-                  <PrivateRoute>
-                    <EditNote />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/logout" element={<LogoutHandler />} />
-              <Route path="/install" element={<Install />} />
-            </Routes>
-          </main>
-        </Layout>
-      </>
-    );
-  }
-
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <div className={darkMode ? "dark" : ""}>
-          <div className="min-h-screen flex flex-col bg-background text-foreground">
-            <DesktopNav
-              darkMode={darkMode}
-              toggleDarkMode={() => setDarkMode(!darkMode)}
-            />
-            <MobileNav
-              darkMode={darkMode}
-              toggleDarkMode={() => setDarkMode(!darkMode)}
-            />
-            <AppRoutes />
-            <Footer />
-            <PWABadge />
-          </div>
+        <div className="min-h-screen flex flex-col bg-background text-foreground">
+          <DesktopNav />
+          <MobileNav />
+          <AppRoutes />
+          <Footer />
+          <PWABadge />
         </div>
       </BrowserRouter>
     </ThemeProvider>
@@ -373,6 +233,81 @@ function LogoutHandler() {
   }, [navigate]);
 
   return <div>Logging out...</div>;
+}
+
+// Routes configuration component
+/**
+ *
+ */
+function AppRoutes() {
+  return (
+    <>
+      <CommandPalette />
+      <Layout>
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/notes"
+              element={
+                <PrivateRoute>
+                  <Notes />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/notes/new"
+              element={
+                <PrivateRoute>
+                  <NewNote />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <PrivateRoute>
+                  <Calendar />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/notes/:id"
+              element={
+                <PrivateRoute>
+                  <EditNote />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/logout" element={<LogoutHandler />} />
+            <Route path="/install" element={<Install />} />
+          </Routes>
+        </main>
+      </Layout>
+    </>
+  );
+}
+
+/**
+ *
+ */
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/auth" />;
+
+  return <>{children}</>;
 }
 
 export default App;
