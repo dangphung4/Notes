@@ -28,9 +28,12 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db as firestore } from '../Auth/firebase';
-import { db } from '../Database/db';
+import { useTheme } from "../Theme/ThemeProvider";
+import { themes, ThemeName } from "../Theme/themes";
+import { Check, PaletteIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  *
@@ -105,39 +108,22 @@ export default function Profile() {
     loadPreferences();
   }, [user]);
 
-  const handleFontChange = async (value: string) => {
-    try {
-      setIsLoading(true);
-      if (user) {
-        await db.updateUserPreferences(user.uid, {
-          editorFont: value
+  const handleFontChange = async (newFont: string) => {
+    // Update local storage
+    localStorage.setItem('editor-font', newFont);
+    
+    // Update CSS variable
+    document.documentElement.style.setProperty('--editor-font', newFont);
+    
+    // If user is logged in, update Firestore
+    if (user) {
+      try {
+        await updateDoc(doc(firestore, 'users', user.uid), {
+          'preferences.editorFont': newFont
         });
-        setEditorFont(value);
-        
-        // Update both the CSS variable and the body class
-        document.documentElement.style.setProperty('--editor-font', `"${value}"`);
-        document.body.className = document.body.className
-          .split(' ')
-          .filter(c => !c.startsWith('font-'))
-          .concat(`font-${value.toLowerCase().replace(/\s+/g, '-')}`)
-          .join(' ');
-        
-        localStorage.setItem('editor-font', value);
-        
-        toast({
-          title: "Font updated",
-          description: "Font preference has been saved and applied"
-        });
+      } catch (error) {
+        console.error('Error updating font preference:', error);
       }
-    } catch (error) {
-      console.error('Error updating font:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update font preference",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -147,7 +133,7 @@ export default function Profile() {
       const savedFont = localStorage.getItem('editor-font');
       if (savedFont) {
         setEditorFont(savedFont);
-        document.documentElement.style.setProperty('--editor-font', `"${savedFont}"`);
+        document.documentElement.style.setProperty('--editor-font', savedFont);
       }
     };
     
@@ -251,6 +237,20 @@ export default function Profile() {
     }
     return user?.email?.[0].toUpperCase() || '?';
   };
+
+  const { theme: currentMode, setTheme: setMode, currentTheme, setCurrentTheme } = useTheme();
+
+  const themePresets = Object.entries(themes).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    theme: name as ThemeName,
+    colors: {
+      background: value[currentMode as keyof typeof value]?.background,
+      foreground: value[currentMode as keyof typeof value]?.foreground,
+      primary: value[currentMode as keyof typeof value]?.primary,
+      secondary: value[currentMode as keyof typeof value]?.secondary,
+      muted: value[currentMode as keyof typeof value]?.muted,
+    },
+  }));
 
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8">
@@ -452,32 +452,6 @@ export default function Profile() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label>Auto Save</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Automatically save notes while typing
-                  </p>
-                </div>
-                <Switch
-                  checked={autoSave}
-                  onCheckedChange={setAutoSave}
-                />
-              </div>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label>Spell Check</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable spell checking while typing
-                  </p>
-                </div>
-                <Switch
-                  checked={spellCheck}
-                  onCheckedChange={setSpellCheck}
-                />
-              </div> */}
-
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label>App Font</Label>
@@ -516,6 +490,152 @@ export default function Profile() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <PaletteIcon className="h-8 w-8 text-primary" />
+                  <div>
+                    <h3 className="text-2xl font-semibold">Theme</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Choose a theme that matches your style
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Mode</CardTitle>
+                      <CardDescription>Choose your preferred color mode</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant={currentMode === 'light' ? 'default' : 'outline'}
+                        className="w-full justify-start"
+                        onClick={() => setMode('light')}
+                      >
+                        <div className="flex items-center gap-2">
+                          {currentMode === 'light' && <Check className="h-4 w-4" />}
+                          Light
+                        </div>
+                      </Button>
+                      <Button
+                        variant={currentMode === 'dark' ? 'default' : 'outline'}
+                        className="w-full justify-start"
+                        onClick={() => setMode('dark')}
+                      >
+                        <div className="flex items-center gap-2">
+                          {currentMode === 'dark' && <Check className="h-4 w-4" />}
+                          Dark
+                        </div>
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Theme Presets</CardTitle>
+                      <CardDescription>Select a predefined color theme</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-2">
+                      {themePresets.map((preset) => (
+                        <Button
+                          key={preset.theme}
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start gap-2",
+                            currentTheme === preset.theme && "border-primary"
+                          )}
+                          onClick={() => setCurrentTheme(preset.theme)}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="flex gap-1">
+                              <div
+                                className="h-4 w-4 rounded-full"
+                                style={{
+                                  backgroundColor: `hsl(${preset.colors.primary})`,
+                                }}
+                              />
+                              <div
+                                className="h-4 w-4 rounded-full"
+                                style={{
+                                  backgroundColor: `hsl(${preset.colors.secondary})`,
+                                }}
+                              />
+                            </div>
+                            <span>{preset.name}</span>
+                            {currentTheme === preset.theme && (
+                              <Check className="h-4 w-4 ml-auto" />
+                            )}
+                          </div>
+                        </Button>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="md:col-span-2">
+                    <CardHeader>
+                      <CardTitle>Theme Preview</CardTitle>
+                      <CardDescription>
+                        See how your selected theme looks with different components
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4">
+                      <div className="grid gap-2">
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium">Buttons</h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Button>Primary</Button>
+                            <Button variant="secondary">Secondary</Button>
+                            <Button variant="outline">Outline</Button>
+                            <Button variant="ghost">Ghost</Button>
+                            <Button variant="destructive">Destructive</Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium">Cards</h4>
+                          <div className="grid gap-2">
+                            <Card>
+                              <CardHeader>
+                                <CardTitle>Example Card</CardTitle>
+                                <CardDescription>
+                                  This is how cards will look with this theme
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <p className="text-sm text-muted-foreground">
+                                  Card content with muted text
+                                </p>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium">Form Elements</h4>
+                          <div className="grid gap-2">
+                            <Input placeholder="Input field" />
+                            <div className="flex items-center space-x-2">
+                              <Switch id="example-switch" />
+                              <Label htmlFor="example-switch">Switch</Label>
+                            </div>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select option" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="option1">Option 1</SelectItem>
+                                <SelectItem value="option2">Option 2</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </CardContent>
           </Card>

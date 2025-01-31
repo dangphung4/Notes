@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
@@ -27,6 +28,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from "../Theme/ThemeProvider";
+import { PenSquareIcon } from "lucide-react";
 
 interface NavProps {
   darkMode: boolean;
@@ -39,9 +42,10 @@ interface NavProps {
  * @param root0.darkMode
  * @param root0.toggleDarkMode
  */
-export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
+export function DesktopNav({ darkMode }: NavProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   // Get initials from display name or email
   const getInitials = () => {
@@ -95,13 +99,16 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
             )}
           </div>
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleDarkMode}
-              aria-label="Toggle dark mode"
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
-              {darkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+              {theme === 'dark' ? (
+                <SunIcon className="h-5 w-5" />
+              ) : (
+                <MoonIcon className="h-5 w-5" />
+              )}
             </Button>
             {user ? (
               <DropdownMenu>
@@ -159,10 +166,11 @@ export function DesktopNav({ darkMode, toggleDarkMode }: NavProps) {
  * @param root0.darkMode
  * @param root0.toggleDarkMode
  */
-export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
+export function MobileNav({ darkMode }: NavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -198,9 +206,9 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
             variant="default"
             size="icon"
             className="rounded-full shadow-lg"
-            onClick={toggleDarkMode}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
-            {darkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
           </Button>
           <Button
             variant="default"
@@ -259,6 +267,17 @@ export function MobileNav({ darkMode, toggleDarkMode }: NavProps) {
             </Button>
           )}
         </div>
+      )}
+      {/* another button to quickly open a new note on mobile on top of hamburger menu */}
+      { user && (
+      <Button
+        variant="default"
+        size="icon"
+        className="h-12 w-12 rounded-full shadow-lg"
+        onClick={() => handleNavigation('/notes/new')}
+      >
+          <PenSquareIcon className="h-6 w-6" />
+        </Button>
       )}
       <Button
         variant="default"

@@ -22,6 +22,8 @@ export interface User {
   lastLoginAt: Date;
   preferences?: {
     editorFont?: string;
+    theme?: string;        // for storing theme name (default, forest, ocean)
+    colorMode?: string;    // for storing light/dark preference
   };
 }
 
@@ -101,6 +103,13 @@ export interface CalendarEvent {
   tags?: Tags[];
 }
 
+// Add to your existing interface for user preferences
+interface UserPreferences {
+  editorFont?: string;
+  theme?: string;        // for storing theme name (default, forest, ocean)
+  colorMode?: string;    // for storing light/dark preference
+}
+
 /**
  *
  */
@@ -108,6 +117,7 @@ class NotesDB extends Dexie {
   notes: Dexie.Table<Note, number>;
   calendarEvents!: Dexie.Table<CalendarEvent, number>;
   tags: Dexie.Table<Tags, string>;
+  users?: Dexie.Table<User, string>;
 
   /**
    *
@@ -118,9 +128,11 @@ class NotesDB extends Dexie {
       notes: "++id, firebaseId, title, updatedAt",
       calendarEvents: "++id, firebaseId, startDate, endDate, ownerUserId",
       tags: "++id, name, group",
+      users: "++userId, email, displayName, photoURL, lastLoginAt, preferences",
     });
     this.notes = this.table("notes");
     this.tags = this.table("tags");
+    this.users = this.table("users");
   }
 
   // Load notes from Firebase
@@ -259,37 +271,40 @@ class NotesDB extends Dexie {
         throw new Error("No permission to edit this note");
       }
 
+      // Create cleaned note data object
+      const noteData = {
+        title: note.title,
+        content: note.content || "",
+        updatedAt: new Date(),
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || "Unknown",
+        lastEditedByPhotoURL: user.photoURL,
+        lastEditedAt: new Date(),
+        // Only include isPinned if it's explicitly boolean
+        ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned })
+      };
+
+      // Remove any undefined or null values
+      const cleanedNoteData = Object.fromEntries(
+        Object.entries(noteData).filter(([_, value]) => value !== undefined && value !== null)
+      );
+
       if (note.firebaseId) {
-        await updateDoc(doc(firestore, "notes", note.firebaseId), {
-          title: note.title,
-          content: note.content || "",
-          updatedAt: new Date(),
-          lastEditedByUserId: user.uid,
-          lastEditedByEmail: user.email,
-          lastEditedByDisplayName: user.displayName || "Unknown",
-          lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date(),
-          isPinned: note.isPinned,
-        });
+        await updateDoc(doc(firestore, "notes", note.firebaseId), cleanedNoteData);
       } else {
-        const docRef = await addDoc(collection(firestore, "notes"), {
-          title: note.title,
-          content: note.content || "",
+        const newNoteData = {
+          ...cleanedNoteData,
           createdAt: new Date(),
-          updatedAt: new Date(),
           ownerUserId: user.uid,
           ownerEmail: user.email,
           ownerDisplayName: user.displayName || "Unknown",
           ownerPhotoURL: user.photoURL,
-          lastEditedByUserId: user.uid,
-          lastEditedByEmail: user.email,
-          lastEditedByDisplayName: user.displayName || "Unknown",
-          lastEditedByPhotoURL: user.photoURL,
-          lastEditedAt: new Date(),
           tags: [],
           isPinned: false,
           isArchived: false,
-        });
+        };
+        const docRef = await addDoc(collection(firestore, "notes"), newNoteData);
         await this.notes.update(note.id!, { firebaseId: docRef.id });
       }
 
@@ -810,11 +825,13 @@ class NotesDB extends Dexie {
           });
         } else {
           // update existing local event
-          await this.calendarEvents.update(existingLocalEvent.id, {
-            sharedWith: updatedShares,
-            lastModifiedAt: new Date(),
-            lastModifiedBy: user.email,
-          } as Partial<CalendarEvent>);
+          await this.calendarEvents.update(existingLocalEvent.id, (obj) => {
+            Object.assign(obj, {
+              ...eventData,
+              id: existingLocalEvent.id,
+              sharedWith: updatedShares,
+            });
+          });
         }
       } else if (status === "declined" && localEvent) {
         // remove from local DB if declined
@@ -1098,38 +1115,74 @@ class NotesDB extends Dexie {
   }
 
   /**
-   *
-   * @param userId
-   * @param preferences
+   * Updates user preferences in both Firestore and IndexedDB
    */
-  async updateUserPreferences(userId: string, preferences: Partial<User['preferences']>) {
-    const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated");
-
+  async updateUserPreferences(userId: string, preferences: Partial<UserPreferences>) {
     try {
+      // Update Firestore
       const userRef = doc(firestore, 'users', userId);
-      const userDoc = await getDoc(userRef);
-      const currentPreferences = userDoc.data()?.preferences || {};
-      
       await updateDoc(userRef, {
-        preferences: {
-          ...currentPreferences,
-          ...preferences
-        },
+        preferences: preferences,
         updatedAt: new Date()
       });
 
-      // Update CSS variable for global font change
-      if (preferences?.editorFont) {
-        document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
-        // Force re-render of editor if needed
-        document.documentElement.classList.add('font-updated');
-        setTimeout(() => {
-          document.documentElement.classList.remove('font-updated');
-        }, 100);
+      // Update local IndexedDB
+      await this.users?.update(userId, (user: User) => {
+        user.preferences = preferences;
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error updating preferences:', error);
+      throw error;
+    }
+  }
+
+  // Find the syncNoteWithFirebase method and update it to filter out undefined values
+  /**
+   *
+   */
+  async syncNoteWithFirebase(note: Note) {
+    if (!auth.currentUser) return;
+
+    try {
+      const noteData = {
+        title: note.title,
+        content: note.content,
+        updatedAt: note.updatedAt,
+        createdAt: note.createdAt,
+        ownerUserId: note.ownerUserId,
+        ownerEmail: note.ownerEmail,
+        ownerDisplayName: note.ownerDisplayName,
+        ownerPhotoURL: note.ownerPhotoURL,
+        lastEditedByUserId: note.lastEditedByUserId,
+        lastEditedByEmail: note.lastEditedByEmail,
+        lastEditedByDisplayName: note.lastEditedByDisplayName,
+        lastEditedByPhotoURL: note.lastEditedByPhotoURL,
+        lastEditedAt: note.lastEditedAt,
+        tags: note.tags || [],
+        // Only include these fields if they are explicitly set to true or false
+        ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned }),
+        ...(typeof note.isArchived === 'boolean' && { isArchived: note.isArchived })
+      };
+
+      // Remove any undefined or null values
+      const cleanedNoteData = Object.fromEntries(
+        Object.entries(noteData).filter(([_, value]) => value !== undefined && value !== null)
+      );
+
+      if (note.firebaseId) {
+        // Update existing document
+        const noteRef = doc(firestore, 'notes', note.firebaseId);
+        await updateDoc(noteRef, cleanedNoteData);
+      } else {
+        // Create new document
+        const docRef = await addDoc(collection(firestore, 'notes'), cleanedNoteData);
+        note.firebaseId = docRef.id;
+        await this.notes.update(note.id!, { firebaseId: docRef.id });
       }
     } catch (error) {
-      console.error('Error updating user preferences:', error);
+      console.error('Error syncing with Firebase:', error);
       throw error;
     }
   }

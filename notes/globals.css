@@ -50,83 +50,80 @@
 }
 
 @layer base {
-    :root {
-        --background: 252 62% 99%;
-        --foreground: 252 67% 2%;
-        --muted: 72 22% 94%;
-        --muted-foreground: 72 1% 39%;
-        --popover: 252 62% 98%;
-        --popover-foreground: 252 67% 1%;
-        --card: 252 62% 98%;
-        --card-foreground: 252 67% 1%;
-        --border: 252 3% 94%;
-        --input: 252 3% 94%;
-        --primary: 252 11% 35%;
-        --primary-foreground: 252 11% 95%;
-        --secondary: 72 11% 35%;
-        --secondary-foreground: 0 0% 100%;
-        --accent: 72 11% 35%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 15 99% 31%;
-        --destructive-foreground: 15 99% 91%;
-        --ring: 252 11% 35%;
-        --chart-1: 252 11% 35%;
-        --chart-2: 72 11% 35%;
-        --chart-3: 72 11% 35%;
-        --chart-4: 72 11% 38%;
-        --chart-5: 252 14% 35%;
-        --radius: 0.5rem;
-        --editor-font: "Monaspace Neon";
-      }
-  
-    .dark {
-      --background: 240 13.73% 10%;
-      --foreground: 229.76 31.78% 74.71%;
-      --muted: 232.5 15.44% 18.32%;
-      --muted-foreground: 233.79 11.37% 50%;
-      --popover: 234.55 17.46% 12.35%;
-      --popover-foreground: 234 12.4% 52.55%;
-      --card: 234.55 17.46% 12.35%;
-      --card-foreground: 229.76 31.78% 74.71%;
-      --border: 232.5 15.38% 30.59%;
-      --input: 232 20% 14.71%;
-      --primary: 0 0% 82.75%;
-      --primary-foreground: 0 0% 20%;
-      --secondary: 225.45 71.22% 72.75%;
-      --secondary-foreground: 234.55 17.46% 12.35%;
-      --accent: 234.55 17.83% 9.47%;
-      --accent-foreground: 0 0% 82.75%;
-      --destructive: 1.58 47.5% 52.94%;
-      --destructive-foreground: 210 40% 98.04%;
-      --ring: 225.45 71.22% 72.75%;
-      --chart-1: 0 0% 82.75%;
-      --chart-2: 225.45 71.22% 72.75%;
-      --chart-3: 234.55 17.83% 9.47%;
-      --chart-4: 225.45 71.22% 75.75%;
-      --chart-5: 0 3% 82.75%;
-    }
-
-    /* Better mobile input styling */
-    input[type="text"] {
-      -webkit-appearance: none;
-      border-radius: 0;
-    }
-
-    /* Remove the blue highlight on mobile tap */
-    input,
-    textarea,
-    button,
-    select,
-    a {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Apply font globally */
-    html {
-      font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
-    }
+  :root {
+    --background: 252 62% 99%;
+    --foreground: 252 67% 2%;
+    --muted: 72 22% 94%;
+    --muted-foreground: 72 1% 39%;
+    --popover: 252 62% 98%;
+    --popover-foreground: 252 67% 1%;
+    --card: 252 62% 98%;
+    --card-foreground: 252 67% 1%;
+    --border: 252 3% 94%;
+    --input: 252 3% 94%;
+    --primary: 252 11% 35%;
+    --primary-foreground: 252 11% 95%;
+    --secondary: 72 11% 35%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 72 11% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 15 99% 31%;
+    --destructive-foreground: 15 99% 91%;
+    --ring: 252 11% 35%;
+    --radius: 0.5rem;
+    --editor-font: "Monaspace Neon";
   }
-  
+
+  .dark {
+    --background: 240 13.73% 10%;
+    --foreground: 229.76 31.78% 74.71%;
+    --muted: 232.5 15.44% 18.32%;
+    --muted-foreground: 233.79 11.37% 50%;
+    --popover: 234.55 17.46% 12.35%;
+    --popover-foreground: 234 12.4% 52.55%;
+    --card: 234.55 17.46% 12.35%;
+    --card-foreground: 229.76 31.78% 74.71%;
+    --border: 232.5 15.38% 30.59%;
+    --input: 232 20% 14.71%;
+    --primary: 0 0% 82.75%;
+    --primary-foreground: 0 0% 20%;
+    --secondary: 225.45 71.22% 72.75%;
+    --secondary-foreground: 234.55 17.46% 12.35%;
+    --accent: 234.55 17.83% 9.47%;
+    --accent-foreground: 0 0% 82.75%;
+    --destructive: 1.58 47.5% 52.94%;
+    --destructive-foreground: 210 40% 98.04%;
+    --ring: 225.45 71.22% 72.75%;
+  }
+
+  /* Only apply theme colors when a specific theme is selected */
+  [data-theme]:not([data-theme="default"]) {
+    /* Theme-specific colors will be applied here by ThemeProvider */
+  }
+
+  /* Remove all other theme variable definitions from :root and .dark */
+  /* They will be set dynamically by the ThemeProvider */
+
+  /* Better mobile input styling */
+  input[type="text"] {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  /* Remove the blue highlight on mobile tap */
+  input,
+  textarea,
+  button,
+  select,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Apply font globally */
+  html {
+    font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
+  }
+}
 
 @layer base {
   * {
@@ -144,308 +141,306 @@
 
 /* BlockNote theme variables */
 .bn-container[data-color-scheme="light"] {
-  --bn-colors-editor-text: hsl(252 67% 2%);
-  --bn-colors-editor-background: hsl(var(--background));
-  --bn-colors-menu-text: hsl(252 67% 2%);
-  --bn-colors-menu-background: hsl(var(--background));
-  --bn-colors-tooltip-text: hsl(252 67% 1%);
-  --bn-colors-tooltip-background: hsl(252 62% 98%);
-  --bn-colors-hovered-text: hsl(0 0% 100%);
-  --bn-colors-hovered-background: hsl(72 11% 35%);
-  --bn-colors-selected-text: hsl(252 11% 95%);
-  --bn-colors-selected-background: hsl(252 11% 35%);
-  --bn-colors-disabled-text: hsl(72 1% 39%);
-  --bn-colors-disabled-background: hsl(72 22% 94%);
-  --bn-colors-shadow: hsl(252 3% 94%);
-  --bn-colors-border: hsl(252 3% 94%);
-  --bn-colors-side-menu: hsl(72 1% 39%);
-  --bn-border-radius: 0.5rem;
-  
-  /* Highlight colors from your theme */
-  --bn-colors-highlights-gray-text: hsl(252 67% 2%);
-  --bn-colors-highlights-gray-background: hsl(72 22% 94%);
-  --bn-colors-highlights-brown-text: hsl(252 67% 2%);
-  --bn-colors-highlights-brown-background: hsl(72 22% 94%);
-  --bn-colors-highlights-red-text: hsl(15 99% 31%);
-  --bn-colors-highlights-red-background: hsl(15 99% 91%);
-  --bn-colors-highlights-blue-text: hsl(252 11% 35%);
-  --bn-colors-highlights-blue-background: hsl(252 11% 95%);
-  --bn-colors-highlights-green-text: hsl(72 11% 35%);
-  --bn-colors-highlights-green-background: hsl(72 22% 94%);
-  --bn-colors-highlights-purple-text: hsl(252 11% 35%);
-  --bn-colors-highlights-purple-background: hsl(252 62% 98%);
+    --bn-colors-editor-text: hsl(252 67% 2%);
+    --bn-colors-editor-background: hsl(var(--background));
+    --bn-colors-menu-text: hsl(252 67% 2%);
+    --bn-colors-menu-background: hsl(var(--background));
+    --bn-colors-tooltip-text: hsl(252 67% 1%);
+    --bn-colors-tooltip-background: hsl(252 62% 98%);
+    --bn-colors-hovered-text: hsl(0 0% 100%);
+    --bn-colors-hovered-background: hsl(72 11% 35%);
+    --bn-colors-selected-text: hsl(252 11% 95%);
+    --bn-colors-selected-background: hsl(252 11% 35%);
+    --bn-colors-disabled-text: hsl(72 1% 39%);
+    --bn-colors-disabled-background: hsl(72 22% 94%);
+    --bn-colors-shadow: hsl(252 3% 94%);
+    --bn-colors-border: hsl(252 3% 94%);
+    --bn-colors-side-menu: hsl(72 1% 39%);
+    --bn-border-radius: 0.5rem;
+    
+    /* Highlight colors from your theme */
+    --bn-colors-highlights-gray-text: hsl(252 67% 2%);
+    --bn-colors-highlights-gray-background: hsl(72 22% 94%);
+    --bn-colors-highlights-brown-text: hsl(252 67% 2%);
+    --bn-colors-highlights-brown-background: hsl(72 22% 94%);
+    --bn-colors-highlights-red-text: hsl(15 99% 31%);
+    --bn-colors-highlights-red-background: hsl(15 99% 91%);
+    --bn-colors-highlights-blue-text: hsl(252 11% 35%);
+    --bn-colors-highlights-blue-background: hsl(252 11% 95%);
+    --bn-colors-highlights-green-text: hsl(72 11% 35%);
+    --bn-colors-highlights-green-background: hsl(72 22% 94%);
+    --bn-colors-highlights-purple-text: hsl(252 11% 35%);
+    --bn-colors-highlights-purple-background: hsl(252 62% 98%);
 }
 
 .bn-container[data-color-scheme="dark"] {
-  --bn-colors-editor-text: hsl(229.76 31.78% 74.71%);
-  --bn-colors-editor-background: hsl(var(--background));
-  --bn-colors-menu-text: hsl(229.76 31.78% 74.71%);
-  --bn-colors-menu-background: hsl(var(--background));
-  --bn-colors-tooltip-text: hsl(234 12.4% 52.55%);
-  --bn-colors-tooltip-background: hsl(234.55 17.46% 12.35%);
-  --bn-colors-hovered-text: hsl(0 0% 82.75%);
-  --bn-colors-hovered-background: hsl(234.55 17.83% 9.47%);
-  --bn-colors-selected-text: hsl(0 0% 82.75%);
-  --bn-colors-selected-background: hsl(234.55 17.83% 9.47%);
-  --bn-colors-disabled-text: hsl(233.79 11.37% 50%);
-  --bn-colors-disabled-background: hsl(232.5 15.44% 18.32%);
-  --bn-colors-shadow: hsl(232.5 15.38% 30.59%);
-  --bn-colors-border: hsl(232.5 15.38% 30.59%);
-  --bn-colors-side-menu: hsl(233.79 11.37% 50%);
-  --bn-border-radius: 0.5rem;
+    --bn-colors-editor-text: hsl(229.76 31.78% 74.71%);
+    --bn-colors-editor-background: hsl(var(--background));
+    --bn-colors-menu-text: hsl(229.76 31.78% 74.71%);
+    --bn-colors-menu-background: hsl(var(--background));
+    --bn-colors-tooltip-text: hsl(234 12.4% 52.55%);
+    --bn-colors-tooltip-background: hsl(234.55 17.46% 12.35%);
+    --bn-colors-hovered-text: hsl(0 0% 82.75%);
+    --bn-colors-hovered-background: hsl(234.55 17.83% 9.47%);
+    --bn-colors-selected-text: hsl(0 0% 82.75%);
+    --bn-colors-selected-background: hsl(234.55 17.83% 9.47%);
+    --bn-colors-disabled-text: hsl(233.79 11.37% 50%);
+    --bn-colors-disabled-background: hsl(232.5 15.44% 18.32%);
+    --bn-colors-shadow: hsl(232.5 15.38% 30.59%);
+    --bn-colors-border: hsl(232.5 15.38% 30.59%);
+    --bn-colors-side-menu: hsl(233.79 11.37% 50%);
+    --bn-border-radius: 0.5rem;
 
-  /* Highlight colors for dark mode */
-  --bn-colors-highlights-gray-text: hsl(229.76 31.78% 74.71%);
-  --bn-colors-highlights-gray-background: hsl(232.5 15.44% 18.32%);
-  --bn-colors-highlights-brown-text: hsl(229.76 31.78% 74.71%);
-  --bn-colors-highlights-brown-background: hsl(232.5 15.44% 18.32%);
-  --bn-colors-highlights-red-text: hsl(1.58 47.5% 52.94%);
-  --bn-colors-highlights-red-background: hsl(232.5 15.44% 18.32%);
-  --bn-colors-highlights-blue-text: hsl(225.45 71.22% 72.75%);
-  --bn-colors-highlights-blue-background: hsl(234.55 17.46% 12.35%);
-  --bn-colors-highlights-green-text: hsl(225.45 71.22% 72.75%);
-  --bn-colors-highlights-green-background: hsl(234.55 17.83% 9.47%);
-  --bn-colors-highlights-purple-text: hsl(225.45 71.22% 72.75%);
-  --bn-colors-highlights-purple-background: hsl(234.55 17.46% 12.35%);
+    /* Highlight colors for dark mode */
+    --bn-colors-highlights-gray-text: hsl(229.76 31.78% 74.71%);
+    --bn-colors-highlights-gray-background: hsl(232.5 15.44% 18.32%);
+    --bn-colors-highlights-brown-text: hsl(229.76 31.78% 74.71%);
+    --bn-colors-highlights-brown-background: hsl(232.5 15.44% 18.32%);
+    --bn-colors-highlights-red-text: hsl(1.58 47.5% 52.94%);
+    --bn-colors-highlights-red-background: hsl(232.5 15.44% 18.32%);
+    --bn-colors-highlights-blue-text: hsl(225.45 71.22% 72.75%);
+    --bn-colors-highlights-blue-background: hsl(234.55 17.46% 12.35%);
+    --bn-colors-highlights-green-text: hsl(225.45 71.22% 72.75%);
+    --bn-colors-highlights-green-background: hsl(234.55 17.83% 9.47%);
+    --bn-colors-highlights-purple-text: hsl(225.45 71.22% 72.75%);
+    --bn-colors-highlights-purple-background: hsl(234.55 17.46% 12.35%);
 }
 
 /* Update the container styles */
 .bn-container {
-  height: 100% !important;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden !important;
-  background-color: hsl(var(--background));
-  max-height: 100%;
-  position: relative !important;
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    background-color: hsl(var(--background));
+    max-height: 100%;
+    position: relative !important;
 }
 
 .bn-editor {
-  flex: 1 1 0%;
-  overflow-y: auto;
-  padding: 1rem;
-  background-color: transparent;
-  height: 0;
+    flex: 1 1 0%;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: transparent;
+    height: 0;
 }
 
 /* Ensure the editor content has proper background */
 .bn-editor > div {
-  background-color: hsl(var(--background));
-  height: auto;
+    background-color: hsl(var(--background));
+    height: auto;
 }
 
 /* Remove this section as it might be causing conflicts */
 /* Remove absolute positioning that was causing issues */
 .bn-container > div {
-  display: flex;
-  flex-direction: column;
-  background-color: hsl(var(--background));
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(var(--background));
 }
 
 /* Remove the iOS keyboard fix as it might be causing issues */
 @supports (-webkit-touch-callout: none) {
-  .bn-editor {
-    padding-bottom: 0; /* Remove the 50vh padding */
-  }
+    .bn-editor {
+        padding-bottom: 0; /* Remove the 50vh padding */
+    }
 }
-
-
 
 /* Update the suggestion menu styles */
 .bn-suggestion-menu {
-  position: absolute !important;
-  z-index: 1000 !important; /* Increase z-index to ensure it shows above other elements */
-  background-color: hsl(var(--background)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  border-radius: var(--radius) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  overflow-y: auto !important;
-  max-height: 400px !important;
-  min-width: 400px !important;
-  padding: 0.75rem !important;
-  
-  /* Remove any fixed positioning that might interfere */
-  top: 100% !important;
-  left: 0 !important;
-  right: auto !important;
-  bottom: auto !important;
-  transform: none !important;
-  
-  /* Add some spacing */
-  margin-top: 0.5rem !important;
+    position: absolute !important;
+    z-index: 1000 !important; /* Increase z-index to ensure it shows above other elements */
+    background-color: hsl(var(--background)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    overflow-y: auto !important;
+    max-height: 400px !important;
+    min-width: 400px !important;
+    padding: 0.75rem !important;
+    
+    /* Remove any fixed positioning that might interfere */
+    top: 100% !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    
+    /* Add some spacing */
+    margin-top: 0.5rem !important;
 }
 
 /* Ensure proper positioning context */
 .bn-editor {
-  position: relative !important;
+    position: relative !important;
 }
 
 /* Remove any transforms that might interfere */
 .bn-container, .bn-editor, .bn-editor > div {
-  transform: none !important;
+    transform: none !important;
 }
 
 /* Keep mobile-specific styles but update for better desktop compatibility */
 @media (min-width: 769px) {
-  
+    
 }
 
 /* Improve menu item styles */
 .bn-suggestion-menu-item {
-  padding: 0.75rem 1rem !important;
-  font-size: 1rem !important;
-  line-height: 1.5 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-  cursor: pointer !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    cursor: pointer !important;
 }
 
 .bn-suggestion-menu-item:hover {
-  background-color: hsl(var(--accent)) !important;
-  color: hsl(var(--accent-foreground)) !important;
+    background-color: hsl(var(--accent)) !important;
+    color: hsl(var(--accent-foreground)) !important;
 }
 
 /* Make icons in menu items larger */
 .bn-suggestion-menu-item svg {
-  width: 1.5rem !important;
-  height: 1.5rem !important;
+    width: 1.5rem !important;
+    height: 1.5rem !important;
 }
 
 /* Adjust mobile styles */
 @media (max-width: 768px) {
-  .bn-suggestion-menu {
-    border-radius: 1rem 1rem 0 0 !important; /* Round top corners */
-    border-bottom: none !important;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
-    
-  }
+    .bn-suggestion-menu {
+        border-radius: 1rem 1rem 0 0 !important; /* Round top corners */
+        border-bottom: none !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+        
+    }
 }
 
 /* Remove the conflicting mobile styles */
 @media (max-width: 768px) {
-  /* Remove this entire block as it conflicts with our new styles */
-  /*.bn-suggestion-menu {
-    position: absolute !important;
-    bottom: auto !important;
-    border-radius: var(--radius) !important;
-  }*/
+    /* Remove this entire block as it conflicts with our new styles */
+    /*.bn-suggestion-menu {
+        position: absolute !important;
+        bottom: auto !important;
+        border-radius: var(--radius) !important;
+    }*/
 }
 
 /* Remove all other mobile-specific menu styles */
 
 /* Remove any transforms that might interfere */
 .bn-container, .bn-editor, .bn-editor > div {
-  transform: none !important;
+    transform: none !important;
 }
 
 /* Keep the editor container relative for proper positioning */
 .bn-editor {
-  position: relative !important;
+    position: relative !important;
 }
 
 /* Fix mobile input handling */
 .bn-editor [contenteditable] {
-  -webkit-user-select: text;
-  user-select: text;
-  -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Improve mobile touch targets */
 .bn-toolbar button {
-  padding: 0.5rem;
-  min-width: 2.5rem;
-  min-height: 2.5rem;
+    padding: 0.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
 }
 
 /* Additional styles for better dark mode integration */
 .bn-container[data-color-scheme="dark"] {
-  /* Override menu backgrounds in dark mode */
-  --bn-menu-background: hsl(240 13.73% 10%);
-  --bn-toolbar-background: hsl(240 13.73% 10%, 0.8);
+    /* Override menu backgrounds in dark mode */
+    --bn-menu-background: hsl(240 13.73% 10%);
+    --bn-toolbar-background: hsl(240 13.73% 10%, 0.8);
 }
 
 /* Improve dark mode text contrast */
 .dark .bn-editor {
-  color: hsl(229.76 31.78% 74.71%);
+    color: hsl(229.76 31.78% 74.71%);
 }
 
 /* Improve dark mode selection */
 .dark .bn-editor ::selection {
-  background: hsl(234.55 17.83% 9.47%);
-  color: hsl(0 0% 82.75%);
+    background: hsl(234.55 17.83% 9.47%);
+    color: hsl(0 0% 82.75%);
 }
 
 /* Mobile-specific improvements */
 @media (max-width: 768px) {
-  /* Adjust toolbar for mobile */
-  .bn-toolbar {
-    padding: 0.25rem !important;
-    gap: 0.25rem !important;
-    flex-wrap: wrap;
-    justify-content: center;
-    background-color: hsl(var(--background));
-    border-bottom: 1px solid hsl(var(--border));
-  }
+    /* Adjust toolbar for mobile */
+    .bn-toolbar {
+        padding: 0.25rem !important;
+        gap: 0.25rem !important;
+        flex-wrap: wrap;
+        justify-content: center;
+        background-color: hsl(var(--background));
+        border-bottom: 1px solid hsl(var(--border));
+    }
 
-  /* Make toolbar buttons easier to tap */
-  .bn-toolbar button {
-    padding: 0.5rem !important;
-    min-width: 2.75rem !important;
-    min-height: 2.75rem !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    /* Make toolbar buttons easier to tap */
+    .bn-toolbar button {
+        padding: 0.5rem !important;
+        min-width: 2.75rem !important;
+        min-height: 2.75rem !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-  /* Improve slash menu on mobile */
-  .bn-suggestion-menu {
-    border-radius: 1rem 1rem 0 0;
-    border-bottom: none;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  }
+    /* Improve slash menu on mobile */
+    .bn-suggestion-menu {
+        border-radius: 1rem 1rem 0 0;
+        border-bottom: none;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
 
-  /* Adjust editor padding for mobile */
-  .bn-editor {
-    padding: 0.75rem !important;
-  }
+    /* Adjust editor padding for mobile */
+    .bn-editor {
+        padding: 0.75rem !important;
+    }
 
-  /* Improve text selection on mobile */
-  .bn-editor [contenteditable] {
-    -webkit-user-select: text;
-    user-select: text;
-    -webkit-tap-highlight-color: transparent;
-  }
+    /* Improve text selection on mobile */
+    .bn-editor [contenteditable] {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-tap-highlight-color: transparent;
+    }
 }
 
 /* Improve mobile keyboard handling */
 @supports (-webkit-touch-callout: none) {
-  .mobile-editor {
-    /* Prevent viewport jumping when keyboard appears */
-    height: -webkit-fill-available !important;
-    min-height: -webkit-fill-available !important;
-  }
+    .mobile-editor {
+        /* Prevent viewport jumping when keyboard appears */
+        height: -webkit-fill-available !important;
+        min-height: -webkit-fill-available !important;
+    }
 }
 
 /* Fix iOS Safari scrolling */
 .bn-editor {
-  -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Improve formatting menu on mobile */
 .bn-formatting-menu {
-  position: fixed !important;
-  bottom: 0 !important;
-  top: auto !important;
-  left: 0 !important;
-  right: 0 !important;
-  transform: none !important;
-  border-radius: 1rem 1rem 0 0;
-  padding: 0.5rem;
-  background-color: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  border-bottom: none;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    border-radius: 1rem 1rem 0 0;
+    padding: 0.5rem;
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-bottom: none;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Hide some toolbar items on mobile to prevent overflow */
@@ -455,54 +450,54 @@
 
 /* Improve mobile editor experience */
 .mobile-editor {
-  /* Prevent iOS zoom on input focus */
-  @media screen and (max-width: 768px) {
-    font-size: 16px !important;
-  }
+    /* Prevent iOS zoom on input focus */
+    @media screen and (max-width: 768px) {
+        font-size: 16px !important;
+    }
 }
 
 /* Update title input styles */
 .title-input {
-  font-weight: 700; /* Make it bolder */
-  font-size: 1.5rem;
-  line-height: 2rem;
-  padding: 0.5rem 0;
-  margin: 0;
-  width: 100%;
-  background: transparent;
-  border: none;
-  outline: none !important;
-  box-shadow: none !important;
+    font-weight: 700; /* Make it bolder */
+    font-size: 1.5rem;
+    line-height: 2rem;
+    padding: 0.5rem 0;
+    margin: 0;
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 @media (min-width: 768px) {
-  .title-input {
-    font-size: 2rem;
-    line-height: 2.5rem;
-    padding: 0.75rem 0;
-  }
+    .title-input {
+        font-size: 2rem;
+        line-height: 2.5rem;
+        padding: 0.75rem 0;
+    }
 }
 
 /* Add padding to the editor container on larger screens */
 @media (min-width: 768px) {
-  .bn-editor {
-    padding: 1.5rem !important;
-  }
+    .bn-editor {
+        padding: 1.5rem !important;
+    }
 }
 
 /* Improve mobile title input */
 @media (max-width: 767px) {
-  .title-input {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-    padding: 0.5rem 0;
-  }
+    .title-input {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+        padding: 0.5rem 0;
+    }
 }
 
 /* Apply editor font globally */
 .ProseMirror, 
 .bn-container {
-  font-family: var(--editor-font), monospace !important;
+    font-family: var(--editor-font), monospace !important;
 }
 
 /* Update font classes with proper weights */
@@ -525,58 +520,58 @@
 .font-playfair { font-family: "Playfair Display" !important; }
 
 .font-fira-code { 
-  font-family: "Fira Code", ui-monospace, monospace !important;
-  font-weight: 400;
+    font-family: "Fira Code", ui-monospace, monospace !important;
+    font-weight: 400;
 }
 
 .font-jetbrains { 
-  font-family: "JetBrains Mono", ui-monospace, monospace !important;
-  font-weight: 400;
+    font-family: "JetBrains Mono", ui-monospace, monospace !important;
+    font-weight: 400;
 }
 
 .font-roboto { 
-  font-family: "Roboto", ui-sans-serif, system-ui, sans-serif !important;
-  font-weight: 400;
+    font-family: "Roboto", ui-sans-serif, system-ui, sans-serif !important;
+    font-weight: 400;
 }
 
 .font-open-sans { 
-  font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif !important;
-  font-weight: 400;
+    font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif !important;
+    font-weight: 400;
 }
 
 .font-source-sans { 
-  font-family: "Source Sans Pro", ui-sans-serif, system-ui, sans-serif !important;
-  font-weight: 400;
+    font-family: "Source Sans Pro", ui-sans-serif, system-ui, sans-serif !important;
+    font-weight: 400;
 }
 
 .font-merriweather { 
-  font-family: "Merriweather", ui-serif, serif !important;
-  font-weight: 400;
+    font-family: "Merriweather", ui-serif, serif !important;
+    font-weight: 400;
 }
 
 .font-playfair { 
-  font-family: "Playfair Display", ui-serif, serif !important;
-  font-weight: 400;
+    font-family: "Playfair Display", ui-serif, serif !important;
+    font-weight: 400;
 }
 
 .font-caveat { 
-  font-family: "Caveat", cursive !important;
-  font-weight: 400;
+    font-family: "Caveat", cursive !important;
+    font-weight: 400;
 }
 
 .font-dancing { 
-  font-family: "Dancing Script", cursive !important;
-  font-weight: 400;
+    font-family: "Dancing Script", cursive !important;
+    font-weight: 400;
 }
 
 .font-comic-neue { 
-  font-family: "Comic Neue", cursive !important;
-  font-weight: 400;
+    font-family: "Comic Neue", cursive !important;
+    font-weight: 400;
 }
 
 .font-permanent-marker { 
-  font-family: "Permanent Marker", cursive !important;
-  font-weight: 400;
+    font-family: "Permanent Marker", cursive !important;
+    font-weight: 400;
 }
 
 /* Apply font to specific elements */
@@ -589,83 +584,98 @@ button,
 input,
 select,
 textarea {
-  font-family: var(--editor-font), system-ui, -apple-system, sans-serif !important;
+    font-family: var(--editor-font), system-ui, -apple-system, sans-serif !important;
 }
 
 /* Preview text styles */
 .preview-text {
-  font-size: 1rem;
-  line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 /* Add font smoothing */
 @media screen and (-webkit-min-device-pixel-ratio: 2),
        screen and (min-resolution: 2dppx) {
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 }
 
 /* Ensure font loading doesn't cause layout shifts */
 html {
-  font-display: swap;
+    font-display: swap;
 }
 
 /* Add preload hints for critical fonts */
 @layer base {
-  /* Add font loading status classes */
-  .fonts-loading {
-    opacity: 0.5;
-    transition: opacity 0.3s ease;
-  }
+    /* Add font loading status classes */
+    .fonts-loading {
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
 
-  .fonts-loaded {
-    opacity: 1;
-  }
+    .fonts-loaded {
+        opacity: 1;
+    }
 }
 
 /* Add this to ensure fonts are applied to the editor content */
 .ProseMirror {
-  font-family: inherit !important;
+    font-family: inherit !important;
 }
 
 .bn-container {
-  font-family: inherit !important;
+    font-family: inherit !important;
 }
 
 /* Update the root variable */
 :root {
-  --editor-font: "Monaspace Neon";
+    --editor-font: "Monaspace Neon";
 }
 
 /* Apply the font through body */
 body {
-  font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
+    font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
 }
 
 /* Add these with your other font classes */
 .font-anonymous-pro {
-  font-family: "Anonymous Pro" !important;
+    font-family: "Anonymous Pro" !important;
 }
 
 .font-overpass-mono {
-  font-family: "Overpass Mono" !important;
+    font-family: "Overpass Mono" !important;
 }
 
 /* Handwriting alternatives */
 .font-handlee {
-  font-family: "Handlee" !important;
+    font-family: "Handlee" !important;
 }
 
 .font-patrick-hand {
-  font-family: "Patrick Hand" !important;
+    font-family: "Patrick Hand" !important;
 }
 
 .font-kalam {
-  font-family: "Kalam" !important;
+    font-family: "Kalam" !important;
 }
 
 .font-indie-flower {
-  font-family: "Indie Flower" !important;
+    font-family: "Indie Flower" !important;
+}
+
+/* Ensure the font is applied immediately on page load */
+html {
+  font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
+}
+
+/* Add this to prevent FOUC (Flash of Unstyled Content) */
+.font-loading {
+  opacity: 0;
+}
+
+.font-loaded {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
