@@ -74,11 +74,15 @@ export default function NewNote() {
     };
   }, [isSaving]);
 
-  // focus title input on mount
+  // Update the useEffect for title input focus
   useEffect(() => {
-    // Short timeout to ensure input is mounted
+    // Short timeout to ensure input is mounted and iOS keyboard shows up
     const timer = setTimeout(() => {
-      titleInputRef.current?.focus();
+      if (titleInputRef.current) {
+        titleInputRef.current.focus();
+        // Force keyboard to show on iOS
+        (titleInputRef.current as HTMLInputElement).click();
+      }
     }, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -155,6 +159,14 @@ export default function NewNote() {
               onChange={(e) => setNote({ ...note, title: e.target.value })}
               className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none min-w-0 flex-1"
               placeholder="Untitled"
+              autoFocus
+              onFocus={(e) => {
+                // Prevent iOS from losing focus
+                e.currentTarget.setSelectionRange(
+                  e.currentTarget.value.length,
+                  e.currentTarget.value.length
+                );
+              }}
             />
             {/* Desktop buttons */}
             <div className="hidden md:flex items-center gap-2">
