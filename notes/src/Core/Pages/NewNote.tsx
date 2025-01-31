@@ -74,11 +74,15 @@ export default function NewNote() {
     };
   }, [isSaving]);
 
-  // focus title input on mount
+  // Update the useEffect for title input focus
   useEffect(() => {
-    // Short timeout to ensure input is mounted
+    // Short timeout to ensure input is mounted and iOS keyboard shows up
     const timer = setTimeout(() => {
-      titleInputRef.current?.focus();
+      if (titleInputRef.current) {
+        titleInputRef.current.focus();
+        // Force keyboard to show on iOS
+        (titleInputRef.current as HTMLInputElement).click();
+      }
     }, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -119,6 +123,17 @@ export default function NewNote() {
     }));
   };
 
+  // Update the content change handler to prevent focus loss
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleContentChange = useCallback((content: any[]) => {
+    const contentStr = JSON.stringify(content);
+    // Use functional update to prevent unnecessary re-renders
+    setNote(prev => ({
+      ...prev,
+      content: contentStr
+    }));
+  }, []);
+
   // Save new note to Firebase directly
   const saveNote = useCallback(async () => {
     if (!user) return;
@@ -155,6 +170,14 @@ export default function NewNote() {
               onChange={(e) => setNote({ ...note, title: e.target.value })}
               className="text-lg font-semibold bg-transparent border-0 p-0 focus:outline-none min-w-0 flex-1"
               placeholder="Untitled"
+              autoFocus
+              onFocus={(e) => {
+                // Prevent iOS from losing focus
+                e.currentTarget.setSelectionRange(
+                  e.currentTarget.value.length,
+                  e.currentTarget.value.length
+                );
+              }}
             />
             {/* Desktop buttons */}
             <div className="hidden md:flex items-center gap-2">
@@ -523,12 +546,8 @@ export default function NewNote() {
       {/* Editor Container - remove padding on mobile */}
       <div className="flex-1 overflow-hidden">
         <Editor
-          key={note.content}
           content={note.content}
-          onChange={(content) => {
-            const contentStr = JSON.stringify(content);
-            setNote({ ...note, content: contentStr });
-          }}
+          onChange={handleContentChange}
           editorRef={editorRef}
         />
       </div>
