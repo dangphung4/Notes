@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Monaspace+Neon:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SF+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&display=swap');
+
+/* SF Mono is system font on macOS */
+@font-face {
+  font-family: 'SF Mono';
+  src: local('SF Mono');
+  font-weight: 400;
+}
+
 @layer base {
     :root {
         --background: 252 62% 99%;
@@ -29,6 +49,7 @@
         --chart-4: 72 11% 38%;
         --chart-5: 252 14% 35%;
         --radius: 0.5rem;
+        --editor-font: 'Monaspace Neon';
       }
   
     .dark {
@@ -71,6 +92,11 @@
     select,
     a {
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Apply font globally */
+    html {
+      font-family: var(--editor-font), system-ui, sans-serif;
     }
   }
   
@@ -443,5 +469,55 @@
     font-size: 1.25rem;
     line-height: 1.75rem;
     padding: 0.5rem 0;
+  }
+}
+
+/* Apply editor font globally */
+.ProseMirror, 
+.bn-container {
+  font-family: var(--editor-font), monospace !important;
+}
+
+/* Font classes for preview in settings */
+.font-monaspace { font-family: 'Monaspace Neon', monospace !important; }
+.font-inter { font-family: 'Inter', sans-serif !important; }
+.font-sf-mono { font-family: 'SF Mono', monospace !important; }
+.font-fira-code { font-family: 'Fira Code', monospace !important; }
+.font-jetbrains { font-family: 'JetBrains Mono', monospace !important; }
+
+/* Font classes for the entire app */
+.font-roboto { font-family: 'Roboto', sans-serif !important; }
+.font-open-sans { font-family: 'Open Sans', sans-serif !important; }
+.font-source-sans { font-family: 'Source Sans Pro', sans-serif !important; }
+.font-merriweather { font-family: 'Merriweather', serif !important; }
+.font-playfair { font-family: 'Playfair Display', serif !important; }
+.font-caveat { font-family: 'Caveat', cursive !important; }
+.font-dancing { font-family: 'Dancing Script', cursive !important; }
+
+/* Apply font to specific elements */
+.ProseMirror,
+.bn-container,
+.title-input,
+.card-title,
+.heading-text,
+button,
+input,
+select,
+textarea {
+  font-family: var(--editor-font), system-ui, sans-serif !important;
+}
+
+/* Preview text styles */
+.preview-text {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Add font smoothing */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 2dppx) {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

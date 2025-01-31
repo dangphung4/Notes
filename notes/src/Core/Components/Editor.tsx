@@ -9,6 +9,9 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import debounce from "lodash/debounce";
+import { useAuth } from '../Auth/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db as firestore } from '../Auth/firebase';
 
 import "@fontsource/monaspace-neon/400.css";
 import "@fontsource/monaspace-neon/500.css";
@@ -36,6 +39,7 @@ export default function Editor({
   onSave,
   editorRef,
 }: EditorProps) {
+  const { user } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.classList.contains("dark")
   );
@@ -102,6 +106,25 @@ export default function Editor({
     setIsDarkMode(document.documentElement.classList.contains("dark"));
   }, []);
 
+  // Load user's font preference
+  useEffect(() => {
+    const loadFontPreference = async () => {
+      if (!user) return;
+      
+      try {
+        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+        const preferences = userDoc.data()?.preferences;
+        if (preferences?.editorFont) {
+          document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
+        }
+      } catch (error) {
+        console.error('Error loading font preference:', error);
+      }
+    };
+
+    loadFontPreference();
+  }, [user]);
+
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-background overflow-hidden">
       <BlockNoteView
@@ -109,10 +132,9 @@ export default function Editor({
         theme={isDarkMode ? "dark" : "light"}
         onChange={() => debouncedSave(editor)}
         className="flex-1 h-full bg-background overflow-y-auto mobile-editor relative
-    [&_.ProseMirror]:text-xl
-    [&_.ProseMirror]:sm:text-2xl
-    [&_.ProseMirror]:font-['Monaspace_Neon']
-    "
+          [&_.ProseMirror]:text-xl
+          [&_.ProseMirror]:sm:text-2xl
+          [&_.ProseMirror]:font-[var(--editor-font)]"
       />
     </div>
   );

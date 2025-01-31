@@ -20,6 +20,9 @@ export interface User {
   displayName: string;
   photoURL: string;
   lastLoginAt: Date;
+  preferences?: {
+    editorFont?: string;
+  };
 }
 
 export interface Tags {
@@ -1091,6 +1094,38 @@ class NotesDB extends Dexie {
       }
     } catch (error) {
       console.error("Error syncing shared event:", error);
+    }
+  }
+
+  async updateUserPreferences(userId: string, preferences: Partial<User['preferences']>) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const userRef = doc(firestore, 'users', userId);
+      const userDoc = await getDoc(userRef);
+      const currentPreferences = userDoc.data()?.preferences || {};
+      
+      await updateDoc(userRef, {
+        preferences: {
+          ...currentPreferences,
+          ...preferences
+        },
+        updatedAt: new Date()
+      });
+
+      // Update CSS variable for global font change
+      if (preferences.editorFont) {
+        document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
+        // Force re-render of editor if needed
+        document.documentElement.classList.add('font-updated');
+        setTimeout(() => {
+          document.documentElement.classList.remove('font-updated');
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      throw error;
     }
   }
 }

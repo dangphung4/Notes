@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../Auth/AuthContext";
 import { updateProfile, updateEmail, updatePassword } from "firebase/auth";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,10 @@ import {
 } from "@radix-ui/react-icons";
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
+import { doc, getDoc } from "firebase/firestore";
+import { db as firestore } from '../Auth/firebase';
+import { db } from '../Database/db';
 
 /**
  *
@@ -53,6 +57,74 @@ export default function Profile() {
   // App Settings
   const [autoSave, setAutoSave] = useState(true);
   const [spellCheck, setSpellCheck] = useState(true);
+
+  const FONT_OPTIONS = [
+    // Monospace fonts
+    { value: 'Monaspace Neon', label: 'Monaspace Neon', class: 'font-monaspace', category: 'Monospace' },
+    { value: 'JetBrains Mono', label: 'JetBrains Mono', class: 'font-jetbrains', category: 'Monospace' },
+    { value: 'Fira Code', label: 'Fira Code', class: 'font-fira-code', category: 'Monospace' },
+    { value: 'SF Mono', label: 'SF Mono', class: 'font-sf-mono', category: 'Monospace' },
+    
+    // Sans Serif fonts
+    { value: 'Inter', label: 'Inter', class: 'font-inter', category: 'Sans Serif' },
+    { value: 'Roboto', label: 'Roboto', class: 'font-roboto', category: 'Sans Serif' },
+    { value: 'Open Sans', label: 'Open Sans', class: 'font-open-sans', category: 'Sans Serif' },
+    { value: 'Source Sans Pro', label: 'Source Sans Pro', class: 'font-source-sans', category: 'Sans Serif' },
+    
+    // Serif fonts
+    { value: 'Merriweather', label: 'Merriweather', class: 'font-merriweather', category: 'Serif' },
+    { value: 'Playfair Display', label: 'Playfair Display', class: 'font-playfair', category: 'Serif' },
+    
+    // Handwriting fonts
+    { value: 'Caveat', label: 'Caveat', class: 'font-caveat', category: 'Handwriting' },
+    { value: 'Dancing Script', label: 'Dancing Script', class: 'font-dancing', category: 'Handwriting' },
+  ];
+
+  const [editorFont, setEditorFont] = useState('Monaspace Neon');
+
+  // Load user preferences
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (!user) return;
+      try {
+        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+        const preferences = userDoc.data()?.preferences;
+        if (preferences?.editorFont) {
+          setEditorFont(preferences.editorFont);
+        }
+      } catch (error) {
+        console.error('Error loading preferences:', error);
+      }
+    };
+    loadPreferences();
+  }, [user]);
+
+  const handleFontChange = async (value: string) => {
+    try {
+      setIsLoading(true);
+      if (user) {
+        await db.updateUserPreferences(user.uid, {
+          editorFont: value
+        });
+        setEditorFont(value);
+        // Update CSS variable immediately
+        document.documentElement.style.setProperty('--editor-font', value);
+        toast({
+          title: "Font updated",
+          description: "Font preference has been saved and applied"
+        });
+      }
+    } catch (error) {
+      console.error('Error updating font:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update font preference",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateProfileInfo = async () => {
     if (!user) return;
@@ -360,6 +432,46 @@ export default function Profile() {
                   checked={spellCheck}
                   onCheckedChange={setSpellCheck}
                 />
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label>Editor Font</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Choose your preferred font for the editor
+                  </p>
+                </div>
+                <Select
+                  value={editorFont}
+                  onValueChange={handleFontChange}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(
+                      FONT_OPTIONS.reduce((acc, font) => {
+                        if (!acc[font.category]) acc[font.category] = [];
+                        acc[font.category].push(font);
+                        return acc;
+                      }, {} as Record<string, typeof FONT_OPTIONS>)
+                    ).map(([category, fonts]) => (
+                      <SelectGroup key={category}>
+                        <SelectLabel className="px-2 py-1.5 text-sm font-semibold">{category}</SelectLabel>
+                        {fonts.map(font => (
+                          <SelectItem 
+                            key={font.value} 
+                            value={font.value}
+                            className={font.class}
+                          >
+                            {font.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
