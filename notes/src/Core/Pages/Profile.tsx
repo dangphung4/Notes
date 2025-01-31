@@ -234,19 +234,7 @@ export default function Profile() {
 
   const { theme: currentMode, setTheme: setMode, currentTheme, setCurrentTheme } = useTheme();
 
-  const themePresets = Object.entries(themes).map(([name, value]) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    theme: name as ThemeName,
-    colors: {
-      background: value[currentMode as keyof typeof value]?.background,
-      foreground: value[currentMode as keyof typeof value]?.foreground,
-      primary: value[currentMode as keyof typeof value]?.primary,
-      secondary: value[currentMode as keyof typeof value]?.secondary,
-      muted: value[currentMode as keyof typeof value]?.muted,
-    },
-  }));
-
-  // Update the groupThemes function with more categories
+  // TODO add more themes and update groupings
   const groupThemes = () => {
     const groups = {
       'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
@@ -263,6 +251,14 @@ export default function Profile() {
         displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, ' $1')
       }))
     }));
+  };
+
+  // Add this helper function near the top of the component
+  const getEffectiveTheme = (mode: 'light' | 'dark' | 'system') => {
+    if (mode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return mode;
   };
 
   return (
@@ -576,13 +572,13 @@ export default function Profile() {
                                       <div
                                         className="h-4 w-4 rounded-full"
                                         style={{
-                                          backgroundColor: `hsl(${themes[theme.name][currentMode].primary})`,
+                                          backgroundColor: `hsl(${themes[theme.name][getEffectiveTheme(currentMode)].primary})`,
                                         }}
                                       />
                                       <div
                                         className="h-4 w-4 rounded-full"
                                         style={{
-                                          backgroundColor: `hsl(${themes[theme.name][currentMode].secondary})`,
+                                          backgroundColor: `hsl(${themes[theme.name][getEffectiveTheme(currentMode)].secondary})`,
                                         }}
                                       />
                                     </div>

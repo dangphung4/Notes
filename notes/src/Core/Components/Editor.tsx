@@ -10,14 +10,14 @@ import "@blocknote/shadcn/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteEditor } from "@blocknote/core";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import debounce from "lodash/debounce";
 import { useAuth } from '../Auth/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db as firestore } from '../Auth/firebase';
 import { cn } from '@/lib/utils';
 import { useTheme } from "../Theme/ThemeProvider";
-import { themes, ThemeName } from "../Theme/themes";
+import { themes } from "../Theme/themes";
 
 import "@fontsource/monaspace-neon/400.css";
 import "@fontsource/monaspace-neon/500.css";
@@ -75,6 +75,7 @@ import * as Badge from "@/components/ui/badge";
 
 import "@/styles/editor.css";
 
+
 interface EditorProps {
   content: string; // Change to expect string since that's how it's stored
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,81 +93,40 @@ interface EditorProps {
  * @param root0.editorRef
  */
 
-// First, let's define a proper type for the BlockNote theme
-type BlockNoteTheme = {
-  colors: {
-    editor: {
-      text: string;
-      background: string;
-    };
-    menu: {
-      text: string;
-      background: string;
-    };
-    tooltip: {
-      text: string;
-      background: string;
-    };
-    hovered: {
-      text: string;
-      background: string;
-    };
-    selected: {
-      text: string;
-      background: string;
-    };
-    disabled: {
-      text: string;
-      background: string;
-    };
-    shadow: string;
-    border: string;
-  };
-  borderRadius: number;
-  fontFamily: string;
-};
+// TODO BLOCK NOTE THEME TYPES FOR INTEGRATING IN EDITOR
+// type CombinedColor = Partial<{
+//   text: string;
+//   background: string;
+// }>;
 
-// Then update the createBlockNoteTheme function
-const createBlockNoteTheme = (mode: 'light' | 'dark', currentTheme: string): "light" | "dark" | BlockNoteTheme => {
-  // First try using the basic theme
-  if (mode === 'light' || mode === 'dark') {
-    return mode;
-  }
+// type ColorScheme = Partial<{
+//   editor: CombinedColor;
+//   menu: CombinedColor;
+//   tooltip: CombinedColor;
+//   hovered: CombinedColor;
+//   selected: CombinedColor;
+//   disabled: CombinedColor;
+//   shadow: string;
+//   border: string;
+//   sideMenu: string;
+//   highlights: Partial<{
+//     gray: CombinedColor;
+//     brown: CombinedColor;
+//     red: CombinedColor;
+//     orange: CombinedColor;
+//     yellow: CombinedColor;
+//     green: CombinedColor;
+//     blue: CombinedColor;
+//     purple: CombinedColor;
+//     pink: CombinedColor;
+//   }>;
+// }>;
 
-  // If that doesn't work, create a custom theme
-  return {
-    colors: {
-      editor: {
-        text: `hsl(${themes[currentTheme][mode].foreground})`,
-        background: `hsl(${themes[currentTheme][mode].background})`,
-      },
-      menu: {
-        text: `hsl(${themes[currentTheme][mode].popoverForeground})`,
-        background: `hsl(${themes[currentTheme][mode].popover})`,
-      },
-      tooltip: {
-        text: `hsl(${themes[currentTheme][mode].popoverForeground})`,
-        background: `hsl(${themes[currentTheme][mode].popover})`,
-      },
-      hovered: {
-        text: `hsl(${themes[currentTheme][mode].accent})`,
-        background: `hsl(${themes[currentTheme][mode].accent}/10)`,
-      },
-      selected: {
-        text: `hsl(${themes[currentTheme][mode].primary})`,
-        background: `hsl(${themes[currentTheme][mode].primary}/10)`,
-      },
-      disabled: {
-        text: `hsl(${themes[currentTheme][mode].mutedForeground})`,
-        background: `hsl(${themes[currentTheme][mode].muted})`,
-      },
-      shadow: `hsl(${themes[currentTheme][mode].border})`,
-      border: `hsl(${themes[currentTheme][mode].border})`,
-    },
-    borderRadius: 4,
-    fontFamily: 'var(--editor-font)',
-  };
-};
+// type BlockNoteTheme = Partial<{
+//     colors: ColorScheme;
+//     borderRadius: number;
+//     fontFamily: string;
+//   }>;
 
 export default function Editor({
   content,
@@ -175,14 +135,14 @@ export default function Editor({
   editorRef,
 }: EditorProps) {
   const { user } = useAuth();
-  const { theme } = useTheme();
+  const { theme: currentMode, currentTheme } = useTheme();
   
-  const getEffectiveTheme = useCallback(() => {
-    if (theme === 'system') {
+  const getEffectiveTheme = (mode: 'light' | 'dark' | 'system') => {
+    if (mode === 'system') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    return theme as 'light' | 'dark';
-  }, [theme]);
+    return mode;
+  };
 
   // Create editor instance
   const editor = useCreateBlockNote({
@@ -194,6 +154,24 @@ export default function Editor({
       [content]
     ),
   });
+
+  // Set CSS variables for theming
+  useEffect(() => {
+    const root = document.documentElement;
+    const mode = getEffectiveTheme(currentMode);
+    const colors = themes[currentTheme][mode];
+
+    root.style.setProperty('--bn-colors-editor-text', `hsl(${colors.foreground})`);
+    root.style.setProperty('--bn-colors-editor-background', `hsl(${colors.background})`);
+    root.style.setProperty('--bn-colors-menu-text', `hsl(${colors.popoverForeground})`);
+    root.style.setProperty('--bn-colors-menu-background', `hsl(${colors.popover})`);
+    root.style.setProperty('--bn-colors-tooltip-text', `hsl(${colors.popoverForeground})`);
+    root.style.setProperty('--bn-colors-tooltip-background', `hsl(${colors.popover})`);
+    root.style.setProperty('--bn-colors-hovered-text', `hsl(${colors.accent})`);
+    root.style.setProperty('--bn-colors-hovered-background', `hsl(${colors.accent}/10)`);
+    root.style.setProperty('--bn-colors-selected-text', `hsl(${colors.primary})`);
+    root.style.setProperty('--bn-colors-selected-background', `hsl(${colors.primary}/10)`);
+  }, [currentMode, currentTheme, getEffectiveTheme]);
 
   // Set editor reference if provided
   useEffect(() => {
@@ -248,11 +226,12 @@ export default function Editor({
     [onChange, onSave]
   );
 
+
   return (
     <div className="flex flex-col flex-1 h-full w-full bg-background overflow-hidden">
       <BlockNoteView
         editor={editor}
-        theme={getEffectiveTheme()}
+        theme={getEffectiveTheme(currentMode)}
         onChange={() => debouncedSave(editor)}
         shadCNComponents={{
           Button,
