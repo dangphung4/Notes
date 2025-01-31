@@ -246,14 +246,14 @@ export default function Profile() {
     },
   }));
 
-  // Add this helper function to group themes
+  // Update the groupThemes function with more categories
   const groupThemes = () => {
     const groups = {
-      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin'],
-      'Classic': ['solarized', 'gruvbox', 'oneDark'],
-      'Vibrant': ['synthwave', 'cyberpunk', 'horizon'],
-      'Natural': ['rosePine', 'palenight', 'ayu'],
-      'Professional': ['github', 'nord', 'cobalt']
+      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
+      'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
+      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
+      'Natural': ['horizon', 'palenight', 'ayu'],
+      'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
     };
     
     return Object.entries(groups).map(([groupName, themeNames]) => ({
@@ -601,6 +601,83 @@ export default function Profile() {
                   </Card>
                 </div>
               </div>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Theme Preview</CardTitle>
+                  <CardDescription>
+                    See how your selected theme looks with different components
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="grid gap-2">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Buttons</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <Button>Primary</Button>
+                        <Button variant="secondary">Secondary</Button>
+                        <Button variant="outline">Outline</Button>
+                        <Button variant="ghost">Ghost</Button>
+                        <Button variant="destructive">Destructive</Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Cards</h4>
+                      <div className="grid gap-2">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Example Card</CardTitle>
+                            <CardDescription>
+                              This is how cards will look with this theme
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                              Card content with muted text
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Form Elements</h4>
+                      <div className="grid gap-2">
+                        <Input placeholder="Input field" />
+                        <div className="flex items-center space-x-2">
+                          <Switch id="example-switch" />
+                          <Label htmlFor="example-switch">Switch</Label>
+                        </div>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="option1">Option 1</SelectItem>
+                            <SelectItem value="option2">Option 2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-medium">Alerts and Messages</h4>
+                      <div className="grid gap-2">
+                        <div className="p-3 bg-primary/10 text-primary rounded-md">
+                          Primary Alert
+                        </div>
+                        <div className="p-3 bg-secondary/10 text-secondary rounded-md">
+                          Secondary Alert
+                        </div>
+                        <div className="p-3 bg-destructive/10 text-destructive rounded-md">
+                          Destructive Alert
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </CardContent>
           </Card>
         </TabsContent>
