@@ -92,38 +92,10 @@ export default function Profile() {
     { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' }
   ];
 
-  const [editorFont, setEditorFont] = useState('Monaspace Neon');
-
-  useEffect(() => {
-    const loadPreferences = async () => {
-      if (!user) return;
-      try {
-        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
-        const preferences = userDoc.data()?.preferences;
-        if (preferences?.editorFont) {
-          setEditorFont(preferences.editorFont);
-        }
-      } catch (error) {
-        console.error('Error loading preferences:', error);
-      }
-    };
-    loadPreferences();
-  }, [user]);
+  const { editorFont, setEditorFont } = useTheme();
 
   const handleFontChange = async (newFont: string) => {
-    localStorage.setItem('editor-font', newFont);
-
-    document.documentElement.style.setProperty('--editor-font', newFont);
-    
-    if (user) {
-      try {
-        await updateDoc(doc(firestore, 'users', user.uid), {
-          'preferences.editorFont': newFont
-        });
-      } catch (error) {
-        console.error('Error updating font preference:', error);
-      }
-    }
+    setEditorFont(newFont);
   };
 
   useEffect(() => {

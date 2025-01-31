@@ -1186,7 +1186,10 @@ class NotesDB extends Dexie {
 
       // Update local IndexedDB
       await this.users?.update(userId, (user: User) => {
-        user.preferences = preferences;
+        user.preferences = {
+          ...user.preferences,
+          ...preferences
+        };
       });
 
       return true;
