@@ -373,10 +373,7 @@ export default function NewNote() {
             variant="ghost" 
             size="sm"
             onClick={() => {
-              const editorContainer = document.querySelector('.bn-editor');
-              if (editorContainer) {
-                editorContainer.scrollTo({ top: 0, behavior: 'smooth' });
-              }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             className="shrink-0"
           >
