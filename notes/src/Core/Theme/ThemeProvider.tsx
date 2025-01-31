@@ -43,6 +43,11 @@ const applyThemeColors = (themeName: ThemeName, mode: Theme) => {
   }
 };
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [theme, setTheme] = useState<Theme>(() => {
@@ -144,6 +149,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ *
+ */
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {

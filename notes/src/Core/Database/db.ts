@@ -1151,6 +1151,8 @@ class NotesDB extends Dexie {
 
   /**
    * Updates user preferences in both Firestore and IndexedDB
+   * @param userId
+   * @param preferences
    */
   async updateUserPreferences(userId: string, preferences: Partial<UserPreferences>) {
     try {
@@ -1176,6 +1178,7 @@ class NotesDB extends Dexie {
   // Find the syncNoteWithFirebase method and update it to filter out undefined values
   /**
    *
+   * @param note
    */
   async syncNoteWithFirebase(note: Note) {
     if (!auth.currentUser) return;

@@ -300,6 +300,8 @@ function AppRoutes() {
 
 /**
  *
+ * @param root0
+ * @param root0.children
  */
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
