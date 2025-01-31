@@ -388,20 +388,6 @@ export default function EditNote() {
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartX) return;
-    
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchEnd - touchStartX;
-    
-    // Swipe right to go back
-    if (diff > 100) {
-      navigate('/notes');
-    }
-    
-    setTouchStart(null);
-    setTouchStartX(0);
-  };
 
   // Update the effect with proper type checking
   useEffect(() => {
@@ -458,14 +444,14 @@ export default function EditNote() {
   }
 
   return (
-    <div className="flex flex-col min-h-[100dvh] h-full">
+    <div className="flex flex-col h-screen">
       {/* Pull to refresh indicator */}
       {isRefreshing && (
         <div className="absolute top-0 left-0 right-0 flex justify-center py-2 bg-background/80 backdrop-blur z-50">
           <Loader2Icon className="h-4 w-4 animate-spin" />
         </div>
       )}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between p-4 border-b shrink-0">
         {/* Left Section: Back Button + Title */}
         <div className="flex-1 flex items-center gap-4 min-w-0">
           <Button
@@ -596,7 +582,7 @@ export default function EditNote() {
       </div>
 
       {/* Desktop Toolbar - Show only on desktop */}
-      <div className="hidden sm:flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b">
+      <div className="hidden sm:flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b shrink-0">
         <Button 
           variant={activeStyles.bold ? "default" : "ghost"}
           size="sm" 
@@ -781,10 +767,9 @@ export default function EditNote() {
           variant="ghost" 
           size="sm"
           onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              const editorElement = editor.domElement;
-              editorElement?.scrollTo({ top: 0, behavior: 'smooth' });
+            const editorContainer = document.querySelector('.bn-editor');
+            if (editorContainer) {
+              editorContainer.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
           className="shrink-0"
@@ -794,7 +779,7 @@ export default function EditNote() {
       </div>
 
       {/* Mobile Toolbar - Show only on mobile */}
-      <div className="sm:hidden flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b">
+      <div className="sm:hidden flex items-center gap-1 p-2 overflow-x-auto bg-muted/50 border-b shrink-0">
         <Button 
           variant={activeStyles.bold ? "default" : "ghost"}
           size="sm" 
@@ -925,11 +910,9 @@ export default function EditNote() {
           variant="ghost" 
           size="sm"
           onClick={() => {
-            const editor = editorRef.current;
-            if (editor) {
-              // Get the editor's DOM element and scroll it
-              const editorElement = editor.domElement;
-              editorElement?.scrollTo({ top: 0, behavior: 'smooth' });
+            const editorContainer = document.querySelector('.bn-editor');
+            if (editorContainer) {
+              editorContainer.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }}
           className="shrink-0"
@@ -939,7 +922,7 @@ export default function EditNote() {
       </div>
 
       {/* Editor */}
-      <div className="flex-1 overflow-hidden h-[calc(100dvh-8rem)]">
+      <div className="flex-1 overflow-hidden min-h-[100dvh]">
         <Editor
           content={note.content}
           onChange={handleContentChange}
