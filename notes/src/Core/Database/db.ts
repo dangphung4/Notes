@@ -271,7 +271,7 @@ class NotesDB extends Dexie {
         throw new Error("No permission to edit this note");
       }
 
-      // Create cleaned note data object
+      // Only include isPinned in the update if the user is the owner
       const noteData = {
         title: note.title,
         content: note.content || "",
@@ -281,8 +281,8 @@ class NotesDB extends Dexie {
         lastEditedByDisplayName: user.displayName || "Unknown",
         lastEditedByPhotoURL: user.photoURL,
         lastEditedAt: new Date(),
-        // Only include isPinned if it's explicitly boolean
-        ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned })
+        // Only include isPinned if user is the owner
+        ...(note.ownerUserId === user.uid && typeof note.isPinned === 'boolean' && { isPinned: note.isPinned })
       };
 
       // Remove any undefined or null values
@@ -491,7 +491,7 @@ class NotesDB extends Dexie {
    */
   async toggleNotePin(noteId: string, isPinned: boolean) {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) throw new Error("User not authenticated");
 
     try {
       const noteRef = doc(firestore, "notes", noteId);
@@ -502,6 +502,8 @@ class NotesDB extends Dexie {
       }
 
       const noteData = noteDoc.data();
+      
+      // Strict ownership check
       if (noteData.ownerUserId !== user.uid) {
         throw new Error("Only the owner can pin/unpin notes");
       }
@@ -509,6 +511,11 @@ class NotesDB extends Dexie {
       await updateDoc(noteRef, {
         isPinned,
         updatedAt: new Date(),
+        lastEditedByUserId: user.uid,
+        lastEditedByEmail: user.email,
+        lastEditedByDisplayName: user.displayName || "",
+        lastEditedByPhotoURL: user.photoURL || "",
+        lastEditedAt: new Date(),
       });
 
       await this.loadFromFirebase();

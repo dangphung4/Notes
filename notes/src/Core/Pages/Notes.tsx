@@ -68,11 +68,12 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
 
   return (
     <Card className={`group hover:shadow-lg transition-all relative
-      ${localNote.isPinned ? 'border-primary/50' : ''}`}
+      ${localNote.isPinned && note.ownerUserId === user?.uid ? 'border-primary/50' : ''}`}
     >
       {/* Action buttons - position absolute */}
       <div className="absolute right-2 top-2 z-10 flex gap-2">
-        {isOwner && (
+        {/* Only show pin button if user is the owner */}
+        {note.ownerUserId === user?.uid && (
           <Button
             variant="ghost"
             size="icon"
@@ -149,7 +150,8 @@ const NoteCard = ({ note, shares, user, view, onClick }: {
                 <div className="text-sm text-muted-foreground space-y-1">
                   <p>Created {formatTimeAgo(localNote.createdAt)}</p>
                   <p>Last updated {formatTimeAgo(localNote.updatedAt)}</p>
-                  {localNote.isPinned && <p>📌 Pinned note</p>}
+                  {/* Only show pin status if user owns the note */}
+                  {localNote.isPinned && note.ownerUserId === user?.uid && <p>📌 Pinned note</p>}
                 </div>
               </div>
 
@@ -828,9 +830,13 @@ export default function Notes() {
         return true;
       })
       .sort((a, b) => {
-        // First sort by pinned status
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!b.isPinned && a.isPinned) return 1;
+        // Only consider pins for notes owned by current user
+        const aIsPinned = a.isPinned && a.ownerUserId === user?.uid;
+        const bIsPinned = b.isPinned && b.ownerUserId === user?.uid;
+        
+        // First sort by pinned status (only for owned notes)
+        if (aIsPinned && !bIsPinned) return -1;
+        if (!aIsPinned && bIsPinned) return 1;
         
         // Then by selected sort
         switch (sortBy) {
@@ -852,7 +858,7 @@ export default function Notes() {
         note?.tags?.some(noteTag => noteTag.id === filterTag.id)
       );
     });
-  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters]);
+  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters, user?.uid]);
 
   /**
    *
