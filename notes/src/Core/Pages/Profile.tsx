@@ -63,7 +63,13 @@ export default function Profile() {
     { value: 'Monaspace Neon', label: 'Monaspace Neon', class: 'font-monaspace', category: 'Monospace' },
     { value: 'JetBrains Mono', label: 'JetBrains Mono', class: 'font-jetbrains', category: 'Monospace' },
     { value: 'Fira Code', label: 'Fira Code', class: 'font-fira-code', category: 'Monospace' },
-    { value: 'SF Mono', label: 'SF Mono', class: 'font-sf-mono', category: 'Monospace' },
+    { value: 'Anonymous Pro', label: 'Anonymous Pro', class: 'font-anonymous-pro', category: 'Monospace' },
+    { value: 'Ubuntu Mono', label: 'Ubuntu Mono', class: 'font-ubuntu-mono', category: 'Monospace' },
+    { value: 'Inconsolata', label: 'Inconsolata', class: 'font-inconsolata', category: 'Monospace' },
+    { value: 'DM Mono', label: 'DM Mono', class: 'font-dm-mono', category: 'Monospace' },
+    { value: 'Overpass Mono', label: 'Overpass Mono', class: 'font-overpass-mono', category: 'Monospace' },
+    { value: 'IBM Plex Mono', label: 'IBM Plex Mono', class: 'font-ibm-plex', category: 'Monospace' },
+    { value: 'Space Mono', label: 'Space Mono', class: 'font-space-mono', category: 'Monospace' },
     
     // Sans Serif fonts
     { value: 'Inter', label: 'Inter', class: 'font-inter', category: 'Sans Serif' },
@@ -76,8 +82,14 @@ export default function Profile() {
     { value: 'Playfair Display', label: 'Playfair Display', class: 'font-playfair', category: 'Serif' },
     
     // Handwriting fonts
+    { value: 'Handlee', label: 'Handlee', class: 'font-handlee', category: 'Handwriting' },
+    { value: 'Patrick Hand', label: 'Patrick Hand', class: 'font-patrick-hand', category: 'Handwriting' },
+    { value: 'Kalam', label: 'Kalam', class: 'font-kalam', category: 'Handwriting' },
+    { value: 'Indie Flower', label: 'Indie Flower', class: 'font-indie-flower', category: 'Handwriting' },
     { value: 'Caveat', label: 'Caveat', class: 'font-caveat', category: 'Handwriting' },
     { value: 'Dancing Script', label: 'Dancing Script', class: 'font-dancing', category: 'Handwriting' },
+    { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' },
+    { value: 'Permanent Marker', label: 'Permanent Marker', class: 'font-permanent-marker', category: 'Handwriting' },
   ];
 
   const [editorFont, setEditorFont] = useState('Monaspace Neon');

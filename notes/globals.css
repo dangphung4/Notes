@@ -618,3 +618,42 @@ html {
 body {
   font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
 }
+
+/* Add these with your other font classes */
+.font-anonymous-pro {
+  font-family: "Anonymous Pro" !important;
+}
+
+.font-ubuntu-mono {
+  font-family: "Ubuntu Mono" !important;
+}
+
+.font-inconsolata {
+  font-family: "Inconsolata" !important;
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+.font-dm-mono {
+  font-family: "DM Mono" !important;
+}
+
+.font-overpass-mono {
+  font-family: "Overpass Mono" !important;
+}
+
+/* Handwriting alternatives */
+.font-handlee {
+  font-family: "Handlee" !important;
+}
+
+.font-patrick-hand {
+  font-family: "Patrick Hand" !important;
+}
+
+.font-kalam {
+  font-family: "Kalam" !important;
+}
+
+.font-indie-flower {
+  font-family: "Indie Flower" !important;
+}

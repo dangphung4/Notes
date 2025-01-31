@@ -69,7 +69,16 @@
     "shadcn-ui": "^0.9.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
-    "tiptap": "^1.32.2"
+    "tiptap": "^1.32.2",
+    "@fontsource/anonymous-pro": "^5.0.8",
+    "@fontsource/ubuntu-mono": "^5.0.8",
+    "@fontsource/inconsolata": "^5.0.8",
+    "@fontsource/handlee": "^5.0.8",
+    "@fontsource/patrick-hand": "^5.0.8",
+    "@fontsource/kalam": "^5.0.8",
+    "@fontsource/indie-flower": "^5.0.8",
+    "@fontsource/dm-mono": "^5.0.8",
+    "@fontsource/overpass-mono": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

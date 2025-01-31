@@ -17,8 +17,6 @@ import "@fontsource/monaspace-neon/400.css";
 import "@fontsource/monaspace-neon/500.css";
 import "@fontsource/monaspace-neon/700.css";
 
-// Add all font imports
-import "@fontsource/fira-code";
 import "@fontsource/fira-code/500.css";
 import "@fontsource/fira-code/700.css";
 import "@fontsource/jetbrains-mono/400.css";
@@ -40,6 +38,21 @@ import "@fontsource/caveat/700.css";
 import "@fontsource/dancing-script/400.css";
 import "@fontsource/dancing-script/500.css";
 import "@fontsource/dancing-script/700.css";
+import "@fontsource/anonymous-pro/400.css";
+import "@fontsource/anonymous-pro/700.css";
+import "@fontsource/ubuntu-mono/400.css";
+import "@fontsource/ubuntu-mono/700.css";
+import "@fontsource/inconsolata/400.css";
+import "@fontsource/inconsolata/700.css";
+import "@fontsource/handlee/400.css";
+import "@fontsource/patrick-hand/400.css";
+import "@fontsource/kalam/400.css";
+import "@fontsource/kalam/700.css";
+import "@fontsource/indie-flower/400.css";
+import "@fontsource/dm-mono/400.css";
+import "@fontsource/dm-mono/500.css";
+import "@fontsource/overpass-mono/400.css";
+import "@fontsource/overpass-mono/700.css";
 
 interface EditorProps {
   content: string; // Change to expect string since that's how it's stored
