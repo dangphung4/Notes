@@ -24,6 +24,7 @@ import EditNote from './Core/Pages/EditNote';
 import Install from './Core/Pages/Install';
 import Calendar from './Core/Pages/Calendar';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, Command } from "@/components/ui/command";
+import { ThemeProvider } from './Core/Theme/ThemeProvider';
 
 // Separate component for command palette
 /**
@@ -337,23 +338,25 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <div className={darkMode ? "dark" : ""}>
-        <div className="min-h-screen flex flex-col bg-background text-foreground">
-          <DesktopNav
-            darkMode={darkMode}
-            toggleDarkMode={() => setDarkMode(!darkMode)}
-          />
-          <MobileNav
-            darkMode={darkMode}
-            toggleDarkMode={() => setDarkMode(!darkMode)}
-          />
-          <AppRoutes />
-          <Footer />
-          <PWABadge />
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className={darkMode ? "dark" : ""}>
+          <div className="min-h-screen flex flex-col bg-background text-foreground">
+            <DesktopNav
+              darkMode={darkMode}
+              toggleDarkMode={() => setDarkMode(!darkMode)}
+            />
+            <MobileNav
+              darkMode={darkMode}
+              toggleDarkMode={() => setDarkMode(!darkMode)}
+            />
+            <AppRoutes />
+            <Footer />
+            <PWABadge />
+          </div>
         </div>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

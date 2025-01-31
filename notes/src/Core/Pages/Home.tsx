@@ -9,7 +9,6 @@ import {
 import { useAuth } from "../Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
-  MoonIcon,
   LightningBoltIcon,
   MixIcon,
   CodeIcon,
@@ -30,7 +29,9 @@ import agendaview from "../../assets/agendaview.png";
 import dayview from "../../assets/dayview.png";
 import weekview from "../../assets/weekview.png";
 import logo from "../../assets/note.svg";
-import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon} from "lucide-react";
+import { CloudIcon, SmartphoneIcon, UserIcon, CommandIcon, TagIcon, CpuIcon, PaletteIcon, LigatureIcon, TextIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useTheme } from "../Theme/ThemeProvider";
 
 /**
  * Home page component that displays the landing page of the application
@@ -42,9 +43,24 @@ export default function Home() {
   const { user } = useAuth();
   /** Navigation hook for routing */
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
 
   /** Detects if user is on MacOS for keyboard shortcuts */
   const isMacOs = navigator.userAgent.includes('Mac');
+
+  const handleThemeChange = (theme: 'light' | 'dark') => {
+    // Save current scroll position
+    const scrollPos = window.scrollY;
+    
+    // Change theme
+    setTheme(theme);
+    
+    // Restore scroll position after a brief delay to ensure theme change is complete
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollPos);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/50">
       {/* Hero Section */}
@@ -260,20 +276,6 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <MoonIcon className="h-6 w-6 text-primary" />
-                <CardTitle>Dark Mode</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Easy on the eyes with automatic theme switching. Perfect for late-night writing sessions.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
                 <SmartphoneIcon className="h-6 w-6 text-primary" />
                 <CardTitle>PWA Ready</CardTitle>
               </div>
@@ -281,6 +283,20 @@ export default function Home() {
             <CardContent>
               <CardDescription>
                 Install as a native app on any device. Work offline and sync when connected.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <PaletteIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Themes & Fonts</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Personalize your experience with custom themes and a wide selection of carefully curated fonts.
               </CardDescription>
             </CardContent>
           </Card>
@@ -662,6 +678,78 @@ export default function Home() {
             }
           >
             <GitHubLogoIcon className="mr-2 h-4 w-4" /> View on GitHub
+          </Button>
+        </div>
+      </section>
+
+      {/* Add new Customization Showcase Section */}
+      <section className="container mx-auto px-4 py-20 bg-muted/30">
+        <h2 className="text-3xl font-bold text-center mb-12">Personalization</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <PaletteIcon className="h-8 w-8 text-primary" />
+              <h3 className="text-2xl font-semibold">Theme Options</h3>
+            </div>
+            <p className="text-muted-foreground">
+              Switch seamlessly between light and dark modes. Our themes are designed to reduce eye strain and enhance readability.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                className="w-full bg-background hover:bg-background/90"
+                onClick={() => handleThemeChange('light')}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded-full bg-primary" />
+                  Light Mode
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full bg-zinc-900 text-white hover:bg-zinc-800"
+                onClick={() => handleThemeChange('dark')}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded-full bg-primary" />
+                  Dark Mode
+                </div>
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <LigatureIcon className="h-8 w-8 text-primary" />
+              <h3 className="text-2xl font-semibold">Font Selection</h3>
+            </div>
+            <p className="text-muted-foreground">
+              Choose from a variety of premium fonts, including monospace coding fonts, elegant serifs, and playful handwriting styles.
+            </p>
+            <div className="grid grid-cols-1 gap-3">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div className="font-monaspace text-sm">Monaspace Neon - Perfect for coding</div>
+                    <div className="font-fira-code text-sm">Fira Code - With ligatures</div>
+                    <div className="font-merriweather text-sm">Merriweather - Elegant serif</div>
+                    <div className="font-caveat text-sm">Caveat - Handwriting style</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 text-center">
+          <p className="text-muted-foreground mb-6">
+            All fonts are locally hosted and optimized for performance. Switch between them instantly in your settings.
+          </p>
+          <Button variant="outline" asChild>
+            <Link to="/profile">
+              <TextIcon className="mr-2 h-4 w-4" />
+              Try Different Fonts
+            </Link>
           </Button>
         </div>
       </section>
