@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Editor from '../Components/Editor';
 import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,8 @@ import {
 export default function NewNote() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { folderId } = location.state || {}; // Get folderId from navigation state
   const titleInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<BlockNoteEditor | null>(null);
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -251,6 +253,13 @@ export default function NewNote() {
       setIsSaving(false);
     }
   }, [note, selectedFolderId, user, navigate]);
+
+  // Set initial folder ID from navigation state
+  useEffect(() => {
+    if (folderId) {
+      setSelectedFolderId(folderId);
+    }
+  }, [folderId]);
 
   return (
     <div className="flex flex-col h-screen">
