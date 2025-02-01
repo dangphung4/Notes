@@ -411,13 +411,13 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }: { isCreate: b
 const groupEventsByDate = (events: CalendarEvent[]) => {
   // Group events by their date string (YYYY-MM-DD)
   const grouped = events.reduce((acc, event) => {
-    // Convert the UTC timestamp to local date string
+    // Convert the UTC timestamp to local date string and move date ahead by 1 day
     const eventDate = new Date(event.startDate);
+    eventDate.setDate(eventDate.getDate() + 1); // Move date ahead by 1 day
     const year = eventDate.getFullYear();
     const month = String(eventDate.getMonth() + 1).padStart(2, '0');
     const day = String(eventDate.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
-    
     
     if (!acc[dateStr]) {
       acc[dateStr] = [];
@@ -438,203 +438,286 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
   return grouped;
 };
 
-// Update the AgendaView component
 const AgendaView = ({ 
   events, 
-  onEventClick 
+  // selectedDate,
+  onEventClick,
+  isLoading,
+  onAddEvent
 }: { 
   events: CalendarEvent[], 
   selectedDate: Date,
-  onEventClick: (event: CalendarEvent) => void 
+  onEventClick: (event: CalendarEvent) => void,
+  isLoading: boolean,
+  onAddEvent: (date?: Date) => void
 }) => {
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="space-y-4">
+            {/* Date header skeleton */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-muted rounded-lg animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+            {/* Event skeletons */}
+            {[...Array(2)].map((_, j) => (
+              <div key={j} className="ml-[4.5rem] space-y-3">
+                <div className="h-20 bg-muted rounded-lg animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const groupedEvents = groupEventsByDate(events);
 
   // Get next 30 days starting from today
   const next30Days = Array.from({ length: 30 }, (_, i) => {
     const date = new Date();
-    date.setDate(date.getDate() + i);
+    date.setDate(date.getDate() + i + 1);
     return format(date, 'yyyy-MM-dd');
   });
 
-  // Filter and sort dates
-  const sortedDates = Object.keys(groupedEvents)
-    .filter(dateStr => {
-      // Only show dates from today onwards
-      return dateStr >= todayStr;
-    })
-    .sort((a, b) => a.localeCompare(b));
+  const renderEventCard = (event: CalendarEvent, 
+    _isToday: boolean
+    ) => (
+    <div 
+      key={event.firebaseId || event.id}
+      className={cn(
+        "group relative rounded-lg border bg-card hover:shadow-md transition-all",
+        "hover:scale-[1.002] cursor-pointer",
+        "sm:hover:-translate-y-0.5"
+      )}
+      onClick={() => onEventClick(event)}
+    >
+      {/* Color indicator */}
+      <div 
+        className="absolute inset-y-0 left-0 w-1 rounded-l-lg"
+        style={{ backgroundColor: event.color || '#3b82f6' }}
+      />
 
-  // Add empty slots for future dates
-  next30Days.forEach(date => {
-    if (!groupedEvents[date]) {
-      groupedEvents[date] = [];
-    }
-  });
+      <div className="p-4 pl-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0 space-y-1">
+            {/* Title and time */}
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium truncate">{event.title}</h4>
+                <div className="flex items-center gap-2 mt-0.5 text-sm text-muted-foreground">
+                  <ClockIcon className="h-3.5 w-3.5" />
+                  <span>
+                    {event.allDay ? (
+                      'All day'
+                    ) : (
+                      <>
+                        {format(new Date(event.startDate), 'h:mm a')}
+                        {event.endDate && (
+                          <> - {format(new Date(event.endDate), 'h:mm a')}</>
+                        )}
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Creator avatar */}
+              <div 
+                className="w-8 h-8 rounded-full bg-muted ring-2 ring-background overflow-hidden flex-shrink-0"
+                title={`Created by ${event.createdBy}`}
+              >
+                {event.createdByPhotoURL ? (
+                  <img 
+                    src={event.createdByPhotoURL} 
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="w-full h-full flex items-center justify-center text-xs">
+                    {event.createdBy.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Location */}
+            {event.location && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPinIcon className="h-3.5 w-3.5" />
+                <span className="truncate">{event.location}</span>
+              </div>
+            )}
+
+            {/* Tags */}
+            {event.tags && event.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {event.tags.map(tag => (
+                  <div
+                    key={tag.id}
+                    className="px-2 py-0.5 rounded-full text-xs"
+                    style={{
+                      backgroundColor: tag.color + '20',
+                      color: tag.color
+                    }}
+                  >
+                    {tag.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sharing indicators */}
+          {event.sharedWith && event.sharedWith.length > 0 && (
+            <div className="flex -space-x-2 pt-1">
+              {event.sharedWith.slice(0, 2).map(share => (
+                <div
+                  key={share.email}
+                  className="w-6 h-6 rounded-full bg-muted ring-2 ring-background overflow-hidden"
+                  title={share.email}
+                >
+                  <span className="w-full h-full flex items-center justify-center text-[10px]">
+                    {share.email.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              ))}
+              {event.sharedWith.length > 2 && (
+                <div className="w-6 h-6 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-[10px]">
+                  +{event.sharedWith.length - 2}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <ScrollArea className="h-[calc(100vh-8rem)]">
       <div className="divide-y divide-border">
-        {events.length === 0 ? (
-          <div className="text-center text-muted-foreground py-12 px-4">
-            <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-20" />
-            <p className="font-medium mb-1">No upcoming events</p>
-            <p className="text-sm">Click the + button to create a new event</p>
-          </div>
-        ) : (
-          sortedDates.map(dateStr => {
-            const dateEvents = groupedEvents[dateStr];
+        {next30Days.length > 0 ? (
+          next30Days.map(dateStr => {
+            const dateEvents = groupedEvents[dateStr] || [];
             const isToday = dateStr === todayStr;
+            const date = new Date(dateStr);
+            const isWeekend = [0, 6].includes(date.getDay());
+
+            // Separate all-day events
+            const allDayEvents = dateEvents.filter(e => e.allDay);
+            const timedEvents = dateEvents.filter(e => !e.allDay);
 
             return (
               <div key={dateStr} className={cn(
                 "transition-colors",
                 isToday && "bg-muted/30"
               )}>
-                {/* Date Header */}
-                <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 z-10 flex items-center px-4 py-2 gap-3">
-                  <div className="flex-shrink-0 w-12 text-center">
+                {/* Date Header - Make it clickable */}
+                <div className={cn(
+                  "sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 z-10",
+                  "border-b"
+                )}>
+                  <div 
+                    className="flex items-center px-4 py-2 gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => onAddEvent(date)}
+                  >
+                    {/* Date number */}
                     <div className={cn(
-                      "text-xl font-semibold leading-none",
-                      isToday && "text-primary"
+                      "w-14 h-14 rounded-lg flex flex-col items-center justify-center",
+                      isToday ? "bg-primary text-primary-foreground" : "bg-muted",
+                      isWeekend && !isToday && "bg-muted/50"
                     )}>
-                      {format(new Date(dateStr), 'd')}
+                      <div className="text-2xl font-semibold leading-none">
+                        {format(date, 'd')}
+                      </div>
+                      <div className="text-xs mt-1">
+                        {format(date, 'EEE')}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(dateStr), 'EEE')}
+
+                    {/* Date info */}
+                    <div>
+                      <h3 className={cn(
+                        "font-medium",
+                        isToday && "text-primary"
+                      )}>
+                        {isToday ? 'Today' : format(date, 'MMMM d, yyyy')}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {dateEvents.length === 0 
+                          ? 'Click to add event' 
+                          : `${dateEvents.length} event${dateEvents.length === 1 ? '' : 's'}`
+                        }
+                      </p>
                     </div>
-                  </div>
-                  <div>
-                    <h3 className={cn(
-                      "text-sm font-medium",
-                      isToday && "text-primary"
-                    )}>
-                      {isToday ? 'Today' : format(new Date(dateStr), 'MMMM d, yyyy')}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {dateEvents.length === 0 
-                        ? 'No events scheduled' 
-                        : `${dateEvents.length} event${dateEvents.length === 1 ? '' : 's'}`
-                      }
-                    </p>
                   </div>
                 </div>
 
                 {/* Events List */}
-                <div className={cn(
-                  "divide-y divide-border/50",
-                  dateEvents.length === 0 && "pb-2"
-                )}>
-                  {dateEvents.map(event => (
-                    <div 
-                      key={event.firebaseId || event.id}
-                      className={cn(
-                        "px-4 py-2 hover:bg-muted/50 cursor-pointer transition-colors",
-                        "sm:hover:scale-[1.002] sm:hover:shadow-sm",
-                      )}
-                      onClick={() => onEventClick(event)}
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Time Column */}
-                        <div className="w-12 flex-shrink-0 pt-1 text-center">
-                          <span className={cn(
-                            "text-sm font-medium",
-                            isToday && "text-muted-foreground"
-                          )}>
-                            {event.allDay ? (
-                              'All day'
-                            ) : (
-                              format(new Date(event.startDate), 'h:mm')
-                            )}
-                          </span>
-                          {!event.allDay && (
-                            <div className="text-[10px] text-muted-foreground">
-                              {format(new Date(event.startDate), 'a')}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Event Details Column */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <div 
-                                  className="w-2 h-2 rounded-full flex-shrink-0 mt-1"
-                                  style={{ backgroundColor: event.color || '#3b82f6' }}
-                                />
-                                <h4 className={cn(
-                                  "font-medium truncate",
-                                  isToday && "text-muted-foreground"
-                                )}>
-                                  {event.title}
-                                </h4>
-                              </div>
-                              
-                              {/* Duration for non-all-day events */}
-                              {!event.allDay && (
-                                <div className="text-xs text-muted-foreground mt-0.5">
-                                  {event.endDate ? format(new Date(event.endDate), 'h:mm a') : ''}
-                                </div>
-                              )}
-
-                              {/* Location */}
-                              {event.location && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                  <MapPinIcon className="h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">{event.location}</span>
-                                </div>
-                              )}
-
-                              {/* Tags */}
-                              {event.tags && event.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-1.5">
-                                  {event.tags.map(tag => (
-                                    <div
-                                      key={tag.id}
-                                      className="px-1.5 py-0.5 rounded-full text-[10px] leading-none"
-                                      style={{
-                                        backgroundColor: tag.color + '20',
-                                        color: tag.color
-                                      }}
-                                    >
-                                      {tag.name}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Sharing Indicators */}
-                            {event.sharedWith && event.sharedWith.length > 0 && (
-                              <div className="flex -space-x-2 pt-1">
-                                {event.sharedWith.slice(0, 2).map(share => (
-                                  <div
-                                    key={share.email}
-                                    className="w-5 h-5 rounded-full bg-muted ring-2 ring-background overflow-hidden"
-                                    title={share.email}
-                                  >
-                                    <span className="w-full h-full flex items-center justify-center text-[10px]">
-                                      {share.email.charAt(0).toUpperCase()}
-                                    </span>
-                                  </div>
-                                ))}
-                                {event.sharedWith.length > 2 && (
-                                  <div className="w-5 h-5 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-[10px]">
-                                    +{event.sharedWith.length - 2}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                <div className="p-4 space-y-3">
+                  {/* Empty state for today */}
+                  {dateEvents.length === 0 && isToday ? (
+                    <div className="text-center py-8 px-4">
+                      <div className="max-w-md mx-auto">
+                        <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground/30" />
+                        <h3 className="mt-4 text-lg font-medium">No events scheduled for today</h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Create an event to get started tracking your schedule.
+                        </p>
+                        <Button
+                          onClick={() => onAddEvent(date)}
+                          className="mt-6"
+                        >
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          Create Event
+                        </Button>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {/* All-day events */}
+                      {allDayEvents.length > 0 && (
+                        <div className="space-y-2">
+                          {allDayEvents.map(event => renderEventCard(event, isToday))}
+                        </div>
+                      )}
+
+                      {/* Timed events */}
+                      {timedEvents.length > 0 && (
+                        <div className="space-y-2">
+                          {timedEvents.map(event => renderEventCard(event, isToday))}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             );
           })
+        ) : (
+          <div className="text-center py-16 px-4">
+            <div className="max-w-md mx-auto">
+              <CalendarIcon className="w-16 h-16 mx-auto text-muted-foreground/30" />
+              <h3 className="mt-4 text-xl font-medium">No upcoming events</h3>
+              <p className="mt-2 text-muted-foreground">
+                Events you create or are invited to will appear here.
+              </p>
+              <Button
+                onClick={() => onAddEvent(new Date())}
+                className="mt-6"
+              >
+                <PlusIcon className="w-4 h-4 mr-2" />
+                Create Event
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </ScrollArea>
@@ -844,7 +927,6 @@ const EventSearch = ({
  *
  */
 export default function Calendar() {
-  // Load preferences from localStorage
   const [view, setView] = useState<'week' | 'day' | 'agenda'>(() => {
     const stored = localStorage.getItem('calendar-preferences');
     if (stored) {
@@ -872,17 +954,9 @@ export default function Calendar() {
     return new Date();
   });
 
-  useEffect(() => {
-    const preferences: StoredCalendarPreferences = {
-      view,
-      selectedDate: selectedDate.toISOString(),
-      currentWeek: currentWeek.toISOString(),
-    };
-    localStorage.setItem('calendar-preferences', JSON.stringify(preferences));
-  }, [view, selectedDate, currentWeek]);
-
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
@@ -935,6 +1009,7 @@ export default function Calendar() {
   };
 
   useEffect(() => {
+    // Initial load
     loadEvents();
     loadPendingInvitations();
   }, []);
@@ -944,34 +1019,43 @@ export default function Calendar() {
    */
   async function loadEvents() {
     try {
+      setIsLoading(true);
+      
+      // Get shared events first (includes both created and shared events)
+      const firebaseEvents = await db.getSharedEvents();
+      
       // Get local events
       const localEvents = await db.calendarEvents.toArray();
-      
-      // Get shared events that have been accepted
-      const sharedEvents = await db.getSharedEvents();
-      const acceptedSharedEvents = sharedEvents.filter(event => {
-        const userEmail = auth.currentUser?.email;
-        const userShare = event.sharedWith?.find(share => share.email === userEmail);
-        return userShare?.status === 'accepted';
-      });
       
       // Create a Map to ensure unique events by firebaseId
       const eventMap = new Map();
       
-      // Prefer local events
-      localEvents.forEach(event => {
-        eventMap.set(event.firebaseId, event);
+      // Add Firebase events first (they are the source of truth)
+      firebaseEvents.forEach(event => {
+        eventMap.set(event.firebaseId, {
+          ...event,
+          startDate: new Date(event.startDate),
+          endDate: event.endDate ? new Date(event.endDate) : undefined,
+          lastModifiedAt: event.lastModifiedAt ? new Date(event.lastModifiedAt) : undefined
+        });
       });
       
-      // Add shared events only if they don't exist locally
-      acceptedSharedEvents.forEach(event => {
+      // Add local events only if they don't exist in Firebase
+      // This handles offline-created events that haven't synced yet
+      localEvents.forEach(event => {
         if (!eventMap.has(event.firebaseId)) {
           eventMap.set(event.firebaseId, event);
         }
       });
       
-      // Convert Map back to array
-      setEvents(Array.from(eventMap.values()));
+      // Convert Map back to array and sort by date
+      const allEvents = Array.from(eventMap.values()).sort((a, b) => 
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      );
+      
+      console.log('Loaded events:', allEvents); // Debug log
+      
+      setEvents(allEvents);
     } catch (error) {
       console.error('Error loading events:', error);
       toast({
@@ -979,6 +1063,8 @@ export default function Calendar() {
         description: "Failed to load calendar events",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -1032,12 +1118,16 @@ export default function Calendar() {
     const newDate = new Date(date);
     newDate.setHours(hour, 0, 0, 0);
     
+    const endDate = new Date(newDate);
+    endDate.setHours(hour + 1, 0, 0, 0);
+    
     setNewEvent({
       ...newEvent,
       startDate: newDate,
-      endDate: new Date(newDate.getTime() + 60 * 60 * 1000) // 1 hour later
+      endDate: endDate
     });
     setIsCreateEventOpen(true);
+    setIsCreate(true);
   };
 
 
@@ -1433,7 +1523,13 @@ export default function Calendar() {
                 onEventClick={(event) => {
                   setSelectedEvent(event);
                   setIsEventDetailsOpen(true);
-                }} 
+                }}
+                isLoading={isLoading}
+                onAddEvent={(date) => {
+                  const targetDate = date || new Date();
+                  setSelectedDate(targetDate);
+                  handleTimeSlotClick(targetDate, new Date().getHours());
+                }}
               />
             </div>
           </TabsContent>
