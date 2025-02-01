@@ -1,8 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Folder, Note } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusIcon, ChevronRightIcon, MagnifyingGlassIcon, Cross2Icon, HamburgerMenuIcon } from '@radix-ui/react-icons';
+import { 
+  PlusIcon, 
+  ChevronRightIcon, 
+  MagnifyingGlassIcon, 
+  Cross2Icon, 
+  HamburgerMenuIcon,
+  StarIcon
+} from '@radix-ui/react-icons';
+import { 
+  ListBulletIcon as ListIcon,
+  Squares2X2Icon as LayoutGridIcon,
+  ClockIcon,
+  DocumentTextIcon as FileTextIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  HashtagIcon as TextIcon
+} from '@heroicons/react/24/outline';
 import { useAuth } from '../Auth/AuthContext';
 import { db } from '../Database/db';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,11 +30,15 @@ import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { formatTimeAgo } from '../utils/noteUtils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface FolderNode extends Folder {
+interface FolderData extends Folder {
+  isFavorite: boolean;
+}
+
+interface FolderNode extends FolderData {
   children: FolderNode[];
   isExpanded?: boolean;
 }
@@ -80,6 +100,7 @@ const FolderTreeItem = ({
   onEdit,
   onDelete,
   onCreateSubfolder,
+  onToggleFavorite,
   notes,
   isCompact = false
 }: { 
@@ -89,6 +110,7 @@ const FolderTreeItem = ({
   onEdit: (folder: FolderNode) => void;
   onDelete: (folderId: string) => void;
   onCreateSubfolder: (folder: FolderNode) => void;
+  onToggleFavorite: (folderId: string) => void;
   notes: Note[];
   isCompact?: boolean;
 }) => {
@@ -96,15 +118,7 @@ const FolderTreeItem = ({
   const navigate = useNavigate();
   const folderNotes = notes.filter(note => note.folderId === folder.id);
   const [showInfo, setShowInfo] = useState(false);
-  const [openNoteIds, setOpenNoteIds] = useState<Record<string, boolean>>({});
   const hasContent = folder.children.length > 0 || folderNotes.length > 0;
-
-  const toggleNoteInfo = (noteId: string) => {
-    setOpenNoteIds(prev => ({
-      ...prev,
-      [noteId]: !prev[noteId]
-    }));
-  };
 
   return (
     <div>
@@ -166,59 +180,75 @@ const FolderTreeItem = ({
 
         {/* Actions Menu */}
         {folder.ownerUserId === user?.uid && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <HamburgerMenuIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={(e) => {
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-7 w-7 rounded-full",
+                folder.isFavorite ? "text-yellow-500" : "opacity-0 group-hover:opacity-100"
+              )}
+              onClick={(e) => {
                 e.stopPropagation();
-                navigate('/notes/new', { state: { folderId: folder.id } });
-              }}>
-                <PlusIcon className="h-4 w-4 mr-2" />
-                New Note
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                onCreateSubfolder(folder);
-              }}>
-                <FolderIcon className="h-4 w-4 mr-2" />
-                New Subfolder
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                onEdit(folder);
-              }}>
-                <PencilIcon className="h-4 w-4 mr-2" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                setShowInfo(true);
-              }}>
-                <FolderIcon className="h-4 w-4 mr-2" />
-                Details
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
+                onToggleFavorite(folder.id);
+              }}
+            >
+              <StarIcon className="h-4 w-4" fill={folder.isFavorite ? "currentColor" : "none"} />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <HamburgerMenuIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(folder.id);
-                }}
-              >
-                <TrashIcon className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  navigate('/notes/new', { state: { folderId: folder.id } });
+                }}>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  New Note
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateSubfolder(folder);
+                }}>
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  New Subfolder
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(folder);
+                }}>
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setShowInfo(true);
+                }}>
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  Details
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(folder.id);
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
@@ -228,321 +258,30 @@ const FolderTreeItem = ({
           {folderNotes.length > 0 && (
             <div className="ml-12 space-y-1 mt-1">
               {folderNotes.map(note => (
-                <div key={`note-${folder.id}-${note.firebaseId}`}>
-                  <div
-                    className="flex flex-col gap-1 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group relative"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/notes/${note.firebaseId}`);
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">
-                          {note.title || 'Untitled'}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-xs text-muted-foreground">
-                          {formatTimeAgo(note.updatedAt)}
-                        </div>
-                        {/* Desktop menu button */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleNoteInfo(note.firebaseId!);
-                          }}
-                        >
-                          <HamburgerMenuIcon className="h-4 w-4" />
-                        </Button>
-                        {/* Mobile indicator */}
-                        <div 
-                          className="md:hidden flex items-center text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleNoteInfo(note.firebaseId!);
-                          }}
-                        >
-                          <div className="rounded-full p-1.5 hover:bg-muted">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="h-4 w-4"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <path d="M12 16v-4" />
-                              <path d="M12 8h.01" />
-                            </svg>
-                          </div>
-                        </div>
+                <div
+                  key={`note-${folder.id}-${note.firebaseId}`}
+                  className="flex flex-col gap-1 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/notes/${note.firebaseId}`);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {note.title || 'Untitled'}
                       </div>
                     </div>
-                    {note.content && (
-                      <div className="ml-6 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {getBlockNoteContent(note.content)}
-                      </div>
-                    )}
-                    {/* Mobile touch target for note details - wider area */}
-                    <button
-                      className="md:hidden absolute right-0 inset-y-0 w-24"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleNoteInfo(note.firebaseId!);
-                      }}
-                    />
+                    <div className="text-xs text-muted-foreground">
+                      {formatTimeAgo(note.updatedAt)}
+                    </div>
                   </div>
-
-                  {/* Note Details Sheet */}
-                  <Sheet 
-                    open={openNoteIds[note.firebaseId!]} 
-                    onOpenChange={(open) => {
-                      setOpenNoteIds(prev => ({
-                        ...prev,
-                        [note.firebaseId!]: open
-                      }));
-                    }}
-                  >
-                    <SheetContent side="right" className="w-full sm:max-w-md">
-                      <SheetHeader>
-                        <SheetTitle className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
-                            <FolderIcon className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold truncate">
-                              {note.title || 'Untitled'}
-                            </div>
-                            <div className="text-xs font-normal text-muted-foreground">
-                              In {folder.name}
-                            </div>
-                          </div>
-                        </SheetTitle>
-                      </SheetHeader>
-                      
-                      <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
-                        <div className="space-y-6 pb-8">
-                          {/* Note Preview */}
-                          {note.content && (
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium">Preview</h4>
-                              <div className="p-4 border rounded-lg">
-                                <div className="text-sm text-muted-foreground line-clamp-6 whitespace-pre-wrap">
-                                  {getBlockNoteContent(note.content)}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Note Stats */}
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="p-4 border rounded-lg">
-                              <div className="text-2xl font-bold">
-                                {note.content ? getBlockNoteContent(note.content).split(/\s+/).filter(Boolean).length : 0}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Words</div>
-                            </div>
-                            <div className="p-4 border rounded-lg">
-                              <div className="text-2xl font-bold">
-                                {note.content ? getBlockNoteContent(note.content).split('\n').filter(Boolean).length : 0}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Lines</div>
-                            </div>
-                            <div className="p-4 border rounded-lg">
-                              <div className="text-2xl font-bold">
-                                {(() => {
-                                  if (!note.content) return '0';
-                                  const parsedText = getBlockNoteContent(note.content);
-                                  const charCount = parsedText.length;
-                                  if (charCount < 1000) return charCount;
-                                  return `${(charCount / 1000).toFixed(1)}K`;
-                                })()}
-                              </div>
-                              <div className="text-xs text-muted-foreground">Characters</div>
-                            </div>
-                          </div>
-
-                          {/* Note Tags */}
-                          {note.tags && note.tags.length > 0 && (
-                            <div className="space-y-2">
-                              <h4 className="text-sm font-medium">Tags</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {note.tags.map(tag => (
-                                  <Badge
-                                    key={tag.id}
-                                    className="px-2 py-0.5 text-xs"
-                                    style={{
-                                      backgroundColor: tag.color + '20',
-                                      color: tag.color
-                                    }}
-                                  >
-                                    {tag.name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Contributors */}
-                          <div className="space-y-3">
-                            <h4 className="text-sm font-medium">Contributors</h4>
-                            <div className="space-y-3">
-                              {/* Owner */}
-                              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                                <div className="relative">
-                                  {note.ownerPhotoURL ? (
-                                    <img
-                                      src={note.ownerPhotoURL}
-                                      alt={note.ownerDisplayName}
-                                      className="w-10 h-10 rounded-full"
-                                    />
-                                  ) : (
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                      <span className="text-lg font-medium text-primary">
-                                        {note.ownerDisplayName?.charAt(0).toUpperCase()}
-                                      </span>
-                                    </div>
-                                  )}
-                                  <div className="absolute -bottom-1 -right-1 bg-primary text-white text-xs px-1 rounded">
-                                    Owner
-                                  </div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium truncate">
-                                    {note.ownerDisplayName}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Created {formatTimeAgo(note.createdAt)}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Last Editor (if different from owner) */}
-                              {note.lastEditedByDisplayName && note.lastEditedByUserId !== note.ownerUserId && (
-                                <div className="flex items-center gap-3 p-3 border rounded-lg">
-                                  <div className="relative">
-                                    {note.lastEditedByPhotoURL ? (
-                                      <img
-                                        src={note.lastEditedByPhotoURL}
-                                        alt={note.lastEditedByDisplayName}
-                                        className="w-10 h-10 rounded-full"
-                                      />
-                                    ) : (
-                                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <span className="text-lg font-medium text-primary">
-                                          {note.lastEditedByDisplayName?.charAt(0).toUpperCase()}
-                                        </span>
-                                      </div>
-                                    )}
-                                    <div className="absolute -bottom-1 -right-1 bg-muted-foreground text-white text-xs px-1 rounded">
-                                      Editor
-                                    </div>
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-medium truncate">
-                                      {note.lastEditedByDisplayName}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                      Modified {formatTimeAgo(note.updatedAt)}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Note Activity */}
-                          <div className="space-y-3">
-                            <h4 className="text-sm font-medium">Activity</h4>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-sm">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                  <PencilIcon className="h-4 w-4 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium">Created</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {new Date(note.createdAt).toLocaleString()}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm">
-                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="h-4 w-4 text-primary"
-                                  >
-                                    <path d="M12 20h9" />
-                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                                  </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium">Last Modified</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {new Date(note.updatedAt).toLocaleString()}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex flex-col gap-2">
-                            <Button
-                              className="w-full justify-start"
-                              onClick={() => {
-                                toggleNoteInfo(note.firebaseId!);
-                                navigate(`/notes/${note.firebaseId}`);
-                              }}
-                            >
-                              <PencilIcon className="h-4 w-4 mr-2" />
-                              Open Note
-                            </Button>
-                            {note.ownerUserId === user?.uid && (
-                              <Button
-                                variant="destructive"
-                                className="w-full justify-start"
-                                onClick={async () => {
-                                  try {
-                                    await db.deleteNote(note.firebaseId!);
-                                    toggleNoteInfo(note.firebaseId!);
-                                    toast({
-                                      title: "Note deleted",
-                                      description: "The note has been permanently deleted"
-                                    });
-                                  } catch (error) {
-                                    console.error('Error deleting note:', error);
-                                    toast({
-                                      title: "Error",
-                                      description: "Failed to delete note",
-                                      variant: "destructive"
-                                    });
-                                  }
-                                }}
-                              >
-                                <TrashIcon className="h-4 w-4 mr-2" />
-                                Delete Note
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </ScrollArea>
-                    </SheetContent>
-                  </Sheet>
+                  {note.content && (
+                    <div className="ml-6 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {getBlockNoteContent(note.content)}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -558,6 +297,7 @@ const FolderTreeItem = ({
               onEdit={onEdit}
               onDelete={onDelete}
               onCreateSubfolder={onCreateSubfolder}
+              onToggleFavorite={onToggleFavorite}
               notes={notes}
               isCompact={isCompact}
             />
@@ -565,7 +305,7 @@ const FolderTreeItem = ({
         </div>
       )}
 
-      {/* Folder Info Sheet */}
+      {/* Enhanced Folder Info Sheet with Statistics */}
       <Sheet open={showInfo} onOpenChange={setShowInfo}>
         <SheetContent side="right" className="w-full sm:max-w-md">
           <SheetHeader>
@@ -576,12 +316,20 @@ const FolderTreeItem = ({
               >
                 <FolderIcon className="h-5 w-5" style={{ color: folder.color }} />
               </div>
-              {folder.name}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="truncate">{folder.name}</span>
+                  {folder.isFavorite && (
+                    <StarIcon className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                  )}
+                </div>
+              </div>
             </SheetTitle>
           </SheetHeader>
           
           <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
             <div className="space-y-6 pb-8">
+              {/* Statistics Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 border rounded-lg">
                   <div className="text-2xl font-bold">{folderNotes.length}</div>
@@ -591,8 +339,59 @@ const FolderTreeItem = ({
                   <div className="text-2xl font-bold">{folder.children.length}</div>
                   <div className="text-xs text-muted-foreground">Subfolders</div>
                 </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.reduce((acc, note) => {
+                      try {
+                        const content = JSON.parse(note.content || '[]');
+                        return acc + content.length;
+                      } catch {
+                        return acc;
+                      }
+                    }, 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Blocks</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.filter(note => 
+                      new Date(note.updatedAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+                    ).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Updated This Week</div>
+                </div>
               </div>
 
+              {/* Activity Chart */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Activity</h4>
+                <div className="grid grid-cols-7 gap-1">
+                  {[...Array(7)].map((_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const count = folderNotes.filter(note => 
+                      new Date(note.updatedAt).toDateString() === date.toDateString()
+                    ).length;
+                    return (
+                      <div key={i} className="space-y-1">
+                        <div 
+                          className={cn(
+                            "h-8 rounded-sm",
+                            count === 0 ? "bg-muted" : "bg-primary",
+                            count > 0 && "opacity-" + Math.min(count * 20, 100)
+                          )}
+                          title={`${count} updates on ${date.toLocaleDateString()}`}
+                        />
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          {date.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Recent Notes */}
               {folderNotes.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium mb-3">Recent Notes</h4>
@@ -633,6 +432,7 @@ const FolderTreeItem = ({
                 </div>
               )}
 
+              {/* Details Section */}
               <div className="space-y-3">
                 <h4 className="text-sm font-medium">Details</h4>
                 <div className="space-y-2 text-sm">
@@ -651,6 +451,7 @@ const FolderTreeItem = ({
                 </div>
               </div>
 
+              {/* Actions */}
               {folder.ownerUserId === user?.uid && (
                 <div className="flex flex-col gap-2">
                   <Button
@@ -663,6 +464,14 @@ const FolderTreeItem = ({
                   >
                     <PencilIcon className="h-4 w-4 mr-2" />
                     Rename Folder
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => onToggleFavorite(folder.id)}
+                  >
+                    <StarIcon className="h-4 w-4 mr-2" fill={folder.isFavorite ? "currentColor" : "none"} />
+                    {folder.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
                   </Button>
                   <Button
                     variant="destructive"
@@ -698,6 +507,469 @@ const FolderSkeleton = ({ level = 0 }: { level?: number }) => (
   </div>
 );
 
+// Add helper function to find folder in tree structure
+const findFolderInTree = (folders: FolderNode[], folderId: string): FolderNode | undefined => {
+  for (const folder of folders) {
+    if (folder.id === folderId) {
+      return folder;
+    }
+    if (folder.children.length > 0) {
+      const found = findFolderInTree(folder.children, folderId);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
+
+const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onDelete, onCreateSubfolder }: {
+  folder: FolderNode;
+  notes: Note[];
+  onToggle: (folderId: string) => void;
+  onToggleFavorite: (folderId: string) => void;
+  onEdit: (folder: FolderNode) => void;
+  onDelete: (folderId: string) => void;
+  onCreateSubfolder: (folder: FolderNode) => void;
+}) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const folderNotes = notes.filter(note => note.folderId === folder.id);
+  const [showInfo, setShowInfo] = useState(false);
+
+  return (
+    <div
+      className="group relative p-4 border rounded-lg hover:bg-muted/50 transition-colors flex flex-col"
+    >
+      <div className="flex items-start gap-3">
+        <div 
+          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: folder.color + '20' }}
+        >
+          <FolderIcon className="h-6 w-6" style={{ color: folder.color }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div 
+              className="flex-1 font-medium truncate cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle(folder.id);
+              }}
+            >
+              {folder.name}
+            </div>
+            {folder.ownerUserId === user?.uid && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-7 w-7 rounded-full",
+                    folder.isFavorite ? "text-yellow-500" : "opacity-0 group-hover:opacity-100"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite(folder.id);
+                  }}
+                >
+                  <StarIcon className="h-4 w-4" fill={folder.isFavorite ? "currentColor" : "none"} />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <HamburgerMenuIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => navigate('/notes/new', { state: { folderId: folder.id } })}>
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      New Note
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onCreateSubfolder(folder)}>
+                      <FolderIcon className="h-4 w-4 mr-2" />
+                      New Subfolder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit(folder)}>
+                      <PencilIcon className="h-4 w-4 mr-2" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowInfo(true)}>
+                      <FolderIcon className="h-4 w-4 mr-2" />
+                      Details
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => onDelete(folder.id)}
+                    >
+                      <TrashIcon className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="text-sm text-muted-foreground">
+              {folderNotes.length} notes
+            </div>
+            {folder.children.length > 0 && (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <div className="text-sm text-muted-foreground">
+                  {folder.children.length} {folder.children.length === 1 ? 'subfolder' : 'subfolders'}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            Updated {formatTimeAgo(folder.updatedAt)}
+          </div>
+        </div>
+      </div>
+      {folder.isExpanded && (
+        <div className="mt-4 space-y-4 border-t pt-4">
+          {folder.children.length > 0 && (
+            <div className="space-y-2">
+              {folder.children.map(childFolder => (
+                <GridFolderItem
+                  key={childFolder.id}
+                  folder={childFolder}
+                  notes={notes}
+                  onToggle={onToggle}
+                  onToggleFavorite={onToggleFavorite}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onCreateSubfolder={onCreateSubfolder}
+                />
+              ))}
+            </div>
+          )}
+          {folderNotes.length > 0 && (
+            <div className="space-y-2">
+              {folderNotes.map(note => (
+                <div
+                  key={`grid-note-${folder.id}-${note.firebaseId}`}
+                  className="flex items-start gap-2 p-2 hover:bg-muted/50 rounded-lg cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/notes/${note.firebaseId}`);
+                  }}
+                >
+                  <FolderIcon className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">
+                      {note.title || 'Untitled'}
+                    </div>
+                    {note.content && (
+                      <div className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {getBlockNoteContent(note.content)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Folder Info Sheet */}
+      <Sheet open={showInfo} onOpenChange={setShowInfo}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: folder.color + '20' }}
+              >
+                <FolderIcon className="h-5 w-5" style={{ color: folder.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="truncate">{folder.name}</span>
+                  {folder.isFavorite && (
+                    <StarIcon className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                  )}
+                </div>
+              </div>
+            </SheetTitle>
+          </SheetHeader>
+          
+          <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+            <div className="space-y-6 pb-8">
+              {/* Statistics Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">{folderNotes.length}</div>
+                  <div className="text-xs text-muted-foreground">Notes</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">{folder.children.length}</div>
+                  <div className="text-xs text-muted-foreground">Subfolders</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.reduce((acc, note) => {
+                      try {
+                        const content = JSON.parse(note.content || '[]');
+                        return acc + content.length;
+                      } catch {
+                        return acc;
+                      }
+                    }, 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Blocks</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.filter(note => 
+                      new Date(note.updatedAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+                    ).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Updated This Week</div>
+                </div>
+              </div>
+
+              {/* Activity Chart */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Activity</h4>
+                <div className="grid grid-cols-7 gap-1">
+                  {[...Array(7)].map((_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const count = folderNotes.filter(note => 
+                      new Date(note.updatedAt).toDateString() === date.toDateString()
+                    ).length;
+                    return (
+                      <div key={i} className="space-y-1">
+                        <div 
+                          className={cn(
+                            "h-8 rounded-sm",
+                            count === 0 ? "bg-muted" : "bg-primary",
+                            count > 0 && "opacity-" + Math.min(count * 20, 100)
+                          )}
+                          title={`${count} updates on ${date.toLocaleDateString()}`}
+                        />
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          {date.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Recent Notes */}
+              {folderNotes.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Recent Notes</h4>
+                  <div className="space-y-2">
+                    {folderNotes
+                      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+                      .slice(0, 5)
+                      .map(note => (
+                        <div
+                          key={`sheet-note-${folder.id}-${note.firebaseId}`}
+                          className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => {
+                            setShowInfo(false);
+                            navigate(`/notes/${note.firebaseId}`);
+                          }}
+                        >
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-3">
+                              <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">
+                                  {note.title || 'Untitled'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Updated {formatTimeAgo(note.updatedAt)}
+                                </div>
+                              </div>
+                            </div>
+                            {note.content && (
+                              <div className="ml-7 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                {getBlockNoteContent(note.content)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Details Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created</span>
+                    <span>{formatTimeAgo(folder.createdAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Last updated</span>
+                    <span>{formatTimeAgo(folder.updatedAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Owner</span>
+                    <span>{folder.ownerDisplayName}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              {folder.ownerUserId === user?.uid && (
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowInfo(false);
+                      onEdit(folder);
+                    }}
+                  >
+                    <PencilIcon className="h-4 w-4 mr-2" />
+                    Rename Folder
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => onToggleFavorite(folder.id)}
+                  >
+                    <StarIcon className="h-4 w-4 mr-2" fill={folder.isFavorite ? "currentColor" : "none"} />
+                    {folder.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowInfo(false);
+                      onDelete(folder.id);
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4 mr-2" />
+                    Delete Folder
+                  </Button>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+};
+
+// Add new floating action bar component
+const FloatingActionBar = ({ 
+  viewMode,
+  setViewMode,
+  sortOption,
+  setSortOption,
+  sortDirection,
+  setSortDirection,
+  onNewFolder,
+  onNewNote
+}: {
+  viewMode: 'list' | 'grid';
+  setViewMode: (mode: 'list' | 'grid') => void;
+  sortOption: 'name' | 'updated' | 'created' | 'notes';
+  setSortOption: (option: 'name' | 'updated' | 'created' | 'notes') => void;
+  sortDirection: 'asc' | 'desc';
+  setSortDirection: (direction: 'asc' | 'desc') => void;
+  onNewFolder: () => void;
+  onNewNote: () => void;
+}) => {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-full shadow-lg z-50">
+      <div className="flex items-center border-r pr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", viewMode === 'list' && "bg-muted")}
+          onClick={() => setViewMode('list')}
+        >
+          <ListIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", viewMode === 'grid' && "bg-muted")}
+          onClick={() => setViewMode('grid')}
+        >
+          <LayoutGridIcon className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <div className="flex items-center border-r pr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", sortOption === 'name' && "bg-muted")}
+          onClick={() => setSortOption('name')}
+        >
+          <TextIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", sortOption === 'updated' && "bg-muted")}
+          onClick={() => setSortOption('updated')}
+        >
+          <ClockIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", sortOption === 'notes' && "bg-muted")}
+          onClick={() => setSortOption('notes')}
+        >
+          <FileTextIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortDirection === 'asc' ? (
+            <ArrowUpIcon className="h-4 w-4" />
+          ) : (
+            <ArrowDownIcon className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <Button
+          variant="default"
+          size="icon"
+          className="rounded-full"
+          onClick={onNewNote}
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full"
+          onClick={onNewFolder}
+        >
+          <FolderIcon className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export default function Folders() {
   const navigate = useNavigate();
   const [folders, setFolders] = useState<FolderNode[]>([]);
@@ -711,6 +983,41 @@ export default function Folders() {
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileSearch, setIsMobileSearch] = useState(false);
+  const [sortOption, setSortOption] = useState<'name' | 'updated' | 'created' | 'notes'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
+  const sortFolders = (foldersToSort: FolderNode[]): FolderNode[] => {
+    return foldersToSort.sort((a, b) => {
+      let comparison = 0;
+      
+      // First sort by favorites
+      if (a.isFavorite && !b.isFavorite) return -1;
+      if (!a.isFavorite && b.isFavorite) return 1;
+      
+      // Then sort by selected option
+      switch (sortOption) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'updated':
+          comparison = b.updatedAt.getTime() - a.updatedAt.getTime();
+          break;
+        case 'created':
+          comparison = b.createdAt.getTime() - a.createdAt.getTime();
+          break;
+        case 'notes':
+          comparison = notes.filter(note => note.folderId === b.id).length - 
+                      notes.filter(note => note.folderId === a.id).length;
+          break;
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    }).map(folder => ({
+      ...folder,
+      children: sortFolders(folder.children)
+    }));
+  };
 
   const loadData = async () => {
     try {
@@ -738,7 +1045,8 @@ export default function Folders() {
         folderMap.set(folder.id, { 
           ...folder, 
           children: [],
-          isExpanded: false // Ensure isExpanded is always initialized
+          isExpanded: false,
+          isFavorite: folder.isFavorite || false
         });
       });
 
@@ -756,14 +1064,6 @@ export default function Folders() {
           rootFolders.push(node);
         }
       });
-
-      // Sort folders alphabetically
-      const sortFolders = (folders: FolderNode[]): FolderNode[] => {
-        return folders.sort((a, b) => a.name.localeCompare(b.name)).map(folder => ({
-          ...folder,
-          children: sortFolders(folder.children)
-        }));
-      };
 
       setFolders(sortFolders(rootFolders));
       setNotes(userNotes);
@@ -807,6 +1107,7 @@ export default function Folders() {
       const folderData: Partial<Folder> = {
         name: newFolderName.trim(),
         color: newFolderColor,
+        isFavorite: false,
       };
 
       if (selectedFolder?.id) {
@@ -882,9 +1183,39 @@ export default function Folders() {
     }
   };
 
-  const filteredFolders = folders.filter(folder => 
-    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const toggleFavorite = async (folderId: string) => {
+    try {
+      const folder = findFolderInTree(folders, folderId);
+      if (folder) {
+        const updatedFolder: Partial<FolderData> = {
+          isFavorite: !folder.isFavorite
+        };
+        await db.updateFolder(folderId, updatedFolder);
+        await loadData();
+        toast({
+          title: folder.isFavorite ? "Removed from favorites" : "Added to favorites",
+          description: `${folder.name} has been ${folder.isFavorite ? 'removed from' : 'added to'} favorites`
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update folder favorite status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const sortedAndFilteredFolders = useMemo(() => {
+    let filtered = folders;
+    if (searchQuery) {
+      filtered = folders.filter(folder => 
+        folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    return sortFolders(filtered);
+  }, [folders, searchQuery, sortOption, sortDirection, notes]);
 
   return (
     <div className="h-full flex flex-col">
@@ -934,104 +1265,72 @@ export default function Folders() {
               >
                 <MagnifyingGlassIcon className="h-5 w-5" />
               </Button>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <HamburgerMenuIcon className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-[400px]">
-                  <SheetHeader>
-                    <SheetTitle>Options</SheetTitle>
-                  </SheetHeader>
-                  <div className="grid gap-4 py-4">
-                    <Button
-                      className="w-full justify-start"
-                      onClick={() => navigate('/notes/new')}
-                    >
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      New Note
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setSelectedFolder(null);
-                        setIsCreatingFolder(true);
-                      }}
-                    >
-                      <FolderIcon className="h-4 w-4 mr-2" />
-                      New Folder
-                    </Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
             </>
           )}
         </div>
       </header>
 
-      {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between gap-4 px-4 py-6">
-        <div className="flex-1 max-w-md">
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search folders..."
-            className="h-9"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => navigate('/notes/new')}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            New Note
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSelectedFolder(null);
-              setIsCreatingFolder(true);
-            }}
-          >
-            <FolderIcon className="h-4 w-4 mr-2" />
-            New Folder
-          </Button>
-        </div>
-      </div>
-
-      {/* Folders List */}
-      <ScrollArea className="flex-1 px-4">
+      {/* Folders List/Grid */}
+      <ScrollArea className="flex-1 px-4 py-4">
         {isLoading ? (
           <div className="space-y-4 animate-pulse">
             {[...Array(5)].map((_, i) => (
               <FolderSkeleton key={i} level={i % 2} />
             ))}
           </div>
-        ) : filteredFolders.length > 0 ? (
-          <div className="space-y-1 pb-8">
-            {filteredFolders.map(folder => (
-              <FolderTreeItem
-                key={folder.id}
-                folder={folder}
-                onToggle={toggleFolder}
-                onEdit={(folder) => {
-                  setSelectedFolder(folder);
-                  setNewFolderName(folder.name);
-                  setNewFolderColor(folder.color || '#4f46e5');
-                  setIsEditingFolder(true);
-                }}
-                onDelete={(folderId) => setFolderToDelete(folderId)}
-                onCreateSubfolder={(folder) => {
-                  setSelectedFolder(folder);
-                  setNewFolderName('');
-                  setNewFolderColor(folder.color || '#4f46e5');
-                  setIsCreatingFolder(true);
-                }}
-                notes={notes}
-                isCompact={false}
-              />
-            ))}
-          </div>
+        ) : sortedAndFilteredFolders.length > 0 ? (
+          viewMode === 'list' ? (
+            <div className="space-y-1 pb-8">
+              {sortedAndFilteredFolders.map(folder => (
+                <FolderTreeItem
+                  key={folder.id}
+                  folder={folder}
+                  onToggle={toggleFolder}
+                  onEdit={(folder) => {
+                    setSelectedFolder(folder);
+                    setNewFolderName(folder.name);
+                    setNewFolderColor(folder.color || '#4f46e5');
+                    setIsEditingFolder(true);
+                  }}
+                  onDelete={(folderId) => setFolderToDelete(folderId)}
+                  onCreateSubfolder={(folder) => {
+                    setSelectedFolder(folder);
+                    setNewFolderName('');
+                    setNewFolderColor(folder.color || '#4f46e5');
+                    setIsCreatingFolder(true);
+                  }}
+                  onToggleFavorite={toggleFavorite}
+                  notes={notes}
+                  isCompact={false}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-[min-content] gap-4 pb-8">
+              {sortedAndFilteredFolders.map(folder => (
+                <GridFolderItem
+                  key={folder.id}
+                  folder={folder}
+                  notes={notes}
+                  onToggle={toggleFolder}
+                  onToggleFavorite={toggleFavorite}
+                  onEdit={(folder) => {
+                    setSelectedFolder(folder);
+                    setNewFolderName(folder.name);
+                    setNewFolderColor(folder.color || '#4f46e5');
+                    setIsEditingFolder(true);
+                  }}
+                  onDelete={(folderId) => setFolderToDelete(folderId)}
+                  onCreateSubfolder={(folder) => {
+                    setSelectedFolder(folder);
+                    setNewFolderName('');
+                    setNewFolderColor(folder.color || '#4f46e5');
+                    setIsCreatingFolder(true);
+                  }}
+                />
+              ))}
+            </div>
+          )
         ) : (
           <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-center px-4">
             {searchQuery ? (
@@ -1064,6 +1363,21 @@ export default function Folders() {
           </div>
         )}
       </ScrollArea>
+
+      {/* Floating Action Bar */}
+      <FloatingActionBar
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        sortDirection={sortDirection}
+        setSortDirection={setSortDirection}
+        onNewNote={() => navigate('/notes/new')}
+        onNewFolder={() => {
+          setSelectedFolder(null);
+          setIsCreatingFolder(true);
+        }}
+      />
 
       {/* Create/Edit Folder Dialog */}
       <Dialog 

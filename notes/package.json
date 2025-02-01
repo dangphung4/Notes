@@ -39,6 +39,7 @@
     "@fontsource/source-sans-3": "^5.0.18",
     "@fontsource/space-mono": "^5.0.8",
     "@fontsource/ubuntu-mono": "^5.0.8",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-alert-dialog": "^1.1.5",
     "@radix-ui/react-avatar": "^1.1.2",
