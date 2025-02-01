@@ -536,6 +536,7 @@ const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onD
   const { user } = useAuth();
   const navigate = useNavigate();
   const folderNotes = notes.filter(note => note.folderId === folder.id);
+  const [showInfo, setShowInfo] = useState(false);
 
   return (
     <div
@@ -599,6 +600,10 @@ const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onD
                       <PencilIcon className="h-4 w-4 mr-2" />
                       Rename
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowInfo(true)}>
+                      <FolderIcon className="h-4 w-4 mr-2" />
+                      Details
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="text-destructive focus:text-destructive"
@@ -635,27 +640,16 @@ const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onD
           {folder.children.length > 0 && (
             <div className="space-y-2">
               {folder.children.map(childFolder => (
-                <div
+                <GridFolderItem
                   key={childFolder.id}
-                  className="flex items-center gap-2 py-2 px-2 hover:bg-muted/50 rounded-lg cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggle(childFolder.id);
-                  }}
-                >
-                  <div 
-                    className="w-6 h-6 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: childFolder.color + '20' }}
-                  >
-                    <FolderIcon className="h-4 w-4" style={{ color: childFolder.color }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{childFolder.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {notes.filter(note => note.folderId === childFolder.id).length} notes
-                    </div>
-                  </div>
-                </div>
+                  folder={childFolder}
+                  notes={notes}
+                  onToggle={onToggle}
+                  onToggleFavorite={onToggleFavorite}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onCreateSubfolder={onCreateSubfolder}
+                />
               ))}
             </div>
           )}
@@ -687,6 +681,192 @@ const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onD
           )}
         </div>
       )}
+      
+      {/* Folder Info Sheet */}
+      <Sheet open={showInfo} onOpenChange={setShowInfo}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: folder.color + '20' }}
+              >
+                <FolderIcon className="h-5 w-5" style={{ color: folder.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="truncate">{folder.name}</span>
+                  {folder.isFavorite && (
+                    <StarIcon className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                  )}
+                </div>
+              </div>
+            </SheetTitle>
+          </SheetHeader>
+          
+          <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+            <div className="space-y-6 pb-8">
+              {/* Statistics Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">{folderNotes.length}</div>
+                  <div className="text-xs text-muted-foreground">Notes</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">{folder.children.length}</div>
+                  <div className="text-xs text-muted-foreground">Subfolders</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.reduce((acc, note) => {
+                      try {
+                        const content = JSON.parse(note.content || '[]');
+                        return acc + content.length;
+                      } catch {
+                        return acc;
+                      }
+                    }, 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Blocks</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.filter(note => 
+                      new Date(note.updatedAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+                    ).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Updated This Week</div>
+                </div>
+              </div>
+
+              {/* Activity Chart */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Activity</h4>
+                <div className="grid grid-cols-7 gap-1">
+                  {[...Array(7)].map((_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const count = folderNotes.filter(note => 
+                      new Date(note.updatedAt).toDateString() === date.toDateString()
+                    ).length;
+                    return (
+                      <div key={i} className="space-y-1">
+                        <div 
+                          className={cn(
+                            "h-8 rounded-sm",
+                            count === 0 ? "bg-muted" : "bg-primary",
+                            count > 0 && "opacity-" + Math.min(count * 20, 100)
+                          )}
+                          title={`${count} updates on ${date.toLocaleDateString()}`}
+                        />
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          {date.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Recent Notes */}
+              {folderNotes.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Recent Notes</h4>
+                  <div className="space-y-2">
+                    {folderNotes
+                      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+                      .slice(0, 5)
+                      .map(note => (
+                        <div
+                          key={`sheet-note-${folder.id}-${note.firebaseId}`}
+                          className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => {
+                            setShowInfo(false);
+                            navigate(`/notes/${note.firebaseId}`);
+                          }}
+                        >
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-3">
+                              <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">
+                                  {note.title || 'Untitled'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Updated {formatTimeAgo(note.updatedAt)}
+                                </div>
+                              </div>
+                            </div>
+                            {note.content && (
+                              <div className="ml-7 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                {getBlockNoteContent(note.content)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Details Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created</span>
+                    <span>{formatTimeAgo(folder.createdAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Last updated</span>
+                    <span>{formatTimeAgo(folder.updatedAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Owner</span>
+                    <span>{folder.ownerDisplayName}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              {folder.ownerUserId === user?.uid && (
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowInfo(false);
+                      onEdit(folder);
+                    }}
+                  >
+                    <PencilIcon className="h-4 w-4 mr-2" />
+                    Rename Folder
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => onToggleFavorite(folder.id)}
+                  >
+                    <StarIcon className="h-4 w-4 mr-2" fill={folder.isFavorite ? "currentColor" : "none"} />
+                    {folder.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowInfo(false);
+                      onDelete(folder.id);
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4 mr-2" />
+                    Delete Folder
+                  </Button>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
@@ -1090,63 +1270,16 @@ export default function Folders() {
               placeholder="Search folders..."
               className="h-9"
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <ArrowDownUpIcon className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => setSortOption('name')}>
-                  <TextIcon className="h-4 w-4 mr-2" />
-                  Sort by name
-                  {sortOption === 'name' && (
-                    <CheckIcon className="h-4 w-4 ml-auto" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption('updated')}>
-                  <ClockIcon className="h-4 w-4 mr-2" />
-                  Sort by last updated
-                  {sortOption === 'updated' && (
-                    <CheckIcon className="h-4 w-4 ml-auto" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption('created')}>
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  Sort by created date
-                  {sortOption === 'created' && (
-                    <CheckIcon className="h-4 w-4 ml-auto" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption('notes')}>
-                  <FileTextIcon className="h-4 w-4 mr-2" />
-                  Sort by notes count
-                  {sortOption === 'notes' && (
-                    <CheckIcon className="h-4 w-4 ml-auto" />
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}>
-                  {sortDirection === 'asc' ? (
-                    <ArrowUpIcon className="h-4 w-4 mr-2" />
-                  ) : (
-                    <ArrowDownIcon className="h-4 w-4 mr-2" />
-                  )}
-                  {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setViewMode(v => v === 'list' ? 'grid' : 'list')}
-            >
-              {viewMode === 'list' ? (
-                <LayoutGridIcon className="h-4 w-4" />
-              ) : (
-                <ListIcon className="h-4 w-4" />
-              )}
-            </Button>
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                onClick={() => setSearchQuery('')}
+              >
+                <Cross2Icon className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
