@@ -15,28 +15,18 @@
         "build",
         "ci",
         "chore",
-        "revert"
+        "revert",
+        "Penify"
       ]
     ],
-    "type-case": [2, "always", "lowerCase"],
-    "type-empty": [
-      0,
-      "never",
-      {
-        "ignorePattern": "^\\[.*\\]:"
-      }
-    ],
-    "subject-empty": [
-      0,
-      "never",
-      {
-        "ignorePattern": "^\\[.*\\]:"
-      }
-    ],
+    "type-case": [0, "always", "lowerCase"],
+    "type-empty": [2, "always"],
+    "subject-empty": [2, "always"],
     "subject-full-stop": [2, "never", "."],
     "header-max-length": [2, "always", 72],
     "body-leading-blank": [1, "always"],
     "body-max-line-length": [2, "always", 100]
   },
-  "defaultIgnores": true
+  "defaultIgnores": true,
+  "ignores": ["\\[Penify\\]:.*"]
 } 
