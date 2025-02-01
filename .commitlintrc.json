@@ -19,9 +19,24 @@
       ]
     ],
     "type-case": [2, "always", "lowerCase"],
-    "type-empty": [2, "never"],
-    "subject-empty": [2, "never"],
+    "type-empty": [
+      0,
+      "never",
+      {
+        "ignorePattern": "^\\[.*\\]:"
+      }
+    ],
+    "subject-empty": [
+      0,
+      "never",
+      {
+        "ignorePattern": "^\\[.*\\]:"
+      }
+    ],
     "subject-full-stop": [2, "never", "."],
-    "header-max-length": [2, "always", 72]
-  }
+    "header-max-length": [2, "always", 72],
+    "body-leading-blank": [1, "always"],
+    "body-max-line-length": [2, "always", 100]
+  },
+  "defaultIgnores": true
 } 
