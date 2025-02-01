@@ -210,6 +210,25 @@ function CommandPalette() {
   );
 }
 
+// Add FooterWrapper component
+function FooterWrapper() {
+  const location = useLocation();
+  const hideFooterPaths = ['/notes/new', '/notes/:id'];
+  
+  // Check if current path matches any path where footer should be hidden
+  const shouldHideFooter = hideFooterPaths.some(path => {
+    // Convert route pattern to regex
+    const regex = new RegExp('^' + path.replace(/:[^\s/]+/g, '[^\\s/]+') + '$');
+    return regex.test(location.pathname);
+  });
+
+  if (shouldHideFooter) {
+    return null;
+  }
+
+  return <Footer />;
+}
+
 // Main App component
 /**
  *
@@ -222,7 +241,7 @@ function App() {
           <DesktopNav darkMode={false} toggleDarkMode={() => {}} />
           <MobileNav darkMode={false} toggleDarkMode={() => {}} />
           <AppRoutes />
-          <Footer />
+          <FooterWrapper />
           <PWABadge />
         </div>
       </BrowserRouter>
