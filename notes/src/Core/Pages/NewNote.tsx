@@ -187,7 +187,6 @@ export default function NewNote() {
 
   // Update the template selection handler
   const handleTemplateSelect = (template: NoteTemplate) => {
-    console.log('Selected template:', template); // Keep debug log
     
     // Get the editor instance
     const editor = editorRef.current;

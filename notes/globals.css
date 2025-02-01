@@ -72,6 +72,7 @@
     --ring: 252 11% 35%;
     --radius: 0.5rem;
     --editor-font: "Monaspace Neon";
+    --font-size: 16px;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -138,7 +139,36 @@
   /* Apply font globally */
   html {
     font-family: var(--editor-font), system-ui, -apple-system, sans-serif;
+    font-size: var(--font-size);
   }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: var(--font-size);
+  }
+
+  /* Apply font size to common text elements */
+  p, span, div, button, input, select, textarea {
+    font-size: var(--font-size);
+  }
+
+  /* Scale headings relative to base font size */
+  h1 { font-size: calc(var(--font-size) * 2); }
+  h2 { font-size: calc(var(--font-size) * 1.5); }
+  h3 { font-size: calc(var(--font-size) * 1.25); }
+  h4 { font-size: calc(var(--font-size) * 1.1); }
+  h5 { font-size: var(--font-size); }
+  h6 { font-size: var(--font-size); }
+
+  /* Scale text utilities relative to base font size */
+  .text-xs { font-size: calc(var(--font-size) * 0.75); }
+  .text-sm { font-size: calc(var(--font-size) * 0.875); }
+  .text-base { font-size: var(--font-size); }
+  .text-lg { font-size: calc(var(--font-size) * 1.125); }
+  .text-xl { font-size: calc(var(--font-size) * 1.25); }
+  .text-2xl { font-size: calc(var(--font-size) * 1.5); }
+  .text-3xl { font-size: calc(var(--font-size) * 1.875); }
+  .text-4xl { font-size: calc(var(--font-size) * 2.25); }
 }
 
 @layer base {
@@ -231,6 +261,9 @@
     background-color: hsl(var(--background));
     max-height: 100%;
     position: relative !important;
+    font-family: inherit !important;
+    font-size: var(--font-size) !important;
+    line-height: 1.5 !important;
 }
 
 .bn-editor {
@@ -239,23 +272,69 @@
     padding: 1rem;
     background-color: transparent;
     height: 0;
+    font-size: var(--font-size) !important;
+    line-height: 1.6 !important;
 }
 
-/* Ensure the editor content has proper background */
+/* Ensure proper content scaling */
 .bn-editor > div {
     background-color: hsl(var(--background));
     height: auto;
+    min-height: 100%;
+    width: 100%;
+    max-width: 100ch;
+    margin: 0 auto;
+    padding: 1rem;
 }
 
-/* Remove this section as it might be causing conflicts */
-/* Remove absolute positioning that was causing issues */
+/* Improve container scaling */
 .bn-container > div {
     display: flex;
     flex-direction: column;
     background-color: hsl(var(--background));
+    min-height: 0;
+    flex: 1;
 }
 
-/* Remove the iOS keyboard fix as it might be causing issues */
+.bn-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.bn-toolbar button {
+    padding: calc(var(--font-size) * 0.25) !important;
+    min-width: calc(var(--font-size) * 2) !important;
+    min-height: calc(var(--font-size) * 2) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Improve menu scaling */
+.bn-suggestion-menu {
+    font-size: var(--font-size) !important;
+    line-height: 1.5 !important;
+    padding: calc(var(--font-size) * 0.5) !important;
+}
+
+.bn-suggestion-menu-item {
+    padding: calc(var(--font-size) * 0.5) calc(var(--font-size) * 0.75) !important;
+    gap: calc(var(--font-size) * 0.5) !important;
+}
+
+.title-input {
+    font-size: calc(var(--font-size) * 1.5) !important;
+    line-height: 1.3 !important;
+    padding: calc(var(--font-size) * 0.5) 0 !important;
+}
+
 @supports (-webkit-touch-callout: none) {
     .bn-editor {
         padding-bottom: 0; /* Remove the 50vh padding */
@@ -302,16 +381,6 @@
 }
 
 /* Improve menu item styles */
-.bn-suggestion-menu-item {
-    padding: 0.75rem 1rem !important;
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    cursor: pointer !important;
-}
-
 .bn-suggestion-menu-item:hover {
     background-color: hsl(var(--accent)) !important;
     color: hsl(var(--accent-foreground)) !important;
@@ -468,15 +537,15 @@
 .mobile-editor {
     /* Prevent iOS zoom on input focus */
     @media screen and (max-width: 768px) {
-        font-size: 16px !important;
+        font-size: var(--font-size) !important;
     }
 }
 
 /* Update title input styles */
 .title-input {
     font-weight: 700; /* Make it bolder */
-    font-size: 1.5rem;
-    line-height: 2rem;
+    font-size: calc(var(--font-size) * 1.5) !important;
+    line-height: 1.5;
     padding: 0.5rem 0;
     margin: 0;
     width: 100%;
@@ -488,8 +557,8 @@
 
 @media (min-width: 768px) {
     .title-input {
-        font-size: 2rem;
-        line-height: 2.5rem;
+        font-size: calc(var(--font-size) * 2) !important;
+        line-height: 1.25;
         padding: 0.75rem 0;
     }
 }
@@ -504,8 +573,8 @@
 /* Improve mobile title input */
 @media (max-width: 767px) {
     .title-input {
-        font-size: 1.25rem;
-        line-height: 1.75rem;
+        font-size: calc(var(--font-size) * 1.25) !important;
+        line-height: 1.4;
         padding: 0.5rem 0;
     }
 }
@@ -701,7 +770,7 @@ html {
 .mobile-editor {
     /* Prevent iOS zoom on input focus */
     @media screen and (max-width: 768px) {
-      font-size: 16px !important;
+      font-size: var(--font-size) !important;
     }
   
     /* Fix iOS keyboard issues */

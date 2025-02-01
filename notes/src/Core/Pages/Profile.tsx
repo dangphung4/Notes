@@ -35,6 +35,7 @@ import { Check, PaletteIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 
 /**
  * Profile page
@@ -90,10 +91,14 @@ export default function Profile() {
     { value: 'Comic Neue', label: 'Comic Neue', class: 'font-comic-neue', category: 'Handwriting' }
   ];
 
-  const { editorFont, setEditorFont } = useTheme();
+  const { editorFont, setEditorFont, fontSize, setFontSize } = useTheme();
 
   const handleFontChange = async (newFont: string) => {
     setEditorFont(newFont);
+  };
+
+  const handleFontSizeChange = (value: number[]) => {
+    setFontSize(value[0]);
   };
 
   useEffect(() => {
@@ -441,7 +446,7 @@ export default function Profile() {
                 Customize your note-taking experience
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label>App Font</Label>
@@ -480,6 +485,43 @@ export default function Profile() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="space-y-0.5">
+                  <Label>Font Size</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Adjust the base font size for the app
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">12px</span>
+                    <span className="text-sm font-medium">{fontSize}px</span>
+                    <span className="text-sm">24px</span>
+                  </div>
+                  <Slider
+                    value={[fontSize]}
+                    onValueChange={handleFontSizeChange}
+                    min={12}
+                    max={24}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex items-center justify-center gap-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFontSize(16)}
+                      className="text-xs"
+                    >
+                      Reset to Default
+                    </Button>
+                    <div className="text-sm text-muted-foreground">
+                      Preview: <span style={{ fontSize: `${fontSize}px` }}>The quick brown fox jumps over the lazy dog</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-6">
