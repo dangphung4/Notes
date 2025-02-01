@@ -3,17 +3,18 @@ import { Folder, Note } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { PlusIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { PlusIcon, ChevronRightIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
 import { useAuth } from '../Auth/AuthContext';
 import { db } from '../Database/db';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { FolderIcon, TrashIcon, PencilIcon, FileTextIcon } from 'lucide-react';
+import { FolderIcon, TrashIcon, PencilIcon, FileTextIcon, InfoIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { formatTimeAgo } from '../utils/noteUtils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface FolderNode extends Folder {
   children: FolderNode[];
@@ -53,7 +54,7 @@ const FolderTreeItem = ({
     <div>
       <div
         className={cn(
-          "group flex items-center gap-2 py-3 px-3 hover:bg-muted/50 rounded-lg cursor-pointer relative transition-all",
+          "group flex items-center gap-2 py-3 px-3 hover:bg-muted/50 active:bg-muted md:rounded-lg cursor-pointer relative transition-all",
           level > 0 && "ml-6",
           folder.isExpanded && "bg-muted/50"
         )}
@@ -68,7 +69,6 @@ const FolderTreeItem = ({
             className={cn(
               "h-4 w-4 transition-transform duration-200",
               folder.isExpanded && "rotate-90",
-              // Only hide arrow if folder has no children AND no notes
               (folder.children.length === 0 && folderNotes.length === 0) && "opacity-0"
             )}
           />
@@ -95,54 +95,61 @@ const FolderTreeItem = ({
             )}
           </div>
 
-          {/* Actions - Always visible on mobile */}
+          {/* Actions Menu */}
           {folder.ownerUserId === user?.uid && (
-            <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full hover:bg-background"
-                onClick={(e) => {
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full hover:bg-background"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DotsVerticalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   navigate('/notes/new', { state: { folderId: folder.id } });
-                }}
-              >
-                <PlusIcon className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full hover:bg-background"
-                onClick={(e) => {
+                }}>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  New Note
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   onCreateSubfolder(folder);
-                }}
-              >
-                <FolderIcon className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full hover:bg-background"
-                onClick={(e) => {
+                }}>
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  New Subfolder
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
                   onEdit(folder);
-                }}
-              >
-                <PencilIcon className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full hover:bg-destructive/10 hover:text-destructive"
-                onClick={(e) => {
+                }}>
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(folder.id);
-                }}
-              >
-                <TrashIcon className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+                  setShowInfo(true);
+                }}>
+                  <InfoIcon className="h-4 w-4 mr-2" />
+                  Details
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(folder.id);
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
@@ -151,11 +158,11 @@ const FolderTreeItem = ({
         <div>
           {/* Notes in this folder */}
           {folderNotes.length > 0 && (
-            <div className="ml-12 space-y-2 mt-2">
+            <div className="ml-12 space-y-px mt-px">
               {folderNotes.map(note => (
                 <div
                   key={note.firebaseId}
-                  className="flex flex-col gap-2 p-3 hover:bg-muted/50 rounded-lg cursor-pointer text-sm group transition-all"
+                  className="flex flex-col gap-2 p-3 hover:bg-muted/50 active:bg-muted md:rounded-lg cursor-pointer text-sm group transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/notes/${note.firebaseId}`);
@@ -168,7 +175,7 @@ const FolderTreeItem = ({
                     <span className="flex-1 font-medium truncate">
                       {note.title || 'Untitled'}
                     </span>
-                    <div className="flex items-center gap-2 text-muted-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="text-xs bg-muted/50 px-2 py-0.5 rounded-md">
                         {formatTimeAgo(note.updatedAt)}
                       </span>
@@ -176,7 +183,7 @@ const FolderTreeItem = ({
                   </div>
 
                   {/* Note Preview */}
-                  <div className="ml-8 text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                  <div className="ml-8 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                     {note.content ? getBlockNoteContent(note.content) : 'Empty note'}
                   </div>
 
@@ -503,14 +510,40 @@ export default function Folders() {
 
   return (
     <div className="container max-w-5xl mx-auto px-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold tracking-tight">Folders</h1>
-          <p className="text-muted-foreground mt-1">
-            Organize your notes in a hierarchical structure
-          </p>
+      {/* Mobile Header */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Folders</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {folders.length} folders • {notes.length} notes
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden"
+              onClick={() => navigate('/notes/new')}
+            >
+              <PlusIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden"
+              onClick={() => {
+                setSelectedFolder(null);
+                setIsCreatingFolder(true);
+              }}
+            >
+              <FolderIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+
+        {/* Desktop Actions */}
+        <div className="hidden md:flex flex-col sm:flex-row gap-2">
           <Button 
             size="lg"
             className="w-full sm:w-auto bg-primary hover:bg-primary/90"
@@ -534,13 +567,13 @@ export default function Folders() {
         </div>
       </div>
 
-      <Card className="p-4 border-dashed">
+      <Card className="border-none shadow-none bg-transparent md:border md:bg-card md:shadow-sm">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : folders.length > 0 ? (
-          <div className="space-y-1">
+          <div className="space-y-px">
             {folders.map(folder => (
               <FolderTreeItem
                 key={folder.id}
