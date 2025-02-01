@@ -2,30 +2,25 @@ import { useState, useEffect } from 'react';
 import { Folder, Note } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { PlusIcon, ChevronRightIcon, DotsVerticalIcon } from '@radix-ui/react-icons';
+import { PlusIcon, ChevronRightIcon, MagnifyingGlassIcon, Cross2Icon, HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { useAuth } from '../Auth/AuthContext';
 import { db } from '../Database/db';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { FolderIcon, TrashIcon, PencilIcon, FileTextIcon, InfoIcon } from 'lucide-react';
+import { FolderIcon, TrashIcon, PencilIcon, ChevronLeftIcon } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { formatTimeAgo } from '../utils/noteUtils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FolderNode extends Folder {
   children: FolderNode[];
   isExpanded?: boolean;
-}
-
-interface BlockNoteContent {
-  type: string;
-  content?: Array<{ type: string; text?: string }>;
-  text?: string;
-  children?: BlockNoteContent[];
 }
 
 const FolderTreeItem = ({ 
@@ -35,7 +30,8 @@ const FolderTreeItem = ({
   onEdit,
   onDelete,
   onCreateSubfolder,
-  notes
+  notes,
+  isCompact = false
 }: { 
   folder: FolderNode;
   level?: number;
@@ -44,23 +40,27 @@ const FolderTreeItem = ({
   onDelete: (folderId: string) => void;
   onCreateSubfolder: (folder: FolderNode) => void;
   notes: Note[];
+  isCompact?: boolean;
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const folderNotes = notes.filter(note => note.folderId === folder.id);
   const [showInfo, setShowInfo] = useState(false);
+  const hasContent = folder.children.length > 0 || folderNotes.length > 0;
 
   return (
     <div>
       <div
         className={cn(
-          "group flex items-center gap-2 py-3 px-3 hover:bg-muted/50 active:bg-muted md:rounded-lg cursor-pointer relative transition-all",
-          level > 0 && "ml-6",
+          "group flex items-center gap-2 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer relative transition-all",
+          level > 0 && "ml-4 sm:ml-6",
           folder.isExpanded && "bg-muted/50"
         )}
         onClick={(e) => {
           e.stopPropagation();
-          onToggle(folder.id);
+          if (hasContent) {
+            onToggle(folder.id);
+          }
         }}
       >
         {/* Expand/Collapse Button */}
@@ -69,142 +69,124 @@ const FolderTreeItem = ({
             className={cn(
               "h-4 w-4 transition-transform duration-200",
               folder.isExpanded && "rotate-90",
-              (folder.children.length === 0 && folderNotes.length === 0) && "opacity-0"
+              !hasContent && "opacity-0"
             )}
           />
         </div>
         
-        <FolderIcon 
-          className="h-4 w-4 shrink-0" 
-          style={{ color: folder.color }} 
-        />
-        <span className="flex-1 truncate font-medium">{folder.name}</span>
-        
-        <div className="flex items-center gap-3">
-          {/* Folder Stats */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1 bg-muted/50 px-2 py-0.5 rounded-md">
-              <FileTextIcon className="h-3.5 w-3.5" />
-              <span>{folderNotes.length}</span>
-            </div>
-            {folder.children.length > 0 && (
-              <div className="flex items-center gap-1 bg-muted/50 px-2 py-0.5 rounded-md">
-                <FolderIcon className="h-3.5 w-3.5" />
-                <span>{folder.children.length}</span>
+        <div 
+          className="w-6 h-6 rounded-lg flex items-center justify-center"
+          style={{ backgroundColor: folder.color + '20' }}
+        >
+          <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium truncate">{folder.name}</span>
+            {!isCompact && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                {folderNotes.length > 0 && (
+                  <Badge variant="secondary" className="h-5 text-xs">
+                    {folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}
+                  </Badge>
+                )}
+                {folder.children.length > 0 && (
+                  <Badge variant="secondary" className="h-5 text-xs">
+                    {folder.children.length} {folder.children.length === 1 ? 'folder' : 'folders'}
+                  </Badge>
+                )}
               </div>
             )}
           </div>
-
-          {/* Actions Menu */}
-          {folder.ownerUserId === user?.uid && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-full hover:bg-background"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <DotsVerticalIcon className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  navigate('/notes/new', { state: { folderId: folder.id } });
-                }}>
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  New Note
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  onCreateSubfolder(folder);
-                }}>
-                  <FolderIcon className="h-4 w-4 mr-2" />
-                  New Subfolder
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(folder);
-                }}>
-                  <PencilIcon className="h-4 w-4 mr-2" />
-                  Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => {
-                  e.stopPropagation();
-                  setShowInfo(true);
-                }}>
-                  <InfoIcon className="h-4 w-4 mr-2" />
-                  Details
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className="text-destructive focus:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(folder.id);
-                  }}
-                >
-                  <TrashIcon className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {!isCompact && folder.updatedAt && (
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Updated {formatTimeAgo(folder.updatedAt)}
+            </div>
           )}
         </div>
+
+        {/* Actions Menu */}
+        {folder.ownerUserId === user?.uid && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <HamburgerMenuIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                navigate('/notes/new', { state: { folderId: folder.id } });
+              }}>
+                <PlusIcon className="h-4 w-4 mr-2" />
+                New Note
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                onCreateSubfolder(folder);
+              }}>
+                <FolderIcon className="h-4 w-4 mr-2" />
+                New Subfolder
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                onEdit(folder);
+              }}>
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                setShowInfo(true);
+              }}>
+                <FolderIcon className="h-4 w-4 mr-2" />
+                Details
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-destructive focus:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(folder.id);
+                }}
+              >
+                <TrashIcon className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {folder.isExpanded && (
         <div>
           {/* Notes in this folder */}
           {folderNotes.length > 0 && (
-            <div className="ml-12 space-y-px mt-px">
+            <div className="ml-12 space-y-1 mt-1">
               {folderNotes.map(note => (
                 <div
-                  key={note.firebaseId}
-                  className="flex flex-col gap-2 p-3 hover:bg-muted/50 active:bg-muted md:rounded-lg cursor-pointer text-sm group transition-all"
+                  key={`note-${folder.id}-${note.firebaseId}`}
+                  className="flex items-center gap-2 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/notes/${note.firebaseId}`);
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 flex items-center justify-center">
-                      <FileTextIcon className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <span className="flex-1 font-medium truncate">
+                  <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">
                       {note.title || 'Untitled'}
-                    </span>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="text-xs bg-muted/50 px-2 py-0.5 rounded-md">
-                        {formatTimeAgo(note.updatedAt)}
-                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Updated {formatTimeAgo(note.updatedAt)}
                     </div>
                   </div>
-
-                  {/* Note Preview */}
-                  <div className="ml-8 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                    {note.content ? getBlockNoteContent(note.content) : 'Empty note'}
-                  </div>
-
-                  {/* Tags */}
-                  {note.tags && note.tags.length > 0 && (
-                    <div className="ml-8 flex flex-wrap gap-1 mt-1">
-                      {note.tags.map(tag => (
-                        <Badge
-                          key={tag.id}
-                          variant="secondary"
-                          className="text-[10px] px-1.5 py-0 h-4"
-                          style={{
-                            backgroundColor: tag.color + '20',
-                            color: tag.color
-                          }}
-                        >
-                          {tag.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -213,7 +195,7 @@ const FolderTreeItem = ({
           {/* Subfolders */}
           {folder.children.map(childFolder => (
             <FolderTreeItem
-              key={childFolder.id}
+              key={`folder-${childFolder.id}`}
               folder={childFolder}
               level={level + 1}
               onToggle={onToggle}
@@ -221,124 +203,137 @@ const FolderTreeItem = ({
               onDelete={onDelete}
               onCreateSubfolder={onCreateSubfolder}
               notes={notes}
+              isCompact={isCompact}
             />
           ))}
         </div>
       )}
 
-      {/* Folder Info Dialog */}
-      <Dialog open={showInfo} onOpenChange={setShowInfo}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FolderIcon className="h-5 w-5" style={{ color: folder.color }} />
+      {/* Folder Info Sheet */}
+      <Sheet open={showInfo} onOpenChange={setShowInfo}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: folder.color + '20' }}
+              >
+                <FolderIcon className="h-5 w-5" style={{ color: folder.color }} />
+              </div>
               {folder.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="p-3">
-                <div className="text-2xl font-bold">{folderNotes.length}</div>
-                <div className="text-xs text-muted-foreground">Notes</div>
-              </Card>
-              <Card className="p-3">
-                <div className="text-2xl font-bold">{folder.children.length}</div>
-                <div className="text-xs text-muted-foreground">Subfolders</div>
-              </Card>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Details</h4>
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Created</span>
-                  <span>{formatTimeAgo(folder.createdAt)}</span>
+            </SheetTitle>
+          </SheetHeader>
+          
+          <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+            <div className="space-y-6 pb-8">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">{folderNotes.length}</div>
+                  <div className="text-xs text-muted-foreground">Notes</div>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Last updated</span>
-                  <span>{formatTimeAgo(folder.updatedAt)}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Owner</span>
-                  <span>{folder.ownerDisplayName}</span>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">{folder.children.length}</div>
+                  <div className="text-xs text-muted-foreground">Subfolders</div>
                 </div>
               </div>
-            </div>
 
-            {folderNotes.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Recent Notes</h4>
-                <div className="space-y-1">
-                  {folderNotes
-                    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-                    .slice(0, 3)
-                    .map(note => (
-                      <div
-                        key={note.firebaseId}
-                        className="flex items-center justify-between text-sm p-2 hover:bg-muted rounded-lg cursor-pointer"
-                        onClick={() => {
-                          setShowInfo(false);
-                          navigate(`/notes/${note.firebaseId}`);
-                        }}
-                      >
-                        <span className="truncate">{note.title || 'Untitled'}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatTimeAgo(note.updatedAt)}
-                        </span>
-                      </div>
-                    ))}
+              {folderNotes.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Recent Notes</h4>
+                  <div className="space-y-2">
+                    {folderNotes
+                      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+                      .slice(0, 5)
+                      .map(note => (
+                        <div
+                          key={`sheet-note-${folder.id}-${note.firebaseId}`}
+                          className="p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => {
+                            setShowInfo(false);
+                            navigate(`/notes/${note.firebaseId}`);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">
+                                {note.title || 'Untitled'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Updated {formatTimeAgo(note.updatedAt)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created</span>
+                    <span>{formatTimeAgo(folder.createdAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Last updated</span>
+                    <span>{formatTimeAgo(folder.updatedAt)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Owner</span>
+                    <span>{folder.ownerDisplayName}</span>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+
+              {folder.ownerUserId === user?.uid && (
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowInfo(false);
+                      onEdit(folder);
+                    }}
+                  >
+                    <PencilIcon className="h-4 w-4 mr-2" />
+                    Rename Folder
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setShowInfo(false);
+                      onDelete(folder.id);
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4 mr-2" />
+                    Delete Folder
+                  </Button>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
 
-const getBlockNoteContent = (jsonString: string) => {
-  try {
-    const blocks = JSON.parse(jsonString) as BlockNoteContent | BlockNoteContent[];
-    let text = '';
-    
-    const extractText = (block: BlockNoteContent) => {
-      // Check if block has content array
-      if (Array.isArray(block.content)) {
-        block.content.forEach((item) => {
-          if (item.type === 'text') {
-            text += item.text || '';
-          }
-        });
-      } else if (block.text) {
-        // Some blocks might have direct text property
-        text += block.text;
-      }
-      
-      // Add newline after certain block types
-      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem'].includes(block.type)) {
-        text += '\n';
-      }
-
-      // Process children recursively
-      if (Array.isArray(block.children)) {
-        block.children.forEach(extractText);
-      }
-    };
-
-    // Handle if blocks is not an array (single block)
-    if (!Array.isArray(blocks)) {
-      extractText(blocks);
-    } else {
-      blocks.forEach(extractText);
-    }
-
-    return text.trim();
-  } catch (error) {
-    console.error('Error parsing BlockNote content:', error);
-    return '';
-  }
-};
+const FolderSkeleton = ({ level = 0 }: { level?: number }) => (
+  <div className={cn("py-2 px-3", level > 0 && "ml-6")}>
+    <div className="flex items-center gap-2">
+      <Skeleton className="h-6 w-6 rounded-full" />
+      <Skeleton className="h-6 w-6 rounded-lg" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-3 w-24" />
+      </div>
+    </div>
+  </div>
+);
 
 export default function Folders() {
   const navigate = useNavigate();
@@ -351,6 +346,8 @@ export default function Folders() {
   const [selectedFolder, setSelectedFolder] = useState<FolderNode | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileSearch, setIsMobileSearch] = useState(false);
 
   const loadData = async () => {
     try {
@@ -359,13 +356,27 @@ export default function Folders() {
         db.notes.toArray()
       ]);
 
+      // Create a map of folder IDs to notes
+      const folderNotesMap = new Map<string | undefined, Note[]>();
+      userNotes.forEach(note => {
+        const folderId = note.folderId;
+        if (!folderNotesMap.has(folderId)) {
+          folderNotesMap.set(folderId, []);
+        }
+        folderNotesMap.get(folderId)!.push(note);
+      });
+
       // Convert flat structure to tree
       const folderMap = new Map<string, FolderNode>();
       const rootFolders: FolderNode[] = [];
 
       // First pass: Create all folder nodes
       userFolders.forEach(folder => {
-        folderMap.set(folder.id, { ...folder, children: [] });
+        folderMap.set(folder.id, { 
+          ...folder, 
+          children: [],
+          isExpanded: false // Ensure isExpanded is always initialized
+        });
       });
 
       // Second pass: Build the tree structure
@@ -508,54 +519,112 @@ export default function Folders() {
     }
   };
 
-  return (
-    <div className="container max-w-5xl mx-auto px-4 py-6">
-      {/* Mobile Header */}
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Folders</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {folders.length} folders • {notes.length} notes
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="shrink-0 md:hidden"
-              onClick={() => navigate('/notes/new')}
-            >
-              <PlusIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="shrink-0 md:hidden"
-              onClick={() => {
-                setSelectedFolder(null);
-                setIsCreatingFolder(true);
-              }}
-            >
-              <FolderIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+  const filteredFolders = folders.filter(folder => 
+    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-        {/* Desktop Actions */}
-        <div className="hidden md:flex flex-col sm:flex-row gap-2">
-          <Button 
-            size="lg"
-            className="w-full sm:w-auto bg-primary hover:bg-primary/90"
-            onClick={() => navigate('/notes/new')}
-          >
+  return (
+    <div className="h-full flex flex-col">
+      {/* Mobile Header */}
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container flex items-center gap-4 h-14 px-4">
+          {isMobileSearch ? (
+            <div className="flex-1 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                onClick={() => setIsMobileSearch(false)}
+              >
+                <ChevronLeftIcon className="h-5 w-5" />
+              </Button>
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search folders..."
+                className="h-9"
+                autoFocus
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <Cross2Icon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-semibold">Folders</h1>
+                <p className="text-sm text-muted-foreground">
+                  {folders.length} folders • {notes.length} notes
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileSearch(true)}
+              >
+                <MagnifyingGlassIcon className="h-5 w-5" />
+              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <HamburgerMenuIcon className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[400px]">
+                  <SheetHeader>
+                    <SheetTitle>Options</SheetTitle>
+                  </SheetHeader>
+                  <div className="grid gap-4 py-4">
+                    <Button
+                      className="w-full justify-start"
+                      onClick={() => navigate('/notes/new')}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      New Note
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        setSelectedFolder(null);
+                        setIsCreatingFolder(true);
+                      }}
+                    >
+                      <FolderIcon className="h-4 w-4 mr-2" />
+                      New Folder
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </>
+          )}
+        </div>
+      </header>
+
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between gap-4 px-4 py-6">
+        <div className="flex-1 max-w-md">
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search folders..."
+            className="h-9"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => navigate('/notes/new')}>
             <PlusIcon className="h-4 w-4 mr-2" />
             New Note
           </Button>
           <Button
-            size="lg"
             variant="outline"
-            className="w-full sm:w-auto border-dashed"
             onClick={() => {
               setSelectedFolder(null);
               setIsCreatingFolder(true);
@@ -567,14 +636,17 @@ export default function Folders() {
         </div>
       </div>
 
-      <Card className="border-none shadow-none bg-transparent md:border md:bg-card md:shadow-sm">
+      {/* Folders List */}
+      <ScrollArea className="flex-1 px-4">
         {isLoading ? (
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="space-y-4 animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <FolderSkeleton key={i} level={i % 2} />
+            ))}
           </div>
-        ) : folders.length > 0 ? (
-          <div className="space-y-px">
-            {folders.map(folder => (
+        ) : filteredFolders.length > 0 ? (
+          <div className="space-y-1 pb-8">
+            {filteredFolders.map(folder => (
               <FolderTreeItem
                 key={folder.id}
                 folder={folder}
@@ -593,17 +665,42 @@ export default function Folders() {
                   setIsCreatingFolder(true);
                 }}
                 notes={notes}
+                isCompact={false}
               />
             ))}
           </div>
         ) : (
-          <div className="text-center text-muted-foreground py-12">
-            <FolderIcon className="mx-auto h-16 w-16 mb-4 opacity-50" />
-            <h3 className="font-semibold text-lg mb-2">No folders yet</h3>
-            <p>Create your first folder to organize your notes</p>
+          <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-center px-4">
+            {searchQuery ? (
+              <>
+                <FolderIcon className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="font-semibold text-lg">No folders found</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Try searching with different keywords
+                </p>
+              </>
+            ) : (
+              <>
+                <FolderIcon className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="font-semibold text-lg">No folders yet</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Create your first folder to organize your notes
+                </p>
+                <Button
+                  className="mt-4"
+                  onClick={() => {
+                    setSelectedFolder(null);
+                    setIsCreatingFolder(true);
+                  }}
+                >
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  Create Folder
+                </Button>
+              </>
+            )}
           </div>
         )}
-      </Card>
+      </ScrollArea>
 
       {/* Create/Edit Folder Dialog */}
       <Dialog 
