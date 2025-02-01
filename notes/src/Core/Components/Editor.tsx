@@ -179,6 +179,33 @@ export default function Editor({
     root.style.setProperty('--bn-colors-hovered-background', `hsl(${colors.accent}/10)`);
     root.style.setProperty('--bn-colors-selected-text', `hsl(${colors.primary})`);
     root.style.setProperty('--bn-colors-selected-background', `hsl(${colors.primary}/10)`);
+
+    root.style.setProperty('--bn-colors-highlights-gray-text', `hsl(${colors.foreground})`);
+    root.style.setProperty('--bn-colors-highlights-gray-background', `hsl(var(--muted) / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-brown-text', `hsl(30 24% 20%)`);
+    root.style.setProperty('--bn-colors-highlights-brown-background', `hsl(30 24% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-red-text', `hsl(0 72% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-red-background', `hsl(0 72% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-orange-text', `hsl(24 75% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-orange-background', `hsl(24 75% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-yellow-text', `hsl(45 75% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-yellow-background', `hsl(45 75% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-green-text', `hsl(120 45% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-green-background', `hsl(120 45% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-blue-text', `hsl(210 75% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-blue-background', `hsl(210 75% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-purple-text', `hsl(270 75% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-purple-background', `hsl(270 75% 80% / 0.3)`);
+    
+    root.style.setProperty('--bn-colors-highlights-pink-text', `hsl(330 75% 35%)`);
+    root.style.setProperty('--bn-colors-highlights-pink-background', `hsl(330 75% 80% / 0.3)`);
   }, [currentMode, currentTheme, getEffectiveTheme]);
 
   // Set editor reference if provided
