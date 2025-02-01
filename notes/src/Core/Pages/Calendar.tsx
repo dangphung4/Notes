@@ -450,7 +450,7 @@ const AgendaView = ({
   selectedDate: Date,
   onEventClick: (event: CalendarEvent) => void,
   isLoading: boolean,
-  onAddEvent: () => void
+  onAddEvent: (date?: Date) => void
 }) => {
   if (isLoading) {
     return (
@@ -630,12 +630,15 @@ const AgendaView = ({
                 "transition-colors",
                 isToday && "bg-muted/30"
               )}>
-                {/* Date Header */}
+                {/* Date Header - Make it clickable */}
                 <div className={cn(
                   "sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 z-10",
                   "border-b"
                 )}>
-                  <div className="flex items-center px-4 py-2 gap-4">
+                  <div 
+                    className="flex items-center px-4 py-2 gap-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => onAddEvent(date)}
+                  >
                     {/* Date number */}
                     <div className={cn(
                       "w-14 h-14 rounded-lg flex flex-col items-center justify-center",
@@ -660,7 +663,7 @@ const AgendaView = ({
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {dateEvents.length === 0 
-                          ? 'No events scheduled' 
+                          ? 'Click to add event' 
                           : `${dateEvents.length} event${dateEvents.length === 1 ? '' : 's'}`
                         }
                       </p>
@@ -680,7 +683,7 @@ const AgendaView = ({
                           Create an event to get started tracking your schedule.
                         </p>
                         <Button
-                          onClick={onAddEvent}
+                          onClick={() => onAddEvent(date)}
                           className="mt-6"
                         >
                           <PlusIcon className="w-4 h-4 mr-2" />
@@ -718,7 +721,7 @@ const AgendaView = ({
                 Events you create or are invited to will appear here.
               </p>
               <Button
-                onClick={onAddEvent}
+                onClick={() => onAddEvent(new Date())}
                 className="mt-6"
               >
                 <PlusIcon className="w-4 h-4 mr-2" />
@@ -1126,12 +1129,16 @@ export default function Calendar() {
     const newDate = new Date(date);
     newDate.setHours(hour, 0, 0, 0);
     
+    const endDate = new Date(newDate);
+    endDate.setHours(hour + 1, 0, 0, 0);
+    
     setNewEvent({
       ...newEvent,
       startDate: newDate,
-      endDate: new Date(newDate.getTime() + 60 * 60 * 1000) // 1 hour later
+      endDate: endDate
     });
     setIsCreateEventOpen(true);
+    setIsCreate(true);
   };
 
 
@@ -1529,7 +1536,11 @@ export default function Calendar() {
                   setIsEventDetailsOpen(true);
                 }}
                 isLoading={isLoading}
-                onAddEvent={() => handleTimeSlotClick(new Date(), new Date().getHours())}
+                onAddEvent={(date) => {
+                  const targetDate = date || new Date();
+                  setSelectedDate(targetDate);
+                  handleTimeSlotClick(targetDate, new Date().getHours());
+                }}
               />
             </div>
           </TabsContent>
