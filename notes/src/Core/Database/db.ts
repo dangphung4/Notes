@@ -51,6 +51,7 @@ export interface Folder {
   createdAt: Date;
   updatedAt: Date;
   isShared?: boolean;
+  isFavorite?: boolean;
 }
 
 export interface Note {
@@ -142,12 +143,12 @@ class NotesDB extends Dexie {
    */
   constructor() {
     super("NotesDB");
-    this.version(5).stores({
+    this.version(6).stores({
       notes: "++id, firebaseId, title, updatedAt, folderId",
       calendarEvents: "++id, firebaseId, startDate, endDate, ownerUserId",
       tags: "++id, name, group",
       users: "++userId, email, displayName, photoURL, lastLoginAt, preferences",
-      folders: "++id, name, parentId, ownerUserId"
+      folders: "++id, name, parentId, ownerUserId, isFavorite"
     });
     this.notes = this.table("notes");
     this.tags = this.table("tags");
@@ -281,6 +282,7 @@ class NotesDB extends Dexie {
           createdAt: data.createdAt?.toDate() || new Date(),
           updatedAt: data.updatedAt?.toDate() || new Date(),
           isShared: data.isShared || false,
+          isFavorite: data.isFavorite || false
         });
       }
     } catch (error) {
@@ -1354,7 +1356,7 @@ class NotesDB extends Dexie {
       };
 
       await updateDoc(folderRef, updateData);
-      await this.loadFromFirebase();
+      await this.loadFromFirebase(); // Reload data to ensure consistency
     } catch (error) {
       console.error("Error updating folder:", error);
       throw error;

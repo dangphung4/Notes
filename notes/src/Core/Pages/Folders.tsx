@@ -183,59 +183,75 @@ const FolderTreeItem = ({
 
         {/* Actions Menu */}
         {folder.ownerUserId === user?.uid && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <HamburgerMenuIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={(e) => {
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-7 w-7 rounded-full",
+                folder.isFavorite ? "text-yellow-500" : "opacity-0 group-hover:opacity-100"
+              )}
+              onClick={(e) => {
                 e.stopPropagation();
-                navigate('/notes/new', { state: { folderId: folder.id } });
-              }}>
-                <PlusIcon className="h-4 w-4 mr-2" />
-                New Note
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                onCreateSubfolder(folder);
-              }}>
-                <FolderIcon className="h-4 w-4 mr-2" />
-                New Subfolder
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                onEdit(folder);
-              }}>
-                <PencilIcon className="h-4 w-4 mr-2" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation();
-                setShowInfo(true);
-              }}>
-                <FolderIcon className="h-4 w-4 mr-2" />
-                Details
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
+                onToggleFavorite(folder.id);
+              }}
+            >
+              <StarIcon className="h-4 w-4" fill={folder.isFavorite ? "currentColor" : "none"} />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <HamburgerMenuIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
-                  onDelete(folder.id);
-                }}
-              >
-                <TrashIcon className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  navigate('/notes/new', { state: { folderId: folder.id } });
+                }}>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  New Note
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateSubfolder(folder);
+                }}>
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  New Subfolder
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(folder);
+                }}>
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setShowInfo(true);
+                }}>
+                  <FolderIcon className="h-4 w-4 mr-2" />
+                  Details
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="text-destructive focus:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(folder.id);
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
 
@@ -292,7 +308,7 @@ const FolderTreeItem = ({
         </div>
       )}
 
-      {/* Folder Info Sheet */}
+      {/* Enhanced Folder Info Sheet with Statistics */}
       <Sheet open={showInfo} onOpenChange={setShowInfo}>
         <SheetContent side="right" className="w-full sm:max-w-md">
           <SheetHeader>
@@ -303,12 +319,20 @@ const FolderTreeItem = ({
               >
                 <FolderIcon className="h-5 w-5" style={{ color: folder.color }} />
               </div>
-              {folder.name}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="truncate">{folder.name}</span>
+                  {folder.isFavorite && (
+                    <StarIcon className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                  )}
+                </div>
+              </div>
             </SheetTitle>
           </SheetHeader>
           
           <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
             <div className="space-y-6 pb-8">
+              {/* Statistics Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 border rounded-lg">
                   <div className="text-2xl font-bold">{folderNotes.length}</div>
@@ -318,8 +342,59 @@ const FolderTreeItem = ({
                   <div className="text-2xl font-bold">{folder.children.length}</div>
                   <div className="text-xs text-muted-foreground">Subfolders</div>
                 </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.reduce((acc, note) => {
+                      try {
+                        const content = JSON.parse(note.content || '[]');
+                        return acc + content.length;
+                      } catch {
+                        return acc;
+                      }
+                    }, 0)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Blocks</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-2xl font-bold">
+                    {folderNotes.filter(note => 
+                      new Date(note.updatedAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+                    ).length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Updated This Week</div>
+                </div>
               </div>
 
+              {/* Activity Chart */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Activity</h4>
+                <div className="grid grid-cols-7 gap-1">
+                  {[...Array(7)].map((_, i) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const count = folderNotes.filter(note => 
+                      new Date(note.updatedAt).toDateString() === date.toDateString()
+                    ).length;
+                    return (
+                      <div key={i} className="space-y-1">
+                        <div 
+                          className={cn(
+                            "h-8 rounded-sm",
+                            count === 0 ? "bg-muted" : "bg-primary",
+                            count > 0 && "opacity-" + Math.min(count * 20, 100)
+                          )}
+                          title={`${count} updates on ${date.toLocaleDateString()}`}
+                        />
+                        <div className="text-[10px] text-muted-foreground text-center">
+                          {date.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Recent Notes */}
               {folderNotes.length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium mb-3">Recent Notes</h4>
@@ -360,6 +435,7 @@ const FolderTreeItem = ({
                 </div>
               )}
 
+              {/* Details Section */}
               <div className="space-y-3">
                 <h4 className="text-sm font-medium">Details</h4>
                 <div className="space-y-2 text-sm">
@@ -378,6 +454,7 @@ const FolderTreeItem = ({
                 </div>
               </div>
 
+              {/* Actions */}
               {folder.ownerUserId === user?.uid && (
                 <div className="flex flex-col gap-2">
                   <Button
@@ -390,6 +467,14 @@ const FolderTreeItem = ({
                   >
                     <PencilIcon className="h-4 w-4 mr-2" />
                     Rename Folder
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => onToggleFavorite(folder.id)}
+                  >
+                    <StarIcon className="h-4 w-4 mr-2" fill={folder.isFavorite ? "currentColor" : "none"} />
+                    {folder.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
                   </Button>
                   <Button
                     variant="destructive"
@@ -424,6 +509,20 @@ const FolderSkeleton = ({ level = 0 }: { level?: number }) => (
     </div>
   </div>
 );
+
+// Add helper function to find folder in tree structure
+const findFolderInTree = (folders: FolderNode[], folderId: string): FolderNode | undefined => {
+  for (const folder of folders) {
+    if (folder.id === folderId) {
+      return folder;
+    }
+    if (folder.children.length > 0) {
+      const found = findFolderInTree(folder.children, folderId);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
 
 export default function Folders() {
   const navigate = useNavigate();
@@ -501,7 +600,7 @@ export default function Folders() {
           ...folder, 
           children: [],
           isExpanded: false,
-          isFavorite: false
+          isFavorite: folder.isFavorite || false
         });
       });
 
@@ -562,6 +661,7 @@ export default function Folders() {
       const folderData: Partial<Folder> = {
         name: newFolderName.trim(),
         color: newFolderColor,
+        isFavorite: false,
       };
 
       if (selectedFolder?.id) {
@@ -639,7 +739,7 @@ export default function Folders() {
 
   const toggleFavorite = async (folderId: string) => {
     try {
-      const folder = folders.flat().find(f => f.id === folderId);
+      const folder = findFolderInTree(folders, folderId);
       if (folder) {
         const updatedFolder: Partial<FolderData> = {
           isFavorite: !folder.isFavorite
@@ -712,45 +812,102 @@ export default function Folders() {
                   {folders.length} folders • {notes.length} notes
                 </p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileSearch(true)}
-              >
-                <MagnifyingGlassIcon className="h-5 w-5" />
-              </Button>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <HamburgerMenuIcon className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-[400px]">
-                  <SheetHeader>
-                    <SheetTitle>Options</SheetTitle>
-                  </SheetHeader>
-                  <div className="grid gap-4 py-4">
-                    <Button
-                      className="w-full justify-start"
-                      onClick={() => navigate('/notes/new')}
-                    >
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      New Note
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileSearch(true)}
+                >
+                  <MagnifyingGlassIcon className="h-5 w-5" />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <ArrowDownUpIcon className="h-5 w-5" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        setSelectedFolder(null);
-                        setIsCreatingFolder(true);
-                      }}
-                    >
-                      <FolderIcon className="h-4 w-4 mr-2" />
-                      New Folder
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setSortOption('name')}>
+                      <TextIcon className="h-4 w-4 mr-2" />
+                      Sort by name
+                      {sortOption === 'name' && (
+                        <CheckIcon className="h-4 w-4 ml-auto" />
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortOption('updated')}>
+                      <ClockIcon className="h-4 w-4 mr-2" />
+                      Sort by last updated
+                      {sortOption === 'updated' && (
+                        <CheckIcon className="h-4 w-4 ml-auto" />
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortOption('created')}>
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      Sort by created date
+                      {sortOption === 'created' && (
+                        <CheckIcon className="h-4 w-4 ml-auto" />
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortOption('notes')}>
+                      <FileTextIcon className="h-4 w-4 mr-2" />
+                      Sort by notes count
+                      {sortOption === 'notes' && (
+                        <CheckIcon className="h-4 w-4 ml-auto" />
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}>
+                      {sortDirection === 'asc' ? (
+                        <ArrowUpIcon className="h-4 w-4 mr-2" />
+                      ) : (
+                        <ArrowDownIcon className="h-4 w-4 mr-2" />
+                      )}
+                      {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setViewMode(v => v === 'list' ? 'grid' : 'list')}>
+                      {viewMode === 'list' ? (
+                        <LayoutGridIcon className="h-4 w-4 mr-2" />
+                      ) : (
+                        <ListIcon className="h-4 w-4 mr-2" />
+                      )}
+                      {viewMode === 'list' ? 'Grid view' : 'List view'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <HamburgerMenuIcon className="h-5 w-5" />
                     </Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="h-[400px]">
+                    <SheetHeader>
+                      <SheetTitle>Options</SheetTitle>
+                    </SheetHeader>
+                    <div className="grid gap-4 py-4">
+                      <Button
+                        className="w-full justify-start"
+                        onClick={() => navigate('/notes/new')}
+                      >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        New Note
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setSelectedFolder(null);
+                          setIsCreatingFolder(true);
+                        }}
+                      >
+                        <FolderIcon className="h-4 w-4 mr-2" />
+                        New Folder
+                      </Button>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </>
           )}
         </div>
