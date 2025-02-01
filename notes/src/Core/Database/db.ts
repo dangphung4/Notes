@@ -757,12 +757,53 @@ class NotesDB extends Dexie {
 
     try {
       const eventsRef = collection(firestore, "calendarEvents");
-      const snapshot = await getDocs(eventsRef);
+      
+      // Get events where user is the creator
+      const createdByQuery = query(eventsRef, where("createdBy", "==", user.email));
+      const createdBySnapshot = await getDocs(createdByQuery);
+      
+      // Get all events to check for shares
+      const allEventsSnapshot = await getDocs(eventsRef);
 
-      const sharedEvents: CalendarEvent[] = [];
+      const events: CalendarEvent[] = [];
       const syncPromises: Promise<void>[] = [];
 
-      snapshot.docs.forEach((doc) => {
+      // Add events created by the user
+      createdBySnapshot.docs.forEach(doc => {
+        const eventData = doc.data();
+        const startDate = eventData.startDate?.toDate() || new Date();
+        const endDate = eventData.endDate?.toDate() || new Date();
+        const lastModifiedAt = eventData.lastModifiedAt?.toDate();
+
+        events.push({
+          id: this.generateUniqueId(),
+          firebaseId: doc.id,
+          title: eventData.title || "",
+          startDate,
+          endDate,
+          description: eventData.description,
+          location: eventData.location,
+          allDay: eventData.allDay || false,
+          color: eventData.color,
+          reminderMinutes: eventData.reminderMinutes,
+          createdBy: eventData.createdBy,
+          createdByPhotoURL: eventData.createdByPhotoURL,
+          lastModifiedBy: eventData.lastModifiedBy,
+          lastModifiedByDisplayName: eventData.lastModifiedByDisplayName,
+          lastModifiedByPhotoURL: eventData.lastModifiedByPhotoURL,
+          lastModifiedAt,
+          sharedWith: eventData.sharedWith || [],
+          tags: eventData.tags || [],
+        });
+      });
+
+      // Add shared events where user is not the creator
+      allEventsSnapshot.docs.forEach(doc => {
+        // Skip if we already added this event (user is creator)
+        if (events.some(e => e.firebaseId === doc.id)) {
+          return;
+        }
+
         const eventData = doc.data();
         const sharedWith = eventData.sharedWith || [];
 
@@ -771,14 +812,12 @@ class NotesDB extends Dexie {
           (share: CalendarEventShare) => share.email === user.email
         );
 
-        if (userShare?.status === "accepted") {
-          syncPromises.push(this.syncSharedEvent(doc.id));
-        } else if (userShare?.status === "pending") {
+        if (userShare) {
           const startDate = eventData.startDate?.toDate() || new Date();
           const endDate = eventData.endDate?.toDate() || new Date();
           const lastModifiedAt = eventData.lastModifiedAt?.toDate();
 
-          sharedEvents.push({
+          events.push({
             id: this.generateUniqueId(),
             firebaseId: doc.id,
             title: eventData.title || "",
@@ -790,7 +829,10 @@ class NotesDB extends Dexie {
             color: eventData.color,
             reminderMinutes: eventData.reminderMinutes,
             createdBy: eventData.createdBy,
+            createdByPhotoURL: eventData.createdByPhotoURL,
             lastModifiedBy: eventData.lastModifiedBy,
+            lastModifiedByDisplayName: eventData.lastModifiedByDisplayName,
+            lastModifiedByPhotoURL: eventData.lastModifiedByPhotoURL,
             lastModifiedAt,
             sharedWith,
             tags: eventData.tags || [],
@@ -798,9 +840,10 @@ class NotesDB extends Dexie {
         }
       });
 
-      await Promise.all(syncPromises);
+      // Sort events by date
+      events.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-      return sharedEvents;
+      return events;
     } catch (error) {
       console.error("Error fetching shared events:", error);
       throw error;
