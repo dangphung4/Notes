@@ -65,8 +65,9 @@ export default function Home() {
       'Default': ['default'],
       'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine', 'discord'],
       'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
-      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
-      'Natural': ['horizon', 'palenight', 'ayu', 'tuscanWallAmpala', 'vesper'],
+      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple', 'yuzuMarmalade'],
+      'Natural': ['horizon', 'palenight', 'ayu', 'tuscanWallAmpala', 'vesper', 'coffeeTime'],
+      'Mechanical': ['gmkOlivia', 'denim', 'gmk9009', 'tiramisu'], // New group for keyboard-inspired themes
       'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
     };
     
