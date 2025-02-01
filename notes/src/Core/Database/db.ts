@@ -161,7 +161,17 @@ class NotesDB extends Dexie {
 
   // Load notes from Firebase
   /**
+   * Asynchronously loads notes and folders from Firebase Firestore for the currently authenticated user.
    *
+   * This method retrieves all notes owned by the user and all notes shared with the user via their email.
+   * It also fetches folders owned by the user. The existing notes and folders in the local state are cleared
+   * before loading new data from Firestore.
+   *
+   * @throws {Error} Throws an error if there is an issue retrieving data from Firebase.
+   *
+   * @example
+   * // Usage example:
+   * await this.loadFromFirebase();
    */
   async loadFromFirebase() {
     const user = auth.currentUser;
@@ -622,8 +632,29 @@ class NotesDB extends Dexie {
   }
 
   /**
+   * Asynchronously creates a calendar event and stores it in Firestore.
    *
-   * @param event
+   * This function takes a partial calendar event object, enriches it with user information,
+   * and saves it to the Firestore database. If a reminder is set for the event, it schedules
+   * the reminder as well.
+   *
+   * @param {Partial<CalendarEvent>} event - The event details to be created. This can include
+   * various properties of a calendar event such as start date, end date, tags, and shared users.
+   *
+   * @returns {Promise<CalendarEvent>} A promise that resolves to the created calendar event,
+   * which includes the generated Firebase ID and other enriched properties.
+   *
+   * @throws {Error} Throws an error if the user is not authenticated or if there is an issue
+   * during the event creation process.
+   *
+   * @example
+   * const newEvent = await createCalendarEvent({
+   *   title: "Team Meeting",
+   *   startDate: new Date("2023-10-01T10:00:00"),
+   *   endDate: new Date("2023-10-01T11:00:00"),
+   *   reminderMinutes: 30,
+   * });
+   * console.log("Created Event:", newEvent);
    */
   async createCalendarEvent(
     event: Partial<CalendarEvent>
@@ -794,8 +825,28 @@ class NotesDB extends Dexie {
   }
 
   /**
-   * Gets all calendar events including owned, shared, and pending invitations
-   * @returns Promise that resolves with an array of calendar events
+   * Retrieves all calendar events that the current user has access to, including events they own, events shared with them, and pending invitations.
+   *
+   * This method performs the following actions:
+   * - Fetches events created by the user.
+   * - Fetches events shared with the user that are either pending or accepted.
+   * - Fetches events where the user has edit permissions.
+   *
+   * The results are processed to ensure that duplicate events are not included, and pending invitations are handled appropriately.
+   *
+   * @returns {Promise<CalendarEvent[]>} A promise that resolves to an array of calendar events.
+   *
+   * @throws {Error} Throws an error if the user is not authenticated or if there is an issue fetching events from the database.
+   *
+   * @example
+   * async function loadEvents() {
+   *   try {
+   *     const events = await getSharedEvents();
+   *     console.log(events);
+   *   } catch (error) {
+   *     console.error("Failed to load events:", error);
+   *   }
+   * }
    */
   async getSharedEvents(): Promise<CalendarEvent[]> {
     const user = auth.currentUser;
