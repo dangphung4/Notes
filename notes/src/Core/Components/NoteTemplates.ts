@@ -26,17 +26,29 @@ export const noteTemplates: Record<string, NoteTemplate> = {
       {
         id: "meeting-date",
         type: "paragraph",
-        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: "", styles: { italic: true } }]
+        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: new Date().toLocaleDateString(), styles: { italic: true } }]
+      },
+      {
+        id: "meeting-time",
+        type: "paragraph",
+        content: [{ type: "text", text: "⏰ ", styles: {} }, { type: "text", text: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), styles: { italic: true } }]
+      },
+      {
+        id: "meeting-attendees-header",
+        type: "heading",
+        content: [{ type: "text", text: "Attendees", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "meeting-attendees",
-        type: "paragraph",
-        content: [{ type: "text", text: "👥 Attendees: ", styles: { bold: true } }]
+        type: "bulletListItem",
+        content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "meeting-agenda",
-        type: "paragraph",
-        content: [{ type: "text", text: "📋 Agenda", styles: { bold: true } }]
+        id: "meeting-agenda-header",
+        type: "heading",
+        content: [{ type: "text", text: "Agenda", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "meeting-agenda-items",
@@ -44,9 +56,10 @@ export const noteTemplates: Record<string, NoteTemplate> = {
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "meeting-notes",
-        type: "paragraph",
-        content: [{ type: "text", text: "📝 Notes", styles: { bold: true } }]
+        id: "meeting-notes-header",
+        type: "heading",
+        content: [{ type: "text", text: "Discussion", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "meeting-notes-items",
@@ -54,14 +67,15 @@ export const noteTemplates: Record<string, NoteTemplate> = {
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "meeting-actions",
-        type: "paragraph",
-        content: [{ type: "text", text: "✅ Action Items", styles: { bold: true } }]
+        id: "meeting-actions-header",
+        type: "heading",
+        content: [{ type: "text", text: "Action Items", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "meeting-actions-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "", styles: {} }],
+        content: [{ type: "text", text: "[ ] ", styles: {} }],
         props: { checked: false }
       }
     ]
@@ -74,28 +88,41 @@ export const noteTemplates: Record<string, NoteTemplate> = {
       {
         id: "daily-date",
         type: "paragraph",
-        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: "", styles: { italic: true } }]
+        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: new Date().toLocaleDateString(), styles: { italic: true } }]
       },
       {
-        id: "daily-focus",
-        type: "paragraph",
-        content: [{ type: "text", text: "🎯 Today's Focus", styles: { bold: true } }]
+        id: "daily-focus-header",
+        type: "heading",
+        content: [{ type: "text", text: "Focus Areas", styles: {} }],
+        props: { level: 2 }
+      },
+      {
+        id: "daily-focus-items",
+        type: "bulletListItem",
+        content: [{ type: "text", text: "", styles: {} }]
+      },
+      {
+        id: "daily-tasks-header",
+        type: "heading",
+        content: [{ type: "text", text: "Tasks", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "daily-tasks",
         type: "checkListItem",
-        content: [{ type: "text", text: "", styles: {} }],
+        content: [{ type: "text", text: "[ ] ", styles: {} }],
         props: { checked: false }
       },
       {
-        id: "daily-notes",
-        type: "paragraph",
-        content: [{ type: "text", text: "📝 Notes & Thoughts", styles: { bold: true } }]
+        id: "daily-notes-header",
+        type: "heading",
+        content: [{ type: "text", text: "Notes", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "daily-notes-content",
-        type: "paragraph",
-        content: []
+        type: "bulletListItem",
+        content: [{ type: "text", text: "", styles: {} }]
       }
     ]
   },
@@ -105,19 +132,26 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "📊",
     content: [
       {
-        id: "project-overview",
-        type: "paragraph",
-        content: [{ type: "text", text: "🎯 Project: ", styles: { bold: true } }]
+        id: "project-overview-header",
+        type: "heading",
+        content: [{ type: "text", text: "Overview", styles: {} }],
+        props: { level: 2 }
       },
       {
-        id: "project-dates",
+        id: "project-name",
         type: "paragraph",
-        content: [{ type: "text", text: "📅 Timeline: ", styles: { bold: true } }]
+        content: [{ type: "text", text: "Project: ", styles: { bold: true } }]
       },
       {
-        id: "project-goals",
+        id: "project-timeline",
         type: "paragraph",
-        content: [{ type: "text", text: "🎯 Goals", styles: { bold: true } }]
+        content: [{ type: "text", text: "Timeline: ", styles: { bold: true } }]
+      },
+      {
+        id: "project-goals-header",
+        type: "heading",
+        content: [{ type: "text", text: "Goals", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "project-goals-items",
@@ -125,14 +159,15 @@ export const noteTemplates: Record<string, NoteTemplate> = {
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "project-tasks",
-        type: "paragraph",
-        content: [{ type: "text", text: "✅ Tasks", styles: { bold: true } }]
+        id: "project-tasks-header",
+        type: "heading",
+        content: [{ type: "text", text: "Tasks & Milestones", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "project-tasks-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "", styles: {} }],
+        content: [{ type: "text", text: "[ ] ", styles: {} }],
         props: { checked: false }
       }
     ]
@@ -143,36 +178,39 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "✅",
     content: [
       {
-        id: "todo-now",
-        type: "paragraph",
-        content: [{ type: "text", text: "🔥 Now", styles: { bold: true } }]
+        id: "todo-now-header",
+        type: "heading",
+        content: [{ type: "text", text: "Now", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "todo-now-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "", styles: {} }],
+        content: [{ type: "text", text: "[ ] ", styles: {} }],
         props: { checked: false }
       },
       {
-        id: "todo-next",
-        type: "paragraph",
-        content: [{ type: "text", text: "⏱️ Next", styles: { bold: true } }]
+        id: "todo-next-header",
+        type: "heading",
+        content: [{ type: "text", text: "Next", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "todo-next-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "", styles: {} }],
+        content: [{ type: "text", text: "[ ] ", styles: {} }],
         props: { checked: false }
       },
       {
-        id: "todo-later",
-        type: "paragraph",
-        content: [{ type: "text", text: "📋 Later", styles: { bold: true } }]
+        id: "todo-later-header",
+        type: "heading",
+        content: [{ type: "text", text: "Later", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "todo-later-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "", styles: {} }],
+        content: [{ type: "text", text: "[ ] ", styles: {} }],
         props: { checked: false }
       }
     ]
@@ -183,14 +221,21 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "💻",
     content: [
       {
-        id: "code-description",
-        type: "paragraph",
-        content: [{ type: "text", text: "📝 Description", styles: { bold: true } }]
+        id: "code-overview-header",
+        type: "heading",
+        content: [{ type: "text", text: "Overview", styles: {} }],
+        props: { level: 2 }
       },
       {
-        id: "code-description-content",
+        id: "code-description",
         type: "paragraph",
         content: []
+      },
+      {
+        id: "code-implementation-header",
+        type: "heading",
+        content: [{ type: "text", text: "Implementation", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "code-snippet",
@@ -199,9 +244,10 @@ export const noteTemplates: Record<string, NoteTemplate> = {
         props: { language: "typescript" }
       },
       {
-        id: "code-notes",
-        type: "paragraph",
-        content: [{ type: "text", text: "📌 Notes", styles: { bold: true } }]
+        id: "code-notes-header",
+        type: "heading",
+        content: [{ type: "text", text: "Notes", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "code-notes-items",
@@ -216,14 +262,21 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "🔍",
     content: [
       {
-        id: "research-topic",
-        type: "paragraph",
-        content: [{ type: "text", text: "🔍 Topic: ", styles: { bold: true } }]
+        id: "research-overview-header",
+        type: "heading",
+        content: [{ type: "text", text: "Overview", styles: {} }],
+        props: { level: 2 }
       },
       {
-        id: "research-summary",
+        id: "research-topic",
         type: "paragraph",
-        content: [{ type: "text", text: "📝 Key Points", styles: { bold: true } }]
+        content: [{ type: "text", text: "Topic: ", styles: { bold: true } }]
+      },
+      {
+        id: "research-findings-header",
+        type: "heading",
+        content: [{ type: "text", text: "Key Findings", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "research-points",
@@ -231,9 +284,10 @@ export const noteTemplates: Record<string, NoteTemplate> = {
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "research-sources",
-        type: "paragraph",
-        content: [{ type: "text", text: "📚 Sources", styles: { bold: true } }]
+        id: "research-sources-header",
+        type: "heading",
+        content: [{ type: "text", text: "Sources", styles: {} }],
+        props: { level: 2 }
       },
       {
         id: "research-sources-items",
