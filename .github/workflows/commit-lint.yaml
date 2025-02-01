@@ -21,8 +21,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 10 # Only fetch last 10 commits
-          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 10
+          
+      - name: Checkout PR
+        if: github.event_name == 'pull_request_target'
+        run: |
+          git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
+          git checkout FETCH_HEAD
           
       - uses: actions/setup-node@v4
         with:
@@ -43,26 +48,19 @@ jobs:
         working-directory: notes
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            # For PRs, check only commits in the PR
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            # Get the commits range for PR
+            git fetch origin main
+            COMMITS_TO_CHECK=$(git log --format="%H" origin/main..HEAD)
             
-            if [ -z "$BASE_SHA" ] || [ -z "$HEAD_SHA" ]; then
-              echo "Warning: Could not determine base or head SHA. This is expected for pull_request_target events."
-              exit 0
+            if [ -n "$COMMITS_TO_CHECK" ]; then
+              echo "$COMMITS_TO_CHECK" | while read -r commit; do
+                COMMIT_MSG=$(git log -1 --format="%s" $commit)
+                AUTHOR_EMAIL=$(git log -1 --format="%ae" $commit)
+                if [[ ! $AUTHOR_EMAIL =~ .*\[bot\]@.*|.*bot@.* ]]; then
+                  echo "$COMMIT_MSG" | npx commitlint --verbose
+                fi
+              done
             fi
-            
-            echo "Checking commits between $BASE_SHA and $HEAD_SHA"
-            git fetch origin $BASE_SHA
-            BASE_SHA=$(git merge-base $BASE_SHA $HEAD_SHA)
-            
-            # Skip bot commits during validation
-            git log $BASE_SHA..$HEAD_SHA --format="%H %ae %s" | \
-            while read -r hash email subject; do
-              if [[ ! $email =~ .*\[bot\]@.*|.*bot@.* ]]; then
-                echo "$subject" | npx commitlint --verbose
-              fi
-            done
           else
             # For pushes, check only the latest commit if not from a bot
             AUTHOR_EMAIL=$(git log -1 --format="%ae")
