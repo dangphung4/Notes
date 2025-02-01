@@ -208,10 +208,10 @@ export default function Profile() {
   const groupThemes = () => {
     const groups = {
       'Default': ['default'],
-      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
+      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine', 'discord'],
       'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
       'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
-      'Natural': ['horizon', 'palenight', 'ayu'],
+      'Natural': ['horizon', 'palenight', 'ayu', 'tuscanWallAmpala', 'vesper'],
       'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
     };
     
