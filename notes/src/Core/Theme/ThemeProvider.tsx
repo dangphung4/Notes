@@ -14,6 +14,8 @@ interface ThemeContextType {
   setCurrentTheme: (theme: ThemeName) => void;
   editorFont: string;
   setEditorFont: (font: string) => void;
+  fontSize: number;
+  setFontSize: (size: number) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -70,6 +72,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return savedFont || 'Monaspace Neon';
   });
 
+  const [fontSize, setFontSize] = useState<number>(() => {
+    const savedSize = localStorage.getItem('font-size');
+    return savedSize ? parseInt(savedSize, 10) : 16;
+  });
+
   // Load user preferences from database
   useEffect(() => {
     const loadPreferences = async () => {
@@ -87,6 +94,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           setEditorFont(preferences.editorFont);
           document.documentElement.style.setProperty('--editor-font', preferences.editorFont);
         }
+        if (preferences?.fontSize) {
+          setFontSize(preferences.fontSize);
+          document.documentElement.style.setProperty('--font-size', `${preferences.fontSize}px`);
+        }
       } catch (error) {
         console.error('Error loading preferences:', error);
       }
@@ -96,13 +107,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // Save theme preferences to database
-  const updatePreferences = async (newTheme: Theme, newCurrentTheme: ThemeName, newEditorFont: string) => {
+  const updatePreferences = async (newTheme: Theme, newCurrentTheme: ThemeName, newEditorFont: string, newFontSize: number) => {
     if (!user) return;
     try {
       await db.updateUserPreferences(user.uid, {
         theme: newCurrentTheme,
         colorMode: newTheme,
-        editorFont: newEditorFont
+        editorFont: newEditorFont,
+        fontSize: newFontSize
       });
     } catch (error) {
       console.error('Error saving preferences:', error);
@@ -113,10 +125,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('theme', theme);
     localStorage.setItem('currentTheme', currentTheme);
     localStorage.setItem('editor-font', editorFont);
+    localStorage.setItem('font-size', fontSize.toString());
     
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.style.setProperty('--editor-font', editorFont);
+    root.style.setProperty('--font-size', `${fontSize}px`);
 
     let effectiveTheme = theme;
     if (theme === 'system') {
@@ -127,9 +141,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyThemeColors(currentTheme, effectiveTheme);
     
     if (user) {
-      updatePreferences(theme, currentTheme, editorFont);
+      updatePreferences(theme, currentTheme, editorFont, fontSize);
     }
-  }, [theme, currentTheme, editorFont, user]);
+  }, [theme, currentTheme, editorFont, fontSize, user]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -153,7 +167,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     currentTheme,
     setCurrentTheme,
     editorFont,
-    setEditorFont
+    setEditorFont,
+    fontSize,
+    setFontSize
   };
 
   return (

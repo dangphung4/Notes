@@ -126,6 +126,7 @@ interface UserPreferences {
   editorFont?: string;
   theme?: string;        // for storing theme name (default, forest, ocean)
   colorMode?: string;    // for storing light/dark preference
+  fontSize?: number;     // for storing base font size
 }
 
 /**
