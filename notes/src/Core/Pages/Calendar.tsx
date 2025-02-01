@@ -438,10 +438,9 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
   return grouped;
 };
 
-// Update the AgendaView component
 const AgendaView = ({ 
   events, 
-  selectedDate,
+  // selectedDate,
   onEventClick,
   isLoading,
   onAddEvent
@@ -487,19 +486,9 @@ const AgendaView = ({
     return format(date, 'yyyy-MM-dd');
   });
 
-  // Filter and sort dates
-  const sortedDates = Object.keys(groupedEvents)
-    .filter(dateStr => dateStr >= todayStr)
-    .sort((a, b) => a.localeCompare(b));
-
-  // Add empty slots for future dates
-  next30Days.forEach(date => {
-    if (!groupedEvents[date]) {
-      groupedEvents[date] = [];
-    }
-  });
-
-  const renderEventCard = (event: CalendarEvent, isToday: boolean) => (
+  const renderEventCard = (event: CalendarEvent, 
+    _isToday: boolean
+    ) => (
     <div 
       key={event.firebaseId || event.id}
       className={cn(
