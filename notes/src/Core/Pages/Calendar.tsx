@@ -1285,17 +1285,19 @@ export default function Calendar() {
                       <span className="hidden sm:inline">New Event</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
-                    <DialogHeader className="px-4 py-3 border-b">
+                  <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
+                    <DialogHeader className="px-4 py-3 border-b shrink-0">
                       <DialogTitle className="text-lg">Create New Event</DialogTitle>
                     </DialogHeader>
 
-                    <EventForm
-                      isCreate={true}
-                      initialEvent={newEvent}
-                      onSubmit={handleCreateEvent}
-                      onCancel={() => setIsCreateEventOpen(false)}
-                    />
+                    <div className="flex-1 overflow-y-auto">
+                      <EventForm
+                        isCreate={true}
+                        initialEvent={newEvent}
+                        onSubmit={handleCreateEvent}
+                        onCancel={() => setIsCreateEventOpen(false)}
+                      />
+                    </div>
                   </DialogContent>
                 </Dialog>
                 <EventInvitations 
@@ -1537,199 +1539,201 @@ export default function Calendar() {
       </Tabs>
 
       <Dialog open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0">
-          <DialogHeader className="px-4 py-3 border-b">
+        <DialogContent className="max-w-[95vw] sm:max-w-[425px] p-0 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
+          <DialogHeader className="px-4 py-3 border-b shrink-0">
             <DialogTitle className="text-base flex items-center gap-2">
               {!isEditing ? (
                 <>
                   {selectedEvent?.createdBy !== auth.currentUser?.email && (
-                    <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex-shrink-0">
-                      {selectedEvent?.createdByPhotoURL ? (
-                        <img 
-                          src={selectedEvent.createdByPhotoURL} 
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
-                          {selectedEvent?.createdBy.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  {selectedEvent?.title}
-                </>
+                  <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex-shrink-0">
+                    {selectedEvent?.createdByPhotoURL ? (
+                      <img 
+                        src={selectedEvent.createdByPhotoURL} 
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
+                        {selectedEvent?.createdBy.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {selectedEvent?.title}
+              </>
               ) : (
                 "Edit Event"
               )}
             </DialogTitle>
           </DialogHeader>
 
-          {isEditing ? (
-            <EventForm
-              isCreate={false}
-              initialEvent={editedEvent || selectedEvent || {}}
-              onSubmit={async (event: Partial<CalendarEvent>) => {
-                if (!selectedEvent?.id) return;
-                try {
-                  await db.updateCalendarEvent(selectedEvent.id, event);
-                  toast({
-                    title: "Event Updated",
-                    description: "Your changes have been saved"
-                  });
-                  loadEvents();
+          <div className="flex-1 overflow-y-auto">
+            {isEditing ? (
+              <EventForm
+                isCreate={false}
+                initialEvent={editedEvent || selectedEvent || {}}
+                onSubmit={async (event: Partial<CalendarEvent>) => {
+                  if (!selectedEvent?.id) return;
+                  try {
+                    await db.updateCalendarEvent(selectedEvent.id, event);
+                    toast({
+                      title: "Event Updated",
+                      description: "Your changes have been saved"
+                    });
+                    loadEvents();
+                    setIsEditing(false);
+                    setEditedEvent(null);
+                    setIsEventDetailsOpen(false);
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to update event",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                onCancel={() => {
                   setIsEditing(false);
                   setEditedEvent(null);
-                  setIsEventDetailsOpen(false);
-                } catch (error) {
-                  toast({
-                    title: "Error",
-                    description: "Failed to update event",
-                    variant: "destructive"
-                  });
-                }
-              }}
-              onCancel={() => {
-                setIsEditing(false);
-                setEditedEvent(null);
-              }}
-            />
-          ) : (
-            <div className="flex flex-col">
-              <div className="p-4 space-y-4">
-                <div className="flex items-start gap-2">
-                  <ClockIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div className="space-y-0.5">
-                    <div>
-                      {selectedEvent?.allDay ? 'All day' : (
-                        `${format(selectedEvent?.startDate || new Date(), 'h:mm a')} - 
-                         ${format(selectedEvent?.endDate || new Date(), 'h:mm a')}`
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(selectedEvent?.startDate || new Date(), 'EEEE, MMMM d, yyyy')}
-                    </div>
-                  </div>
-                </div>
-
-                {selectedEvent?.location && (
+                }}
+              />
+            ) : (
+              <div className="flex flex-col">
+                <div className="p-4 space-y-4">
                   <div className="flex items-start gap-2">
-                    <MapPinIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div>{selectedEvent.location}</div>
-                  </div>
-                )}
-
-                {selectedEvent?.description && (
-                  <div className="pt-2 border-t">
-                    <div className="font-medium mb-1 text-sm">Description</div>
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {selectedEvent.description}
+                    <ClockIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div className="space-y-0.5">
+                      <div>
+                        {selectedEvent?.allDay ? 'All day' : (
+                          `${format(selectedEvent?.startDate || new Date(), 'h:mm a')} - 
+                           ${format(selectedEvent?.endDate || new Date(), 'h:mm a')}`
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {format(selectedEvent?.startDate || new Date(), 'EEEE, MMMM d, yyyy')}
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {selectedEvent?.tags && selectedEvent.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {selectedEvent.tags.map(tag => (
-                      <div
-                        key={tag.id}
-                        className="px-2 py-0.5 rounded-full text-xs"
-                        style={{
-                          backgroundColor: tag.color + '20',
-                          color: tag.color
-                        }}
-                      >
-                        {tag.name}
+                  {selectedEvent?.location && (
+                    <div className="flex items-start gap-2">
+                      <MapPinIcon className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                      <div>{selectedEvent.location}</div>
+                    </div>
+                  )}
+
+                  {selectedEvent?.description && (
+                    <div className="pt-2 border-t">
+                      <div className="font-medium mb-1 text-sm">Description</div>
+                      <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {selectedEvent.description}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {selectedEvent?.sharedWith && selectedEvent.sharedWith.length > 0 && (
-                  <div className="pt-4 border-t">
-                    <div className="font-medium mb-2">Shared with</div>
-                    <div className="space-y-2">
-                      {selectedEvent.sharedWith.map((share) => (
-                        <div key={share.email} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <UserPlusIcon className="h-4 w-4 text-muted-foreground" />
-                            <span>{share.email}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {share.permission} • {share.status}
-                          </span>
+                  {selectedEvent?.tags && selectedEvent.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {selectedEvent.tags.map(tag => (
+                        <div
+                          key={tag.id}
+                          className="px-2 py-0.5 rounded-full text-xs"
+                          style={{
+                            backgroundColor: tag.color + '20',
+                            color: tag.color
+                          }}
+                        >
+                          {tag.name}
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div className="pt-4 border-t">
-                  <div className="font-medium mb-2">Reminder</div>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedEvent?.reminderMinutes 
-                      ? `${selectedEvent.reminderMinutes} minutes before`
-                      : 'No reminder set'}
-                  </div>
-                </div>
+                  {selectedEvent?.sharedWith && selectedEvent.sharedWith.length > 0 && (
+                    <div className="pt-4 border-t">
+                      <div className="font-medium mb-2">Shared with</div>
+                      <div className="space-y-2">
+                        {selectedEvent.sharedWith.map((share) => (
+                          <div key={share.email} className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <UserPlusIcon className="h-4 w-4 text-muted-foreground" />
+                              <span>{share.email}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {share.permission} • {share.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                <div className="pt-4 border-t text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <span>Created by</span>
-                    <div className="flex items-center gap-1">
-                      {selectedEvent?.createdByPhotoURL ? (
-                        <img 
-                          src={selectedEvent.createdByPhotoURL}
-                          alt=""
-                          className="w-4 h-4 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
-                          {selectedEvent?.createdBy.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span>{selectedEvent?.createdBy}</span>
+                  <div className="pt-4 border-t">
+                    <div className="font-medium mb-2">Reminder</div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedEvent?.reminderMinutes 
+                        ? `${selectedEvent.reminderMinutes} minutes before`
+                        : 'No reminder set'}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <span>Created by</span>
+                      <div className="flex items-center gap-1">
+                        {selectedEvent?.createdByPhotoURL ? (
+                          <img 
+                            src={selectedEvent.createdByPhotoURL}
+                            alt=""
+                            className="w-4 h-4 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                            {selectedEvent?.createdBy.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <span>{selectedEvent?.createdBy}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="border-t p-4 flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsEventDetailsOpen(false)}>
-                  Close
-                </Button>
-                {(selectedEvent?.createdBy === auth.currentUser?.email || 
-                  selectedEvent?.sharedWith?.some(share => 
-                    share.email === auth.currentUser?.email && share.permission === 'edit'
-                  )) && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsCreate(false);
-                      setEditedEvent(selectedEvent);
-                      setIsEditing(true);
-                    }}
-                  >
-                    Edit
+                <div className="border-t p-4 flex justify-end gap-2 mt-auto">
+                  <Button variant="outline" onClick={() => setIsEventDetailsOpen(false)}>
+                    Close
                   </Button>
-                )}
-                {selectedEvent?.createdBy === auth.currentUser?.email && (
-                  <Button
-                    variant="destructive"
-                    onClick={async () => {
-                      if (selectedEvent?.id) {
-                        await db.deleteCalendarEvent(selectedEvent.id);
-                        loadEvents();
-                        setIsEventDetailsOpen(false);
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                )}
+                  {(selectedEvent?.createdBy === auth.currentUser?.email || 
+                    selectedEvent?.sharedWith?.some(share => 
+                      share.email === auth.currentUser?.email && share.permission === 'edit'
+                    )) && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsCreate(false);
+                        setEditedEvent(selectedEvent);
+                        setIsEditing(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {selectedEvent?.createdBy === auth.currentUser?.email && (
+                    <Button
+                      variant="destructive"
+                      onClick={async () => {
+                        if (selectedEvent?.id) {
+                          await db.deleteCalendarEvent(selectedEvent.id);
+                          loadEvents();
+                          setIsEventDetailsOpen(false);
+                        }
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
