@@ -411,13 +411,13 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }: { isCreate: b
 const groupEventsByDate = (events: CalendarEvent[]) => {
   // Group events by their date string (YYYY-MM-DD)
   const grouped = events.reduce((acc, event) => {
-    // Convert the UTC timestamp to local date string
+    // Convert the UTC timestamp to local date string and move date ahead by 1 day
     const eventDate = new Date(event.startDate);
+    eventDate.setDate(eventDate.getDate() + 1); // Move date ahead by 1 day
     const year = eventDate.getFullYear();
     const month = String(eventDate.getMonth() + 1).padStart(2, '0');
     const day = String(eventDate.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
-    
     
     if (!acc[dateStr]) {
       acc[dateStr] = [];
@@ -483,7 +483,7 @@ const AgendaView = ({
   // Get next 30 days starting from today
   const next30Days = Array.from({ length: 30 }, (_, i) => {
     const date = new Date();
-    date.setDate(date.getDate() + i);
+    date.setDate(date.getDate() + i + 1);
     return format(date, 'yyyy-MM-dd');
   });
 
