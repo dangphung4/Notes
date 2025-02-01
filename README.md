@@ -131,6 +131,18 @@ npm run build
 - [ ] Fix scrolling issues
 - [ ] Fix reload behavior
 - [ ] Improve Ctrl + A and other shortcuts
+- [ ] Folder statistics dashboard
+- [ ] Quick actions menu for common operations
+- [ ] Advanced folder sorting and filtering
+- [ ] Recent activity timeline
+- [ ] Folder favorites and pinning
+- [ ] Note tags and labels system
+- [ ] List/Grid view toggle for folders
+- [ ] Extended folder color themes and customization
+- [ ] Folder sharing and collaboration
+- [ ] Folder archiving and restore
+- [ ] Folder export and backup
+- [ ] Folder templates
 
 #### Core Features
 
