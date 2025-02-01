@@ -22,6 +22,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 10 # Only fetch last 10 commits
+          ref: ${{ github.event.pull_request.head.sha }}
           
       - uses: actions/setup-node@v4
         with:
@@ -51,7 +52,10 @@ jobs:
               exit 0
             fi
             
+            echo "Checking commits between $BASE_SHA and $HEAD_SHA"
+            git fetch origin $BASE_SHA
             BASE_SHA=$(git merge-base $BASE_SHA $HEAD_SHA)
+            
             # Skip bot commits during validation
             git log $BASE_SHA..$HEAD_SHA --format="%H %ae %s" | \
             while read -r hash email subject; do
