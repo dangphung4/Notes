@@ -414,11 +414,7 @@ const FolderTreeItem = ({
                         >
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-3">
-                              {note.type === 'folder' ? (
-                                <FolderIcon className="h-4 w-4 text-muted-foreground" />
-                              ) : (
-                                <FileTextIcon className="h-4 w-4 text-muted-foreground" />
-                              )}
+                              <FolderIcon className="h-4 w-4 text-muted-foreground" />
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium truncate">
                                   {note.title || 'Untitled'}
@@ -669,7 +665,7 @@ const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onD
                     navigate(`/notes/${note.firebaseId}`);
                   }}
                 >
-                  <FolderIcon className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />
+                  <FileTextIcon className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
                       {note.title || 'Untitled'}
