@@ -179,6 +179,7 @@ class NotesDB extends Dexie {
       // Get all shares for me by email
       const mySharesSnapshot = await getDocs(
         query(sharesRef, where("email", "==", user.email))
+      );
       /**
        * Asynchronously loads notes and folders from Firebase Firestore for the currently authenticated user.
        *
@@ -639,6 +640,11 @@ class NotesDB extends Dexie {
         createdByPhotoURL: user.photoURL || "",
         lastModifiedBy: user.email || "",
         lastModifiedByPhotoURL: user.photoURL || "",
+        lastModifiedByDisplayName: user.displayName || "",
+        lastModifiedAt: new Date(),
+        startDate: event.startDate || new Date(),
+        endDate: event.endDate || new Date(),
+        
         /**
          * Asynchronously creates a calendar event and stores it in Firestore.
          *
@@ -806,6 +812,10 @@ class NotesDB extends Dexie {
       const sharedQuery = query(
         eventsRef,
         where("sharedWith", "array-contains", {
+          email: user.email,
+          permission: "view",
+          status: "pending"
+        })
       /**
        * Retrieves all calendar events that the current user has access to, including events they own, events shared with them, and pending invitations.
        *
