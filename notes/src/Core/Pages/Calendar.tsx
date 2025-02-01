@@ -408,6 +408,36 @@ const EventForm = ({ isCreate, initialEvent, onSubmit, onCancel }: { isCreate: b
   );
 };
 
+/**
+ * Groups an array of calendar events by their date, adjusting the date to the next day.
+ * Each event is categorized under a string representation of its date in the format YYYY-MM-DD.
+ * Events are sorted within each date group, prioritizing all-day events before timed events,
+ * and sorting timed events by their start date.
+ *
+ * @param {CalendarEvent[]} events - An array of calendar events to be grouped.
+ * @returns {Record<string, CalendarEvent[]>} An object where each key is a date string
+ * (YYYY-MM-DD) and the value is an array of events occurring on that date.
+ *
+ * @example
+ * const events = [
+ *   { startDate: '2023-10-01T10:00:00Z', allDay: false },
+ *   { startDate: '2023-10-01T00:00:00Z', allDay: true },
+ *   { startDate: '2023-10-02T09:00:00Z', allDay: false }
+ * ];
+ * const groupedEvents = groupEventsByDate(events);
+ * // groupedEvents will be:
+ * // {
+ * //   '2023-10-02': [
+ * //     { startDate: '2023-10-01T00:00:00Z', allDay: true },
+ * //     { startDate: '2023-10-01T10:00:00Z', allDay: false }
+ * //   ],
+ * //   '2023-10-03': [
+ * //     { startDate: '2023-10-02T09:00:00Z', allDay: false }
+ * //   ]
+ * // }
+ *
+ * @throws {TypeError} Throws an error if the input is not an array of CalendarEvent objects.
+ */
 const groupEventsByDate = (events: CalendarEvent[]) => {
   // Group events by their date string (YYYY-MM-DD)
   const grouped = events.reduce((acc, event) => {
@@ -438,6 +468,30 @@ const groupEventsByDate = (events: CalendarEvent[]) => {
   return grouped;
 };
 
+/**
+ * Renders the agenda view for a calendar application, displaying events grouped by date.
+ * It shows a loading skeleton when data is being fetched and lists events for the next 30 days.
+ *
+ * @param {Object} props - The properties for the AgendaView component.
+ * @param {CalendarEvent[]} props.events - An array of calendar events to be displayed.
+ * @param {Date} props.selectedDate - The currently selected date in the calendar.
+ * @param {function(CalendarEvent): void} props.onEventClick - Callback function triggered when an event is clicked.
+ * @param {boolean} props.isLoading - Indicates whether the events are currently being loaded.
+ * @param {function(Date=): void} props.onAddEvent - Callback function to add a new event, optionally on a specific date.
+ *
+ * @returns {JSX.Element} The rendered agenda view component.
+ *
+ * @example
+ * <AgendaView
+ *   events={events}
+ *   selectedDate={new Date()}
+ *   onEventClick={(event) => console.log(event)}
+ *   isLoading={false}
+ *   onAddEvent={(date) => console.log('Add event on', date)}
+ * />
+ *
+ * @throws {Error} Throws an error if the events prop is not an array.
+ */
 const AgendaView = ({ 
   events, 
   // selectedDate,
@@ -486,6 +540,37 @@ const AgendaView = ({
     return format(date, 'yyyy-MM-dd');
   });
 
+  /**
+   * Renders a card component for a calendar event.
+   *
+   * This function creates a visual representation of a calendar event,
+   * including its title, time, location, tags, and sharing indicators.
+   * The card is interactive and can be clicked to trigger an event handler.
+   *
+   * @param {CalendarEvent} event - The calendar event to be displayed.
+   * @param {boolean} _isToday - A flag indicating if the event is today.
+   *
+   * @returns {JSX.Element} A JSX element representing the event card.
+   *
+   * @throws {Error} Throws an error if the event object is invalid or missing required properties.
+   *
+   * @example
+   * const event = {
+   *   firebaseId: '123',
+   *   id: '456',
+   *   title: 'Team Meeting',
+   *   startDate: '2023-10-01T10:00:00Z',
+   *   endDate: '2023-10-01T11:00:00Z',
+   *   allDay: false,
+   *   createdBy: 'John Doe',
+   *   createdByPhotoURL: 'https://example.com/photo.jpg',
+   *   location: 'Conference Room A',
+   *   tags: [{ id: '1', name: 'Work', color: '#ff0000' }],
+   *   sharedWith: [{ email: 'jane@example.com' }]
+   * };
+   *
+   * const card = renderEventCard(event, true);
+   */
   const renderEventCard = (event: CalendarEvent, 
     _isToday: boolean
     ) => (
@@ -924,7 +1009,14 @@ const EventSearch = ({
 };
 
 /**
+ * A functional component that renders a calendar interface allowing users to view, create, and manage events.
+ * It supports different views (day, week, agenda) and handles event sharing and invitations.
  *
+ * @component
+ * @returns {JSX.Element} The rendered calendar component.
+ *
+ * @example
+ * <Calendar />
  */
 export default function Calendar() {
   const [view, setView] = useState<'week' | 'day' | 'agenda'>(() => {
@@ -1015,7 +1107,26 @@ export default function Calendar() {
   }, []);
 
   /**
+   * Asynchronously loads calendar events from both Firebase and local storage.
+   * This function retrieves shared events from Firebase and local events from the
+   * local database, ensuring that there are no duplicates based on the unique
+   * `firebaseId`. It handles offline-created events that have not yet been synced
+   * with Firebase.
    *
+   * The function sets a loading state while fetching the events and updates the
+   * event list upon successful retrieval. In case of an error, it logs the error
+   * and displays a toast notification to inform the user of the failure.
+   *
+   * @async
+   * @function loadEvents
+   * @throws {Error} Throws an error if the event loading process fails.
+   *
+   * @example
+   * // Call the function to load events
+   * await loadEvents();
+   *
+   * @returns {Promise<void>} A promise that resolves when the events have been loaded
+   * and set in the application state.
    */
   async function loadEvents() {
     try {
@@ -1114,6 +1225,23 @@ export default function Calendar() {
   };
 
   // Function to handle time slot clicks
+  /**
+   * Handles the click event on a time slot, setting the start and end dates for a new event.
+   *
+   * This function takes a specific date and hour, creates a new date object for the start time,
+   * and calculates the end time by adding one hour to the start time. It then updates the event state
+   * to reflect the new start and end dates and opens the event creation modal.
+   *
+   * @param {Date} date - The base date for the event.
+   * @param {number} hour - The hour of the day (0-23) when the event starts.
+   * @throws {Error} Throws an error if the hour is not within the valid range (0-23).
+   *
+   * @example
+   * // Example usage:
+   * handleTimeSlotClick(new Date('2023-10-01'), 14);
+   * // This will set the start date to 14:00 on October 1, 2023,
+   * // and the end date to 15:00 on the same day.
+   */
   const handleTimeSlotClick = (date: Date, hour: number) => {
     const newDate = new Date(date);
     newDate.setHours(hour, 0, 0, 0);
