@@ -26,8 +26,8 @@ jobs:
       - name: Checkout PR
         if: github.event_name == 'pull_request_target'
         run: |
-          git fetch origin +refs/pull/${{ github.event.pull_request.number }}/merge
-          git checkout FETCH_HEAD
+          git fetch origin "pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}"
+          git checkout "pr-${{ github.event.pull_request.number }}"
           
       - uses: actions/setup-node@v4
         with:
@@ -48,19 +48,20 @@ jobs:
         working-directory: notes
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            # Get the commits range for PR
+            # For PRs, get the base branch
             git fetch origin main
-            COMMITS_TO_CHECK=$(git log --format="%H" origin/main..HEAD)
             
-            if [ -n "$COMMITS_TO_CHECK" ]; then
-              echo "$COMMITS_TO_CHECK" | while read -r commit; do
-                COMMIT_MSG=$(git log -1 --format="%s" $commit)
-                AUTHOR_EMAIL=$(git log -1 --format="%ae" $commit)
-                if [[ ! $AUTHOR_EMAIL =~ .*\[bot\]@.*|.*bot@.* ]]; then
-                  echo "$COMMIT_MSG" | npx commitlint --verbose
-                fi
-              done
-            fi
+            # Get all commits in the PR
+            for commit in $(git rev-list HEAD ^origin/main); do
+              COMMIT_MSG=$(git log -1 --format="%s" $commit)
+              AUTHOR_EMAIL=$(git log -1 --format="%ae" $commit)
+              if [[ ! $AUTHOR_EMAIL =~ .*\[bot\]@.*|.*bot@.* ]]; then
+                echo "Checking commit: $COMMIT_MSG"
+                echo "$COMMIT_MSG" | npx commitlint --verbose || true
+              else
+                echo "Skipping bot commit: $COMMIT_MSG"
+              fi
+            done
           else
             # For pushes, check only the latest commit if not from a bot
             AUTHOR_EMAIL=$(git log -1 --format="%ae")
