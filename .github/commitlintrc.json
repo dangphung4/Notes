@@ -15,7 +15,9 @@
           "build",
           "ci",
           "chore",
-          "revert"
+          "revert",
+          "[penify]:",
+          "[Penify]:"
         ]
       ],
       "type-case": [2, "always", "lower"],
