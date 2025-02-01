@@ -211,6 +211,31 @@ function CommandPalette() {
 }
 
 // Add FooterWrapper component
+/**
+ * A functional component that conditionally renders the Footer component
+ * based on the current location's pathname. The footer is hidden for specific
+ * routes defined in the `hideFooterPaths` array.
+ *
+ * The following paths will hide the footer:
+ * - '/notes/new'
+ * - '/notes/:id' (where :id can be any value)
+ *
+ * It uses the `useLocation` hook from React Router to access the current
+ * location and determine if the footer should be displayed.
+ *
+ * @returns {JSX.Element | null} Returns the Footer component if the current
+ * location does not match any of the hide paths; otherwise, returns null.
+ *
+ * @example
+ * // Example usage within a parent component
+ * const App = () => (
+ *   <div>
+ *     <Header />
+ *     <FooterWrapper />
+ *     <MainContent />
+ *   </div>
+ * );
+ */
 function FooterWrapper() {
   const location = useLocation();
   const hideFooterPaths = ['/notes/new', '/notes/:id'];
@@ -231,7 +256,27 @@ function FooterWrapper() {
 
 // Main App component
 /**
+ * The main application component that serves as the entry point for the application.
+ * It wraps the application in a theme provider and sets up routing and layout.
  *
+ * This component includes:
+ * - A theme provider to manage styling.
+ * - A router for handling navigation.
+ * - A desktop navigation component.
+ * - A mobile navigation component.
+ * - Application routes defined in the AppRoutes component.
+ * - A footer wrapper for the application's footer content.
+ * - A PWA badge for progressive web app features.
+ *
+ * @returns {JSX.Element} The rendered application component.
+ *
+ * @example
+ * // Usage of the App component in a React application
+ * import React from 'react';
+ * import ReactDOM from 'react-dom';
+ * import App from './App';
+ *
+ * ReactDOM.render(<App />, document.getElementById('root'));
  */
 function App() {
   return (
