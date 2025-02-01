@@ -27,9 +27,12 @@ import Folders from './Core/Pages/Folders';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, Command } from "@/components/ui/command";
 import { ThemeProvider } from './Core/Theme/ThemeProvider';
 
-// Separate component for command palette
 /**
- *
+ * CommandPalette component provides a command dialog for quick navigation and actions.
+ * It listens for keyboard shortcuts and displays a command palette with various options.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered CommandPalette component.
  */
 function CommandPalette() {
   const navigate = useNavigate();
@@ -210,7 +213,6 @@ function CommandPalette() {
   );
 }
 
-// Add FooterWrapper component
 /**
  * A functional component that conditionally renders the Footer component
  * based on the current location's pathname. The footer is hidden for specific
@@ -254,7 +256,6 @@ function FooterWrapper() {
   return <Footer />;
 }
 
-// Main App component
 /**
  * The main application component that serves as the entry point for the application.
  * It wraps the application in a theme provider and sets up routing and layout.
@@ -295,7 +296,11 @@ function App() {
 }
 
 /**
- *
+ * LogoutHandler component handles user logout by signing out the user
+ * and navigating back to the home page.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered LogoutHandler component.
  */
 function LogoutHandler() {
   const navigate = useNavigate();
@@ -309,9 +314,12 @@ function LogoutHandler() {
   return <div>Logging out...</div>;
 }
 
-// Routes configuration component
 /**
- *
+ * AppRoutes component defines the application's routes and renders the appropriate
+ * components based on the current URL. It includes both public and private routes.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered AppRoutes component.
  */
 function AppRoutes() {
   return (
@@ -381,9 +389,13 @@ function AppRoutes() {
 }
 
 /**
- *
- * @param root0
- * @param root0.children
+ * PrivateRoute component restricts access to certain routes based on user authentication.
+ * If the user is not authenticated, they are redirected to the authentication page.
+ * 
+ * @component
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to render if authenticated.
+ * @returns {JSX.Element} The rendered PrivateRoute component.
  */
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
