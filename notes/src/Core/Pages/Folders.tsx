@@ -96,7 +96,15 @@ const FolderTreeItem = ({
   const navigate = useNavigate();
   const folderNotes = notes.filter(note => note.folderId === folder.id);
   const [showInfo, setShowInfo] = useState(false);
+  const [openNoteIds, setOpenNoteIds] = useState<Record<string, boolean>>({});
   const hasContent = folder.children.length > 0 || folderNotes.length > 0;
+
+  const toggleNoteInfo = (noteId: string) => {
+    setOpenNoteIds(prev => ({
+      ...prev,
+      [noteId]: !prev[noteId]
+    }));
+  };
 
   return (
     <div>
@@ -220,30 +228,225 @@ const FolderTreeItem = ({
           {folderNotes.length > 0 && (
             <div className="ml-12 space-y-1 mt-1">
               {folderNotes.map(note => (
-                <div
-                  key={`note-${folder.id}-${note.firebaseId}`}
-                  className="flex flex-col gap-1 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/notes/${note.firebaseId}`);
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">
-                        {note.title || 'Untitled'}
+                <div key={`note-${folder.id}-${note.firebaseId}`}>
+                  <div
+                    className="flex flex-col gap-1 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/notes/${note.firebaseId}`);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">
+                          {note.title || 'Untitled'}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-muted-foreground">
+                          {formatTimeAgo(note.updatedAt)}
+                        </div>
+                        {/* Desktop menu button */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleNoteInfo(note.firebaseId!);
+                          }}
+                        >
+                          <HamburgerMenuIcon className="h-4 w-4" />
+                        </Button>
+                        {/* Mobile indicator */}
+                        <div 
+                          className="md:hidden flex items-center text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleNoteInfo(note.firebaseId!);
+                          }}
+                        >
+                          <div className="rounded-full p-1.5 hover:bg-muted">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M12 16v-4" />
+                              <path d="M12 8h.01" />
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatTimeAgo(note.updatedAt)}
-                    </div>
+                    {note.content && (
+                      <div className="ml-6 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {getBlockNoteContent(note.content)}
+                      </div>
+                    )}
+                    {/* Mobile touch target for note details - wider area */}
+                    <button
+                      className="md:hidden absolute right-0 inset-y-0 w-24"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleNoteInfo(note.firebaseId!);
+                      }}
+                    />
                   </div>
-                  {note.content && (
-                    <div className="ml-6 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                      {getBlockNoteContent(note.content)}
-                    </div>
-                  )}
+
+                  {/* Note Details Sheet */}
+                  <Sheet 
+                    open={openNoteIds[note.firebaseId!]} 
+                    onOpenChange={(open) => {
+                      setOpenNoteIds(prev => ({
+                        ...prev,
+                        [note.firebaseId!]: open
+                      }));
+                    }}
+                  >
+                    <SheetContent side="right" className="w-full sm:max-w-md">
+                      <SheetHeader>
+                        <SheetTitle className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
+                            <FolderIcon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold truncate">
+                              {note.title || 'Untitled'}
+                            </div>
+                            <div className="text-xs font-normal text-muted-foreground">
+                              In {folder.name}
+                            </div>
+                          </div>
+                        </SheetTitle>
+                      </SheetHeader>
+                      
+                      <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+                        <div className="space-y-6 pb-8">
+                          {/* Note Preview */}
+                          {note.content && (
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium">Preview</h4>
+                              <div className="p-4 border rounded-lg">
+                                <div className="text-sm text-muted-foreground line-clamp-6 whitespace-pre-wrap">
+                                  {getBlockNoteContent(note.content)}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Note Stats */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 border rounded-lg">
+                              <div className="text-2xl font-bold">
+                                {note.content ? getBlockNoteContent(note.content).split(/\s+/).filter(Boolean).length : 0}
+                              </div>
+                              <div className="text-xs text-muted-foreground">Words</div>
+                            </div>
+                            <div className="p-4 border rounded-lg">
+                              <div className="text-2xl font-bold">
+                                {note.content ? getBlockNoteContent(note.content).split('\n').filter(Boolean).length : 0}
+                              </div>
+                              <div className="text-xs text-muted-foreground">Lines</div>
+                            </div>
+                          </div>
+
+                          {/* Note Tags */}
+                          {note.tags && note.tags.length > 0 && (
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-medium">Tags</h4>
+                              <div className="flex flex-wrap gap-1">
+                                {note.tags.map(tag => (
+                                  <Badge
+                                    key={tag.id}
+                                    className="px-2 py-0.5 text-xs"
+                                    style={{
+                                      backgroundColor: tag.color + '20',
+                                      color: tag.color
+                                    }}
+                                  >
+                                    {tag.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Note Details */}
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-medium">Details</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Created</span>
+                                <span>{formatTimeAgo(note.createdAt)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Last updated</span>
+                                <span>{formatTimeAgo(note.updatedAt)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Owner</span>
+                                <span>{note.ownerDisplayName}</span>
+                              </div>
+                              {note.lastEditedByDisplayName && (
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Last edited by</span>
+                                  <span>{note.lastEditedByDisplayName}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              className="w-full justify-start"
+                              onClick={() => {
+                                toggleNoteInfo(note.firebaseId!);
+                                navigate(`/notes/${note.firebaseId}`);
+                              }}
+                            >
+                              <PencilIcon className="h-4 w-4 mr-2" />
+                              Open Note
+                            </Button>
+                            {note.ownerUserId === user?.uid && (
+                              <Button
+                                variant="destructive"
+                                className="w-full justify-start"
+                                onClick={async () => {
+                                  try {
+                                    await db.deleteNote(note.firebaseId!);
+                                    toggleNoteInfo(note.firebaseId!);
+                                    toast({
+                                      title: "Note deleted",
+                                      description: "The note has been permanently deleted"
+                                    });
+                                  } catch (error) {
+                                    console.error('Error deleting note:', error);
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to delete note",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }}
+                              >
+                                <TrashIcon className="h-4 w-4 mr-2" />
+                                Delete Note
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </SheetContent>
+                  </Sheet>
                 </div>
               ))}
             </div>
