@@ -20,6 +20,13 @@ interface FolderNode extends Folder {
   isExpanded?: boolean;
 }
 
+interface BlockNoteContent {
+  type: string;
+  content?: Array<{ type: string; text?: string }>;
+  text?: string;
+  children?: BlockNoteContent[];
+}
+
 const FolderTreeItem = ({ 
   folder, 
   level = 0,
@@ -90,9 +97,9 @@ const FolderTreeItem = ({
             )}
           </div>
 
-          {/* Actions */}
+          {/* Actions - Always visible on mobile */}
           {folder.ownerUserId === user?.uid && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="icon"
@@ -163,7 +170,7 @@ const FolderTreeItem = ({
                     <span className="flex-1 font-medium truncate">
                       {note.title || 'Untitled'}
                     </span>
-                    <div className="flex items-center gap-2 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 text-muted-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <span className="text-xs">
                         {formatTimeAgo(note.updatedAt)}
                       </span>
@@ -172,13 +179,7 @@ const FolderTreeItem = ({
 
                   {/* Note Preview */}
                   <div className="ml-8 text-xs text-muted-foreground line-clamp-2">
-                    {note.content ? (
-                      <div dangerouslySetInnerHTML={{ 
-                        __html: note.content.replace(/<[^>]*>/g, ' ').slice(0, 150) + '...'
-                      }} />
-                    ) : (
-                      'Empty note'
-                    )}
+                    {note.content ? getBlockNoteContent(note.content) : 'Empty note'}
                   </div>
 
                   {/* Tags */}
@@ -288,6 +289,49 @@ const FolderTreeItem = ({
       </Dialog>
     </div>
   );
+};
+
+const getBlockNoteContent = (jsonString: string) => {
+  try {
+    const blocks = JSON.parse(jsonString) as BlockNoteContent | BlockNoteContent[];
+    let text = '';
+    
+    const extractText = (block: BlockNoteContent) => {
+      // Check if block has content array
+      if (Array.isArray(block.content)) {
+        block.content.forEach((item) => {
+          if (item.type === 'text') {
+            text += item.text || '';
+          }
+        });
+      } else if (block.text) {
+        // Some blocks might have direct text property
+        text += block.text;
+      }
+      
+      // Add newline after certain block types
+      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem'].includes(block.type)) {
+        text += '\n';
+      }
+
+      // Process children recursively
+      if (Array.isArray(block.children)) {
+        block.children.forEach(extractText);
+      }
+    };
+
+    // Handle if blocks is not an array (single block)
+    if (!Array.isArray(blocks)) {
+      extractText(blocks);
+    } else {
+      blocks.forEach(extractText);
+    }
+
+    return text.trim();
+  } catch (error) {
+    console.error('Error parsing BlockNote content:', error);
+    return '';
+  }
 };
 
 export default function Folders() {
@@ -452,22 +496,30 @@ export default function Folders() {
 
   return (
     <div className="container max-w-5xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">Folders</h1>
           <p className="text-muted-foreground">
             Organize your notes in a hierarchical structure
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => navigate('/notes/new')}>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            size="lg"
+            className="w-full sm:w-auto bg-primary/10 hover:bg-primary/20 text-primary"
+            onClick={() => navigate('/notes/new')}
+          >
             <PlusIcon className="h-4 w-4 mr-2" />
             New Note
           </Button>
-          <Button onClick={() => {
-            setSelectedFolder(null);
-            setIsCreatingFolder(true);
-          }}>
+          <Button
+            size="lg"
+            className="w-full sm:w-auto"
+            onClick={() => {
+              setSelectedFolder(null);
+              setIsCreatingFolder(true);
+            }}
+          >
             <FolderIcon className="h-4 w-4 mr-2" />
             New Folder
           </Button>
