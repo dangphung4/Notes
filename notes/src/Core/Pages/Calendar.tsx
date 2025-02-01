@@ -924,7 +924,19 @@ const EventSearch = ({
 };
 
 /**
+ * A functional component that renders a calendar interface allowing users to view, create, and manage events.
+ * The calendar supports different views such as day, week, and agenda.
+ * It retrieves user preferences from local storage and manages events through a database.
  *
+ * @returns {JSX.Element} The rendered calendar component.
+ *
+ * @example
+ * // Usage in a React application
+ * import Calendar from './Calendar';
+ *
+ * function App() {
+ *   return <Calendar />;
+ * }
  */
 export default function Calendar() {
   const [view, setView] = useState<'week' | 'day' | 'agenda'>(() => {
