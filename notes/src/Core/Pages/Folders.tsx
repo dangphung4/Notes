@@ -7,19 +7,16 @@ import {
   ChevronRightIcon, 
   MagnifyingGlassIcon, 
   Cross2Icon, 
-  HamburgerMenuIcon, 
-  CheckIcon,
-  ArrowDownIcon,
+  HamburgerMenuIcon,
   StarIcon
 } from '@radix-ui/react-icons';
 import { 
   ListBulletIcon as ListIcon,
   Squares2X2Icon as LayoutGridIcon,
-  ArrowsUpDownIcon as ArrowDownUpIcon,
   ClockIcon,
   DocumentTextIcon as FileTextIcon,
-  CalendarIcon,
   ArrowUpIcon,
+  ArrowDownIcon,
   HashtagIcon as TextIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../Auth/AuthContext';
@@ -33,7 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { formatTimeAgo } from '../utils/noteUtils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -871,6 +868,108 @@ const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onD
   );
 };
 
+// Add new floating action bar component
+const FloatingActionBar = ({ 
+  viewMode,
+  setViewMode,
+  sortOption,
+  setSortOption,
+  sortDirection,
+  setSortDirection,
+  onNewFolder,
+  onNewNote
+}: {
+  viewMode: 'list' | 'grid';
+  setViewMode: (mode: 'list' | 'grid') => void;
+  sortOption: 'name' | 'updated' | 'created' | 'notes';
+  setSortOption: (option: 'name' | 'updated' | 'created' | 'notes') => void;
+  sortDirection: 'asc' | 'desc';
+  setSortDirection: (direction: 'asc' | 'desc') => void;
+  onNewFolder: () => void;
+  onNewNote: () => void;
+}) => {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-full shadow-lg z-50">
+      <div className="flex items-center border-r pr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", viewMode === 'list' && "bg-muted")}
+          onClick={() => setViewMode('list')}
+        >
+          <ListIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", viewMode === 'grid' && "bg-muted")}
+          onClick={() => setViewMode('grid')}
+        >
+          <LayoutGridIcon className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <div className="flex items-center border-r pr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", sortOption === 'name' && "bg-muted")}
+          onClick={() => setSortOption('name')}
+        >
+          <TextIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", sortOption === 'updated' && "bg-muted")}
+          onClick={() => setSortOption('updated')}
+        >
+          <ClockIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("rounded-full", sortOption === 'notes' && "bg-muted")}
+          onClick={() => setSortOption('notes')}
+        >
+          <FileTextIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortDirection === 'asc' ? (
+            <ArrowUpIcon className="h-4 w-4" />
+          ) : (
+            <ArrowDownIcon className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <Button
+          variant="default"
+          size="icon"
+          className="rounded-full"
+          onClick={onNewNote}
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full"
+          onClick={onNewFolder}
+        >
+          <FolderIcon className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export default function Folders() {
   const navigate = useNavigate();
   const [folders, setFolders] = useState<FolderNode[]>([]);
@@ -1159,149 +1258,20 @@ export default function Folders() {
                   {folders.length} folders • {notes.length} notes
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMobileSearch(true)}
-                >
-                  <MagnifyingGlassIcon className="h-5 w-5" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <ArrowDownUpIcon className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => setSortOption('name')}>
-                      <TextIcon className="h-4 w-4 mr-2" />
-                      Sort by name
-                      {sortOption === 'name' && (
-                        <CheckIcon className="h-4 w-4 ml-auto" />
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortOption('updated')}>
-                      <ClockIcon className="h-4 w-4 mr-2" />
-                      Sort by last updated
-                      {sortOption === 'updated' && (
-                        <CheckIcon className="h-4 w-4 ml-auto" />
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortOption('created')}>
-                      <CalendarIcon className="h-4 w-4 mr-2" />
-                      Sort by created date
-                      {sortOption === 'created' && (
-                        <CheckIcon className="h-4 w-4 ml-auto" />
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortOption('notes')}>
-                      <FileTextIcon className="h-4 w-4 mr-2" />
-                      Sort by notes count
-                      {sortOption === 'notes' && (
-                        <CheckIcon className="h-4 w-4 ml-auto" />
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}>
-                      {sortDirection === 'asc' ? (
-                        <ArrowUpIcon className="h-4 w-4 mr-2" />
-                      ) : (
-                        <ArrowDownIcon className="h-4 w-4 mr-2" />
-                      )}
-                      {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setViewMode(v => v === 'list' ? 'grid' : 'list')}>
-                      {viewMode === 'list' ? (
-                        <LayoutGridIcon className="h-4 w-4 mr-2" />
-                      ) : (
-                        <ListIcon className="h-4 w-4 mr-2" />
-                      )}
-                      {viewMode === 'list' ? 'Grid view' : 'List view'}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <HamburgerMenuIcon className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="h-[400px]">
-                    <SheetHeader>
-                      <SheetTitle>Options</SheetTitle>
-                    </SheetHeader>
-                    <div className="grid gap-4 py-4">
-                      <Button
-                        className="w-full justify-start"
-                        onClick={() => navigate('/notes/new')}
-                      >
-                        <PlusIcon className="h-4 w-4 mr-2" />
-                        New Note
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                        onClick={() => {
-                          setSelectedFolder(null);
-                          setIsCreatingFolder(true);
-                        }}
-                      >
-                        <FolderIcon className="h-4 w-4 mr-2" />
-                        New Folder
-                      </Button>
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileSearch(true)}
+              >
+                <MagnifyingGlassIcon className="h-5 w-5" />
+              </Button>
             </>
           )}
         </div>
       </header>
 
-      {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between gap-4 px-4 py-6">
-        <div className="flex-1 max-w-md">
-          <div className="flex items-center gap-2">
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search folders..."
-              className="h-9"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                onClick={() => setSearchQuery('')}
-              >
-                <Cross2Icon className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={() => navigate('/notes/new')}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            New Note
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSelectedFolder(null);
-              setIsCreatingFolder(true);
-            }}
-          >
-            <FolderIcon className="h-4 w-4 mr-2" />
-            New Folder
-          </Button>
-        </div>
-      </div>
-
       {/* Folders List/Grid */}
-      <ScrollArea className="flex-1 px-4">
+      <ScrollArea className="flex-1 px-4 py-4">
         {isLoading ? (
           <div className="space-y-4 animate-pulse">
             {[...Array(5)].map((_, i) => (
@@ -1393,6 +1363,21 @@ export default function Folders() {
           </div>
         )}
       </ScrollArea>
+
+      {/* Floating Action Bar */}
+      <FloatingActionBar
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        sortDirection={sortDirection}
+        setSortDirection={setSortDirection}
+        onNewNote={() => navigate('/notes/new')}
+        onNewFolder={() => {
+          setSelectedFolder(null);
+          setIsCreatingFolder(true);
+        }}
+      />
 
       {/* Create/Edit Folder Dialog */}
       <Dialog 
