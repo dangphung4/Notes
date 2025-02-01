@@ -23,6 +23,56 @@ interface FolderNode extends Folder {
   isExpanded?: boolean;
 }
 
+interface BlockNoteContent {
+  type: string;
+  content?: Array<{ type: string; text?: string }>;
+  text?: string;
+  children?: BlockNoteContent[];
+}
+
+const getBlockNoteContent = (jsonString: string): string => {
+  try {
+    const blocks = JSON.parse(jsonString) as BlockNoteContent | BlockNoteContent[];
+    let text = '';
+    
+    const extractText = (block: BlockNoteContent) => {
+      // Check if block has content array
+      if (Array.isArray(block.content)) {
+        block.content.forEach((item) => {
+          if (item.type === 'text') {
+            text += item.text || '';
+          }
+        });
+      } else if (block.text) {
+        // Some blocks might have direct text property
+        text += block.text;
+      }
+      
+      // Add newline after certain block types
+      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem'].includes(block.type)) {
+        text += '\n';
+      }
+
+      // Process children recursively
+      if (Array.isArray(block.children)) {
+        block.children.forEach(extractText);
+      }
+    };
+
+    // Handle if blocks is not an array (single block)
+    if (!Array.isArray(blocks)) {
+      extractText(blocks);
+    } else {
+      blocks.forEach(extractText);
+    }
+
+    return text.trim();
+  } catch (error) {
+    console.error('Error parsing BlockNote content:', error);
+    return '';
+  }
+};
+
 const FolderTreeItem = ({ 
   folder, 
   level = 0,
@@ -172,21 +222,28 @@ const FolderTreeItem = ({
               {folderNotes.map(note => (
                 <div
                   key={`note-${folder.id}-${note.firebaseId}`}
-                  className="flex items-center gap-2 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group"
+                  className="flex flex-col gap-1 py-2 px-3 hover:bg-muted/50 active:bg-muted rounded-lg cursor-pointer text-sm group"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/notes/${note.firebaseId}`);
                   }}
                 >
-                  <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {note.title || 'Untitled'}
+                  <div className="flex items-center gap-2">
+                    <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {note.title || 'Untitled'}
+                      </div>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Updated {formatTimeAgo(note.updatedAt)}
+                      {formatTimeAgo(note.updatedAt)}
                     </div>
                   </div>
+                  {note.content && (
+                    <div className="ml-6 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                      {getBlockNoteContent(note.content)}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -253,16 +310,23 @@ const FolderTreeItem = ({
                             navigate(`/notes/${note.firebaseId}`);
                           }}
                         >
-                          <div className="flex items-center gap-3">
-                            <FolderIcon className="h-4 w-4 text-muted-foreground" />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate">
-                                {note.title || 'Untitled'}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Updated {formatTimeAgo(note.updatedAt)}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-3">
+                              <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">
+                                  {note.title || 'Untitled'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Updated {formatTimeAgo(note.updatedAt)}
+                                </div>
                               </div>
                             </div>
+                            {note.content && (
+                              <div className="ml-7 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                {getBlockNoteContent(note.content)}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
