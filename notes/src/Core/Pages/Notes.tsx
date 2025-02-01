@@ -33,7 +33,6 @@ import { XCircleIcon } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { BarChart2Icon, ClockIcon, UserIcon, ActivityIcon, LinkIcon } from 'lucide-react';
 import ShareDialog from '../Components/ShareDialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface StoredNotesPreferences {
@@ -1332,24 +1331,6 @@ export default function Notes() {
     }
   };
 
-  // Delete folder
-  const handleDeleteFolder = async (folderId: string) => {
-    try {
-      await db.deleteFolder(folderId);
-      setSelectedFolderId(undefined);
-      toast({
-        title: "Folder deleted",
-        description: "The folder has been deleted and its notes moved to root"
-      });
-    } catch (error) {
-      console.error('Error deleting folder:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete folder",
-        variant: "destructive"
-      });
-    }
-  };
 
   // Enhanced filtering logic
   const filteredNotes = useMemo(() => {
@@ -1560,19 +1541,6 @@ export default function Notes() {
                       <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
                       {folder.name}
                     </div>
-                    {folder.ownerUserId === user?.uid && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 ml-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteFolder(folder.id);
-                        }}
-                      >
-                        <TrashIcon className="h-3 w-3" />
-                      </Button>
-                    )}
                   </div>
                 </SelectItem>
               ))}

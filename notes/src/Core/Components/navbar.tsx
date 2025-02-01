@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "../Theme/ThemeProvider";
-import { PenSquareIcon } from "lucide-react";
+import { PenSquareIcon, FolderIcon } from "lucide-react";
 
 interface NavProps {
   darkMode: boolean;
@@ -83,6 +83,12 @@ export function DesktopNav({ darkMode }: NavProps) {
               </Button>
             )}
             {user && (
+              <Button variant="ghost" onClick={() => navigate('/folders')}>
+                <FolderIcon className="h-5 w-5" />
+                <span className="ml-2">Folders</span>
+              </Button>
+            )}
+            {user && (
               <Button variant="ghost" onClick={() => navigate('/calendar')}>
                 <CalendarIcon className="h-5 w-5" />
                 <span className="ml-2">Calendar</span>
@@ -134,6 +140,10 @@ export function DesktopNav({ darkMode }: NavProps) {
                   <DropdownMenuItem onClick={() => navigate('/notes')}>
                     <FileTextIcon className="mr-2 h-4 w-4" />
                     <span>Notes</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/folders')}>
+                    <FolderIcon className="mr-2 h-4 w-4" />
+                    <span>Folders</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/calendar')}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -226,6 +236,14 @@ export function MobileNav({ darkMode }: NavProps) {
                 onClick={() => handleNavigation('/notes')}
               >
                 <FileTextIcon className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="default"
+                size="icon"
+                className="rounded-full shadow-lg"
+                onClick={() => handleNavigation('/folders')}
+              >
+                <FolderIcon className="h-5 w-5" />
               </Button>
               <Button
                 variant="default"
