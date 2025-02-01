@@ -345,61 +345,61 @@ export default function Folders() {
   const [isLoading, setIsLoading] = useState(true);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
 
-  // Load folders and notes
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [userFolders, userNotes] = await Promise.all([
-          db.getFolders(),
-          db.notes.toArray()
-        ]);
+  const loadData = async () => {
+    try {
+      const [userFolders, userNotes] = await Promise.all([
+        db.getFolders(),
+        db.notes.toArray()
+      ]);
 
-        // Convert flat structure to tree
-        const folderMap = new Map<string, FolderNode>();
-        const rootFolders: FolderNode[] = [];
+      // Convert flat structure to tree
+      const folderMap = new Map<string, FolderNode>();
+      const rootFolders: FolderNode[] = [];
 
-        // First pass: Create all folder nodes
-        userFolders.forEach(folder => {
-          folderMap.set(folder.id, { ...folder, children: [] });
-        });
+      // First pass: Create all folder nodes
+      userFolders.forEach(folder => {
+        folderMap.set(folder.id, { ...folder, children: [] });
+      });
 
-        // Second pass: Build the tree structure
-        userFolders.forEach(folder => {
-          const node = folderMap.get(folder.id)!;
-          if (folder.parentId) {
-            const parent = folderMap.get(folder.parentId);
-            if (parent) {
-              parent.children.push(node);
-            } else {
-              rootFolders.push(node);
-            }
+      // Second pass: Build the tree structure
+      userFolders.forEach(folder => {
+        const node = folderMap.get(folder.id)!;
+        if (folder.parentId) {
+          const parent = folderMap.get(folder.parentId);
+          if (parent) {
+            parent.children.push(node);
           } else {
             rootFolders.push(node);
           }
-        });
+        } else {
+          rootFolders.push(node);
+        }
+      });
 
-        // Sort folders alphabetically
-        const sortFolders = (folders: FolderNode[]): FolderNode[] => {
-          return folders.sort((a, b) => a.name.localeCompare(b.name)).map(folder => ({
-            ...folder,
-            children: sortFolders(folder.children)
-          }));
-        };
+      // Sort folders alphabetically
+      const sortFolders = (folders: FolderNode[]): FolderNode[] => {
+        return folders.sort((a, b) => a.name.localeCompare(b.name)).map(folder => ({
+          ...folder,
+          children: sortFolders(folder.children)
+        }));
+      };
 
-        setFolders(sortFolders(rootFolders));
-        setNotes(userNotes);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load folders and notes",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      setFolders(sortFolders(rootFolders));
+      setNotes(userNotes);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load folders and notes",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Load initial data
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -423,13 +423,11 @@ export default function Folders() {
     if (!newFolderName.trim()) return;
 
     try {
-      // Create folder data object, omitting parentId if it's not set
       const folderData: Partial<Folder> = {
         name: newFolderName.trim(),
         color: newFolderColor,
       };
 
-      // Only add parentId if we're creating a subfolder
       if (selectedFolder?.id) {
         folderData.parentId = selectedFolder.id;
       }
@@ -439,6 +437,7 @@ export default function Folders() {
       setNewFolderColor('#4f46e5');
       setIsCreatingFolder(false);
       setSelectedFolder(null);
+      await loadData(); // Reload data after creating folder
       toast({
         title: "Folder created",
         description: "Your new folder has been created successfully"
@@ -465,6 +464,7 @@ export default function Folders() {
       setNewFolderColor('#4f46e5');
       setIsEditingFolder(false);
       setSelectedFolder(null);
+      await loadData(); // Reload data after editing folder
       toast({
         title: "Folder updated",
         description: "Your folder has been updated successfully"
@@ -486,6 +486,7 @@ export default function Folders() {
       if (selectedFolder?.id === folderId) {
         setSelectedFolder(null);
       }
+      await loadData(); // Reload data after deleting folder
       toast({
         title: "Folder deleted",
         description: "The folder has been deleted and its notes moved to root"
