@@ -267,7 +267,11 @@ const FolderTreeItem = ({
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <FolderIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                    {note.type === 'folder' ? (
+                      <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">
                         {note.title || 'Untitled'}
@@ -410,7 +414,11 @@ const FolderTreeItem = ({
                         >
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-3">
-                              <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                              {note.type === 'folder' ? (
+                                <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <FileTextIcon className="h-4 w-4 text-muted-foreground" />
+                              )}
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium truncate">
                                   {note.title || 'Untitled'}
