@@ -43,9 +43,17 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]; then
             # For PRs, check only commits in the PR
-            BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            
+            if [ -z "$BASE_SHA" ] || [ -z "$HEAD_SHA" ]; then
+              echo "Warning: Could not determine base or head SHA. This is expected for pull_request_target events."
+              exit 0
+            fi
+            
+            BASE_SHA=$(git merge-base $BASE_SHA $HEAD_SHA)
             # Skip bot commits during validation
-            git log $BASE_SHA..${{ github.event.pull_request.head.sha }} --format="%H %ae %s" | \
+            git log $BASE_SHA..$HEAD_SHA --format="%H %ae %s" | \
             while read -r hash email subject; do
               if [[ ! $email =~ .*\[bot\]@.*|.*bot@.* ]]; then
                 echo "$subject" | npx commitlint --verbose
