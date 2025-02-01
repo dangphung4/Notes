@@ -24,30 +24,36 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "👥",
     content: [
       {
-        id: "meeting-date",
-        type: "paragraph",
-        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: new Date().toLocaleDateString(), styles: { italic: true } }]
+        id: "meeting-title",
+        type: "heading",
+        content: [{ type: "text", text: "📅 Meeting Notes", styles: { bold: true, textColor: "blue" } }],
+        props: { level: 2 }
       },
       {
-        id: "meeting-time",
+        id: "meeting-meta",
         type: "paragraph",
-        content: [{ type: "text", text: "⏰ ", styles: {} }, { type: "text", text: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), styles: { italic: true } }]
+        content: [
+          { type: "text", text: "Date: ", styles: { bold: true } },
+          { type: "text", text: new Date().toLocaleDateString(), styles: { italic: true } },
+          { type: "text", text: " • Time: ", styles: { bold: true } },
+          { type: "text", text: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), styles: { italic: true } }
+        ]
       },
       {
         id: "meeting-attendees-header",
         type: "heading",
-        content: [{ type: "text", text: "Attendees", styles: {} }],
+        content: [{ type: "text", text: "👥 Attendees", styles: { bold: true, textColor: "purple" } }],
         props: { level: 2 }
       },
       {
         id: "meeting-attendees",
         type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
+        content: [{ type: "text", text: "@", styles: { textColor: "blue" } }]
       },
       {
         id: "meeting-agenda-header",
         type: "heading",
-        content: [{ type: "text", text: "Agenda", styles: {} }],
+        content: [{ type: "text", text: "📋 Agenda", styles: { bold: true, textColor: "green" } }],
         props: { level: 2 }
       },
       {
@@ -58,7 +64,7 @@ export const noteTemplates: Record<string, NoteTemplate> = {
       {
         id: "meeting-notes-header",
         type: "heading",
-        content: [{ type: "text", text: "Discussion", styles: {} }],
+        content: [{ type: "text", text: "💡 Discussion Points", styles: { bold: true, textColor: "blue" } }],
         props: { level: 2 }
       },
       {
@@ -69,13 +75,13 @@ export const noteTemplates: Record<string, NoteTemplate> = {
       {
         id: "meeting-actions-header",
         type: "heading",
-        content: [{ type: "text", text: "Action Items", styles: {} }],
+        content: [{ type: "text", text: "✅ Action Items", styles: { bold: true, textColor: "red" } }],
         props: { level: 2 }
       },
       {
         id: "meeting-actions-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "[ ] ", styles: {} }],
+        content: [{ type: "text", text: "@", styles: { textColor: "blue" } }],
         props: { checked: false }
       }
     ]
@@ -86,37 +92,46 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "📅",
     content: [
       {
-        id: "daily-date",
-        type: "paragraph",
-        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: new Date().toLocaleDateString(), styles: { italic: true } }]
-      },
-      {
-        id: "daily-focus-header",
+        id: "daily-title",
         type: "heading",
-        content: [{ type: "text", text: "Focus Areas", styles: {} }],
+        content: [{ type: "text", text: "📅 Daily Log", styles: { bold: true, textColor: "blue" } }],
         props: { level: 2 }
       },
       {
-        id: "daily-focus-items",
+        id: "daily-date",
+        type: "paragraph",
+        content: [
+          { type: "text", text: "Date: ", styles: { bold: true } },
+          { type: "text", text: new Date().toLocaleDateString(), styles: { italic: true } }
+        ]
+      },
+      {
+        id: "daily-priorities-header",
+        type: "heading",
+        content: [{ type: "text", text: "🎯 Top Priorities", styles: { bold: true, textColor: "red" } }],
+        props: { level: 2 }
+      },
+      {
+        id: "daily-priorities",
         type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
+        content: [{ type: "text", text: "", styles: { textColor: "red" } }]
       },
       {
         id: "daily-tasks-header",
         type: "heading",
-        content: [{ type: "text", text: "Tasks", styles: {} }],
+        content: [{ type: "text", text: "📋 Tasks", styles: { bold: true, textColor: "green" } }],
         props: { level: 2 }
       },
       {
         id: "daily-tasks",
         type: "checkListItem",
-        content: [{ type: "text", text: "[ ] ", styles: {} }],
+        content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
       },
       {
         id: "daily-notes-header",
         type: "heading",
-        content: [{ type: "text", text: "Notes", styles: {} }],
+        content: [{ type: "text", text: "📝 Notes", styles: { bold: true, textColor: "blue" } }],
         props: { level: 2 }
       },
       {
@@ -132,85 +147,94 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "📊",
     content: [
       {
-        id: "project-overview-header",
+        id: "project-title",
         type: "heading",
-        content: [{ type: "text", text: "Overview", styles: {} }],
+        content: [{ type: "text", text: "🚀 Project Plan", styles: { bold: true, textColor: "blue" } }],
         props: { level: 2 }
       },
       {
-        id: "project-name",
+        id: "project-meta",
         type: "paragraph",
-        content: [{ type: "text", text: "Project: ", styles: { bold: true } }]
-      },
-      {
-        id: "project-timeline",
-        type: "paragraph",
-        content: [{ type: "text", text: "Timeline: ", styles: { bold: true } }]
+        content: [
+          { type: "text", text: "Status: ", styles: { bold: true } },
+          { type: "text", text: "Planning", styles: { italic: true, textColor: "orange" } }
+        ]
       },
       {
         id: "project-goals-header",
         type: "heading",
-        content: [{ type: "text", text: "Goals", styles: {} }],
+        content: [{ type: "text", text: "🎯 Goals", styles: { bold: true, textColor: "purple" } }],
         props: { level: 2 }
       },
       {
         id: "project-goals-items",
+        type: "bulletListItem",
+        content: [{ type: "text", text: "", styles: { textColor: "purple" } }]
+      },
+      {
+        id: "project-timeline-header",
+        type: "heading",
+        content: [{ type: "text", text: "📅 Timeline", styles: { bold: true, textColor: "green" } }],
+        props: { level: 2 }
+      },
+      {
+        id: "project-timeline-items",
         type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
         id: "project-tasks-header",
         type: "heading",
-        content: [{ type: "text", text: "Tasks & Milestones", styles: {} }],
+        content: [{ type: "text", text: "✅ Tasks", styles: { bold: true, textColor: "blue" } }],
         props: { level: 2 }
       },
       {
         id: "project-tasks-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "[ ] ", styles: {} }],
+        content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
       }
     ]
   },
   todo: {
     title: "Todo List",
-    description: "Simple task tracking",
+    description: "Priority-based task tracking",
     icon: "✅",
     content: [
       {
-        id: "todo-now-header",
+        id: "todo-high",
         type: "heading",
-        content: [{ type: "text", text: "Now", styles: {} }],
+        content: [{ type: "text", text: "🔴 High Priority", styles: { bold: true, textColor: "red" } }],
         props: { level: 2 }
       },
       {
-        id: "todo-now-items",
+        id: "todo-high-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "[ ] ", styles: {} }],
+        content: [{ type: "text", text: "", styles: { textColor: "red" } }],
         props: { checked: false }
       },
       {
-        id: "todo-next-header",
+        id: "todo-medium",
         type: "heading",
-        content: [{ type: "text", text: "Next", styles: {} }],
+        content: [{ type: "text", text: "🟠 Medium Priority", styles: { bold: true, textColor: "orange" } }],
         props: { level: 2 }
       },
       {
-        id: "todo-next-items",
+        id: "todo-medium-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "[ ] ", styles: {} }],
+        content: [{ type: "text", text: "", styles: { textColor: "orange" } }],
         props: { checked: false }
       },
       {
-        id: "todo-later-header",
+        id: "todo-low",
         type: "heading",
-        content: [{ type: "text", text: "Later", styles: {} }],
+        content: [{ type: "text", text: "🟢 Low Priority", styles: { bold: true, textColor: "green" } }],
         props: { level: 2 }
       },
       {
-        id: "todo-later-items",
+        id: "todo-low-items",
         type: "checkListItem",
-        content: [{ type: "text", text: "[ ] ", styles: {} }],
+        content: [{ type: "text", text: "", styles: { textColor: "green" } }],
         props: { checked: false }
       }
     ]
@@ -221,9 +245,15 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "💻",
     content: [
       {
-        id: "code-overview-header",
+        id: "code-title",
         type: "heading",
-        content: [{ type: "text", text: "Overview", styles: {} }],
+        content: [{ type: "text", text: "💻 Code Documentation", styles: { bold: true, textColor: "blue" } }],
+        props: { level: 2 }
+      },
+      {
+        id: "code-description-header",
+        type: "heading",
+        content: [{ type: "text", text: "📝 Description", styles: { bold: true, textColor: "purple" } }],
         props: { level: 2 }
       },
       {
@@ -232,9 +262,9 @@ export const noteTemplates: Record<string, NoteTemplate> = {
         content: []
       },
       {
-        id: "code-implementation-header",
+        id: "code-snippet-header",
         type: "heading",
-        content: [{ type: "text", text: "Implementation", styles: {} }],
+        content: [{ type: "text", text: "🔍 Code", styles: { bold: true, textColor: "green" } }],
         props: { level: 2 }
       },
       {
@@ -246,7 +276,7 @@ export const noteTemplates: Record<string, NoteTemplate> = {
       {
         id: "code-notes-header",
         type: "heading",
-        content: [{ type: "text", text: "Notes", styles: {} }],
+        content: [{ type: "text", text: "📌 Notes", styles: { bold: true, textColor: "red" } }],
         props: { level: 2 }
       },
       {
@@ -262,37 +292,43 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     icon: "🔍",
     content: [
       {
-        id: "research-overview-header",
+        id: "research-title",
         type: "heading",
-        content: [{ type: "text", text: "Overview", styles: {} }],
+        content: [{ type: "text", text: "🔍 Research", styles: { bold: true, textColor: "blue" } }],
+        props: { level: 2 }
+      },
+      {
+        id: "research-topic-header",
+        type: "heading",
+        content: [{ type: "text", text: "📚 Topic", styles: { bold: true, textColor: "purple" } }],
         props: { level: 2 }
       },
       {
         id: "research-topic",
         type: "paragraph",
-        content: [{ type: "text", text: "Topic: ", styles: { bold: true } }]
+        content: [{ type: "text", text: "", styles: { textColor: "purple" } }]
       },
       {
         id: "research-findings-header",
         type: "heading",
-        content: [{ type: "text", text: "Key Findings", styles: {} }],
+        content: [{ type: "text", text: "💡 Key Findings", styles: { bold: true, textColor: "green" } }],
         props: { level: 2 }
       },
       {
-        id: "research-points",
+        id: "research-findings",
         type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
+        content: [{ type: "text", text: "", styles: { textColor: "green" } }]
       },
       {
         id: "research-sources-header",
         type: "heading",
-        content: [{ type: "text", text: "Sources", styles: {} }],
+        content: [{ type: "text", text: "🔗 Sources", styles: { bold: true, textColor: "orange" } }],
         props: { level: 2 }
       },
       {
         id: "research-sources-items",
         type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
+        content: [{ type: "text", text: "", styles: { textColor: "blue" } }]
       }
     ]
   }
