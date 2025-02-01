@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useMemo } from 'react';
-import { SharePermission } from '../Database/db';
+import { SharePermission, Folder } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
 import type { Note, Tags } from '../Database/db';
-import { LayoutGridIcon, LayoutListIcon } from 'lucide-react';
+import { LayoutGridIcon, LayoutListIcon, FolderIcon, FolderPlusIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -33,6 +33,7 @@ import { XCircleIcon } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { BarChart2Icon, ClockIcon, UserIcon, ActivityIcon, LinkIcon } from 'lucide-react';
 import ShareDialog from '../Components/ShareDialog';
+import { cn } from "@/lib/utils";
 
 interface StoredNotesPreferences {
   activeTab: 'my-notes' | 'shared';
@@ -41,7 +42,8 @@ interface StoredNotesPreferences {
   selectedTags: string[];
   selectedTagFilters: Tags[];
   searchQuery: string;
-  dateFilter?: string; // Store as ISO string
+  dateFilter?: string;
+  selectedFolderId?: string;
 }
 
 const getBlockNoteContent = (jsonString: string) => {
@@ -131,7 +133,8 @@ const NoteCard = ({
   view, 
   onClick,
   allNotes,
-  navigate
+  navigate,
+  folders
 }: { 
   note: Note, 
   shares: SharePermission[], 
@@ -139,7 +142,8 @@ const NoteCard = ({
   view: 'grid' | 'list',
   onClick: () => void,
   allNotes: Note[],
-  navigate: (path: string) => void
+  navigate: (path: string) => void,
+  folders: Folder[]
 }) => {
   const isOwner = note.ownerUserId === user?.uid;
   const [noteShares, setNoteShares] = useState<SharePermission[]>([]);
@@ -147,7 +151,7 @@ const NoteCard = ({
   const hasShares = noteShares.length > 0;
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Tags[]>(note.tags || []);
-  const [localNote, setLocalNote] = useState(note);
+  const [localNote, setLocalNote] = useState<Note>(note);
 
   // Add function to load shares
   const loadShares = async () => {
@@ -258,6 +262,69 @@ const NoteCard = ({
                     <BarChart2Icon className="h-4 w-4 text-primary" />
                     Note Statistics
                   </h4>
+
+                  {/* Add Folder Selection */}
+                  {localNote.ownerUserId === user?.uid && (
+                    <div className="mb-4">
+                      <div className="text-sm text-muted-foreground mb-2">Folder</div>
+                      <Select
+                        value={localNote.folderId || "root"}
+                        onValueChange={async (value) => {
+                          try {
+                            const newFolderId = value === "root" ? undefined : value;
+                            await db.updateNote(note.firebaseId!, { folderId: newFolderId });
+                            setLocalNote(prev => ({
+                              ...prev,
+                              folderId: newFolderId
+                            }));
+                            toast({
+                              title: "Folder updated",
+                              description: "Note has been moved to the selected folder"
+                            });
+                          } catch (error) {
+                            console.error('Error updating folder:', error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to update folder",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue>
+                            <div className="flex items-center gap-2">
+                              <FolderIcon className="h-4 w-4" style={{ 
+                                color: localNote.folderId ? 
+                                  folders.find((f: Folder) => f.id === localNote.folderId)?.color : undefined 
+                              }} />
+                              {localNote.folderId ? 
+                                folders.find((f: Folder) => f.id === localNote.folderId)?.name || "Select folder" : 
+                                "Root"
+                              }
+                            </div>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="root">
+                            <div className="flex items-center gap-2">
+                              <FolderIcon className="h-4 w-4" />
+                              Root
+                            </div>
+                          </SelectItem>
+                          {folders.map((folder: Folder) => (
+                            <SelectItem key={folder.id} value={folder.id}>
+                              <div className="flex items-center gap-2">
+                                <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
+                                {folder.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="p-3">
                       <div className="text-2xl font-bold">
@@ -952,6 +1019,7 @@ export default function Notes() {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [shares, setShares] = useState<SharePermission[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'my-notes' | 'shared'>(() => {
@@ -1005,6 +1073,17 @@ export default function Notes() {
   });
   const [allTags, setAllTags] = useState<Tags[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
+  const [newFolderColor, setNewFolderColor] = useState('#4f46e5'); // Default indigo color
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(() => {
+    const stored = localStorage.getItem('notes-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredNotesPreferences;
+      return preferences.selectedFolderId;
+    }
+    return undefined;
+  });
 
   // Persist view preference
   useEffect(() => {
@@ -1204,6 +1283,19 @@ export default function Notes() {
     loadTags();
   }, []);
 
+  // Load folders
+  useEffect(() => {
+    const loadFolders = async () => {
+      try {
+        const userFolders = await db.getFolders();
+        setFolders(userFolders);
+      } catch (error) {
+        console.error('Error loading folders:', error);
+      }
+    };
+    loadFolders();
+  }, []);
+
   const myNotes = notes.filter(note => note.ownerUserId === user?.uid);
   const sharedWithMe = notes.filter(note => {
     if (!user) return false;
@@ -1212,6 +1304,33 @@ export default function Notes() {
       share.email === user.email
     );
   });
+
+  // Create new folder
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return;
+
+    try {
+      await db.createFolder({
+        name: newFolderName.trim(),
+        color: newFolderColor,
+      });
+      setNewFolderName('');
+      setNewFolderColor('#4f46e5');
+      setIsCreatingFolder(false);
+      toast({
+        title: "Folder created",
+        description: "Your new folder has been created successfully"
+      });
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create folder",
+        variant: "destructive"
+      });
+    }
+  };
+
 
   // Enhanced filtering logic
   const filteredNotes = useMemo(() => {
@@ -1222,6 +1341,13 @@ export default function Notes() {
           return false;
         }
         
+        // Folder filter
+        if (selectedFolderId !== undefined) {
+          if (note.folderId !== selectedFolderId) {
+            return false;
+          }
+        }
+
         // Tags filter
         if (selectedTags.length > 0) {
           if (!selectedTags.every(tag => note?.tags?.some(noteTag => noteTag.id === tag))) {
@@ -1266,7 +1392,7 @@ export default function Notes() {
         note?.tags?.some(noteTag => noteTag.id === filterTag.id)
       );
     });
-  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters, user?.uid]);
+  }, [activeTab, myNotes, sharedWithMe, searchQuery, selectedTags, dateFilter, sortBy, selectedTagFilters, user?.uid, selectedFolderId]);
 
   // Add effect to save preferences whenever they change
   useEffect(() => {
@@ -1278,9 +1404,10 @@ export default function Notes() {
       selectedTagFilters,
       searchQuery,
       dateFilter: dateFilter?.toISOString(),
+      selectedFolderId,
     };
     localStorage.setItem('notes-preferences', JSON.stringify(preferences));
-  }, [activeTab, view, sortBy, selectedTags, selectedTagFilters, searchQuery, dateFilter]);
+  }, [activeTab, view, sortBy, selectedTags, selectedTagFilters, searchQuery, dateFilter, selectedFolderId]);
 
   /**
    *
@@ -1291,8 +1418,8 @@ export default function Notes() {
     setDateFilter(undefined);
     setSelectedTagFilters([]);
     setSortBy('updated');
+    setSelectedFolderId(undefined);
     
-    // Update localStorage with cleared filters
     const preferences: StoredNotesPreferences = {
       activeTab,
       view,
@@ -1301,6 +1428,7 @@ export default function Notes() {
       selectedTagFilters: [],
       searchQuery: '',
       dateFilter: undefined,
+      selectedFolderId: undefined,
     };
     localStorage.setItem('notes-preferences', JSON.stringify(preferences));
   }
@@ -1383,6 +1511,53 @@ export default function Notes() {
 
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Folder Selection */}
+          <Select
+            value={selectedFolderId || "root"}
+            onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="All folders">
+                <div className="flex items-center gap-2">
+                  <FolderIcon className="h-4 w-4" />
+                  {selectedFolderId 
+                    ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
+                    : "All folders"
+                  }
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="root">
+                <div className="flex items-center gap-2">
+                  <FolderIcon className="h-4 w-4" />
+                  All folders
+                </div>
+              </SelectItem>
+              {folders.map(folder => (
+                <SelectItem key={folder.id} value={folder.id}>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
+                      {folder.name}
+                    </div>
+                  </div>
+                </SelectItem>
+              ))}
+              <Button
+                variant="ghost"
+                className="w-full justify-start mt-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCreatingFolder(true);
+                }}
+              >
+                <FolderPlusIcon className="h-4 w-4 mr-2" />
+                New Folder
+              </Button>
+            </SelectContent>
+          </Select>
+
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
             <SelectTrigger className="w-[140px]">
@@ -1481,8 +1656,23 @@ export default function Notes() {
         </div>
 
         {/* Active Filters Display */}
-        {(selectedTags.length > 0 || dateFilter) && (
+        {(selectedTags.length > 0 || dateFilter || selectedFolderId) && (
           <div className="flex flex-wrap gap-2">
+            {selectedFolderId && (
+              <Badge
+                variant="secondary"
+                className="gap-1"
+              >
+                <FolderIcon className="h-3 w-3 mr-1" style={{ 
+                  color: folders.find(f => f.id === selectedFolderId)?.color 
+                }} />
+                {folders.find(f => f.id === selectedFolderId)?.name}
+                <XIcon
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setSelectedFolderId(undefined)}
+                />
+              </Badge>
+            )}
             {selectedTags.map(tag => (
               <Badge
                 key={tag}
@@ -1563,6 +1753,7 @@ export default function Notes() {
                 onClick={() => navigate(`/notes/${note.firebaseId}`)}
                 allNotes={notes}
                 navigate={navigate}
+                folders={folders}
               />
             ))}
           </div>
@@ -1584,6 +1775,99 @@ export default function Notes() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       )}
+
+      {/* Create Folder Dialog */}
+      <Dialog open={isCreatingFolder} onOpenChange={setIsCreatingFolder}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Folder</DialogTitle>
+            <DialogDescription>
+              Customize your folder with a name and color
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Name</label>
+              <Input
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Folder name"
+                className="w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Color</label>
+              <div className="grid grid-cols-6 gap-2">
+                {[
+                  '#ef4444', // Red
+                  '#f97316', // Orange
+                  '#f59e0b', // Amber
+                  '#eab308', // Yellow
+                  '#84cc16', // Lime
+                  '#22c55e', // Green
+                  '#10b981', // Emerald
+                  '#14b8a6', // Teal
+                  '#06b6d4', // Cyan
+                  '#0ea5e9', // Sky
+                  '#3b82f6', // Blue
+                  '#6366f1', // Indigo
+                  '#8b5cf6', // Violet
+                  '#a855f7', // Purple
+                  '#d946ef', // Fuchsia
+                  '#ec4899', // Pink
+                  '#f43f5e', // Rose
+                  '#64748b', // Slate
+                ].map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={cn(
+                      "h-6 w-6 rounded-md border border-muted transition-all hover:scale-110",
+                      newFolderColor === color && "ring-2 ring-primary ring-offset-2"
+                    )}
+                    style={{ 
+                      backgroundColor: color,
+                      borderColor: color
+                    }}
+                    onClick={() => setNewFolderColor(color)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: newFolderColor + '20' }}
+              >
+                <FolderIcon className="w-5 h-5" style={{ color: newFolderColor }} />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium" style={{ color: newFolderColor }}>
+                  {newFolderName || 'Untitled Folder'}
+                </div>
+                <div className="text-xs text-muted-foreground">Preview</div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setNewFolderName('');
+                setNewFolderColor('#4f46e5');
+                setIsCreatingFolder(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateFolder}>
+              Create Folder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

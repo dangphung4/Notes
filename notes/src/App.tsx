@@ -23,6 +23,7 @@ import NewNote from './Core/Pages/NewNote';
 import EditNote from './Core/Pages/EditNote';
 import Install from './Core/Pages/Install';
 import Calendar from './Core/Pages/Calendar';
+import Folders from './Core/Pages/Folders';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, Command } from "@/components/ui/command";
 import { ThemeProvider } from './Core/Theme/ThemeProvider';
 
@@ -128,6 +129,15 @@ function CommandPalette() {
                 shortcut: ["G", "N"],
                 action: () => {
                   navigate("/notes");
+                  setOpen(false);
+                },
+              },
+              {
+                id: "folders",
+                name: "Folders",
+                shortcut: ["G", "F"],
+                action: () => {
+                  navigate("/folders");
                   setOpen(false);
                 },
               },
@@ -249,6 +259,14 @@ function AppRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/folders"
+              element={
+                <PrivateRoute>
+                  <Folders />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/notes"
               element={

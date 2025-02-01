@@ -37,6 +37,22 @@ export interface Tags {
   color: string;
 }
 
+export interface Folder {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  parentId?: string;
+  ownerUserId: string;
+  ownerEmail: string;
+  ownerDisplayName: string;
+  ownerPhotoURL?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isShared?: boolean;
+}
+
 export interface Note {
   id?: number;
   firebaseId?: string;
@@ -45,6 +61,7 @@ export interface Note {
   updatedAt: Date;
   createdAt: Date;
   tags?: Tags[];
+  folderId?: string;
 
   ownerUserId: string;
   ownerEmail: string;
@@ -118,21 +135,24 @@ class NotesDB extends Dexie {
   calendarEvents!: Dexie.Table<CalendarEvent, number>;
   tags: Dexie.Table<Tags, string>;
   users?: Dexie.Table<User, string>;
+  folders: Dexie.Table<Folder, string>;
 
   /**
    *
    */
   constructor() {
     super("NotesDB");
-    this.version(4).stores({
-      notes: "++id, firebaseId, title, updatedAt",
+    this.version(5).stores({
+      notes: "++id, firebaseId, title, updatedAt, folderId",
       calendarEvents: "++id, firebaseId, startDate, endDate, ownerUserId",
       tags: "++id, name, group",
       users: "++userId, email, displayName, photoURL, lastLoginAt, preferences",
+      folders: "++id, name, parentId, ownerUserId"
     });
     this.notes = this.table("notes");
     this.tags = this.table("tags");
     this.users = this.table("users");
+    this.folders = this.table("folders");
   }
 
   // Load notes from Firebase
@@ -168,6 +188,14 @@ class NotesDB extends Dexie {
             )
           : { docs: [] };
 
+      // Load folders
+      const foldersRef = collection(firestore, "folders");
+      const foldersQuery = query(
+        foldersRef,
+        where("ownerUserId", "==", user.uid)
+      );
+      const foldersSnapshot = await getDocs(foldersQuery);
+      
       // Clear existing notes
       await this.notes.clear();
 
@@ -195,6 +223,7 @@ class NotesDB extends Dexie {
           tags: data.tags || [],
           isPinned: data.isPinned || false,
           isArchived: data.isArchived || false,
+          folderId: data.folderId || null,
         });
       }
 
@@ -227,8 +256,32 @@ class NotesDB extends Dexie {
             tags: data.tags || [],
             isPinned: data.isPinned || false,
             isArchived: data.isArchived || false,
+            folderId: data.folderId || null,
           });
         }
+      }
+
+      // Load folders
+      await this.folders.clear();
+
+      // Add folders
+      for (const doc of foldersSnapshot.docs) {
+        const data = doc.data();
+        await this.folders.add({
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          color: data.color,
+          icon: data.icon,
+          parentId: data.parentId,
+          ownerUserId: data.ownerUserId,
+          ownerEmail: data.ownerEmail,
+          ownerDisplayName: data.ownerDisplayName,
+          ownerPhotoURL: data.ownerPhotoURL,
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+          isShared: data.isShared || false,
+        });
       }
     } catch (error) {
       console.error("Error loading from Firebase:", error);
@@ -303,6 +356,7 @@ class NotesDB extends Dexie {
           tags: [],
           isPinned: false,
           isArchived: false,
+          folderId: null,
         };
         const docRef = await addDoc(collection(firestore, "notes"), newNoteData);
         await this.notes.update(note.id!, { firebaseId: docRef.id });
@@ -449,6 +503,7 @@ class NotesDB extends Dexie {
         createdAt: new Date(),
         updatedAt: new Date(),
         tags: note.tags || [],
+        folderId: note.folderId || null,
       };
 
       const docRef = await addDoc(collection(firestore, "notes"), noteData);
@@ -487,6 +542,7 @@ class NotesDB extends Dexie {
         lastEditedByPhotoURL: user.photoURL || "",
         lastEditedAt: new Date(),
         tags: updates.tags || [],
+        folderId: updates.folderId !== undefined ? updates.folderId : noteDoc.data().folderId,
       };
 
       await updateDoc(noteRef, updateData);
@@ -1225,7 +1281,8 @@ class NotesDB extends Dexie {
         tags: note.tags || [],
         // Only include these fields if they are explicitly set to true or false
         ...(typeof note.isPinned === 'boolean' && { isPinned: note.isPinned }),
-        ...(typeof note.isArchived === 'boolean' && { isArchived: note.isArchived })
+        ...(typeof note.isArchived === 'boolean' && { isArchived: note.isArchived }),
+        folderId: note.folderId || null,
       };
 
       // Remove any undefined or null values
@@ -1245,6 +1302,120 @@ class NotesDB extends Dexie {
       }
     } catch (error) {
       console.error('Error syncing with Firebase:', error);
+      throw error;
+    }
+  }
+
+  // Folder Methods
+  async createFolder(folder: Partial<Folder>): Promise<string> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const folderData = {
+        ...folder,
+        ownerUserId: user.uid,
+        ownerEmail: user.email,
+        ownerDisplayName: user.displayName || "",
+        ownerPhotoURL: user.photoURL || "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const docRef = await addDoc(collection(firestore, "folders"), folderData);
+      await this.loadFromFirebase(); // Reload data
+      return docRef.id;
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      throw error;
+    }
+  }
+
+  async updateFolder(folderId: string, updates: Partial<Folder>) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const folderRef = doc(firestore, "folders", folderId);
+      const folderDoc = await getDoc(folderRef);
+
+      if (!folderDoc.exists()) {
+        throw new Error("Folder not found");
+      }
+
+      const folderData = folderDoc.data();
+      if (folderData.ownerUserId !== user.uid) {
+        throw new Error("Only the owner can update this folder");
+      }
+
+      const updateData = {
+        ...updates,
+        updatedAt: new Date(),
+      };
+
+      await updateDoc(folderRef, updateData);
+      await this.loadFromFirebase();
+    } catch (error) {
+      console.error("Error updating folder:", error);
+      throw error;
+    }
+  }
+
+  async deleteFolder(folderId: string) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const folderRef = doc(firestore, "folders", folderId);
+      const folderDoc = await getDoc(folderRef);
+
+      if (!folderDoc.exists()) return;
+
+      const folderData = folderDoc.data();
+      if (folderData.ownerUserId !== user.uid) {
+        throw new Error("Only the owner can delete this folder");
+      }
+
+      // Move all notes in this folder to root (no folder)
+      const notesRef = collection(firestore, "notes");
+      const notesInFolder = await getDocs(
+        query(notesRef, where("folderId", "==", folderId))
+      );
+
+      const updatePromises = notesInFolder.docs.map(doc =>
+        updateDoc(doc.ref, { folderId: null })
+      );
+      await Promise.all(updatePromises);
+
+      // Delete the folder
+      await deleteDoc(folderRef);
+      await this.loadFromFirebase();
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      throw error;
+    }
+  }
+
+  async getFolders(): Promise<Folder[]> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const foldersRef = collection(firestore, "folders");
+      const q = query(
+        foldersRef,
+        where("ownerUserId", "==", user.uid)
+      );
+      const snapshot = await getDocs(q);
+
+      return snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate()
+      })) as Folder[];
+    } catch (error) {
+      console.error("Error fetching folders:", error);
       throw error;
     }
   }
