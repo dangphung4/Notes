@@ -20,66 +20,46 @@ export const noteTemplates: Record<string, NoteTemplate> = {
   },
   meeting: {
     title: "Meeting Notes",
-    description: "Template for meeting minutes and action items",
+    description: "Quick capture for meetings",
     icon: "👥",
     content: [
       {
-        id: "meeting-1",
-        type: "heading",
-        content: [{ type: "text", text: "Meeting Summary", styles: { bold: true } }],
-        props: { level: 1 }
-      },
-      {
-        id: "meeting-2",
+        id: "meeting-date",
         type: "paragraph",
-        content: [{ type: "text", text: "Date: ", styles: { italic: true } }]
+        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: "", styles: { italic: true } }]
       },
       {
-        id: "meeting-3",
+        id: "meeting-attendees",
         type: "paragraph",
-        content: [{ type: "text", text: "Duration: ", styles: { italic: true } }]
+        content: [{ type: "text", text: "👥 Attendees: ", styles: { bold: true } }]
       },
       {
-        id: "meeting-4",
-        type: "heading",
-        content: [{ type: "text", text: "Attendees", styles: { bold: true } }],
-        props: { level: 2 }
+        id: "meeting-agenda",
+        type: "paragraph",
+        content: [{ type: "text", text: "📋 Agenda", styles: { bold: true } }]
       },
       {
-        id: "meeting-5",
+        id: "meeting-agenda-items",
         type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "meeting-6",
-        type: "heading",
-        content: [{ type: "text", text: "Key Discussion Points", styles: { bold: true } }],
-        props: { level: 2 }
+        id: "meeting-notes",
+        type: "paragraph",
+        content: [{ type: "text", text: "📝 Notes", styles: { bold: true } }]
       },
       {
-        id: "meeting-7",
+        id: "meeting-notes-items",
         type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "meeting-8",
-        type: "heading",
-        content: [{ type: "text", text: "Decisions Made", styles: { bold: true, backgroundColor: "yellow" } }],
-        props: { level: 2 }
+        id: "meeting-actions",
+        type: "paragraph",
+        content: [{ type: "text", text: "✅ Action Items", styles: { bold: true } }]
       },
       {
-        id: "meeting-9",
-        type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
-      },
-      {
-        id: "meeting-10",
-        type: "heading",
-        content: [{ type: "text", text: "Action Items", styles: { bold: true, textColor: "red" } }],
-        props: { level: 2 }
-      },
-      {
-        id: "meeting-11",
+        id: "meeting-actions-items",
         type: "checkListItem",
         content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
@@ -87,323 +67,177 @@ export const noteTemplates: Record<string, NoteTemplate> = {
     ]
   },
   daily: {
-    title: "Daily Journal",
-    description: "Template for daily reflections and tasks",
+    title: "Daily Log",
+    description: "Track your day",
     icon: "📅",
     content: [
       {
-        id: "daily-1",
-        type: "heading",
-        content: [{ type: "text", text: "Daily Journal", styles: { bold: true } }],
-        props: { level: 1 }
-      },
-      {
-        id: "daily-2",
+        id: "daily-date",
         type: "paragraph",
-        content: [{ type: "text", text: "Date: ", styles: { italic: true } }]
+        content: [{ type: "text", text: "📅 ", styles: {} }, { type: "text", text: "", styles: { italic: true } }]
       },
       {
-        id: "daily-3",
-        type: "heading",
-        content: [{ type: "text", text: "Today's Goals", styles: { bold: true } }],
-        props: { level: 2 }
+        id: "daily-focus",
+        type: "paragraph",
+        content: [{ type: "text", text: "🎯 Today's Focus", styles: { bold: true } }]
       },
       {
-        id: "daily-4",
+        id: "daily-tasks",
         type: "checkListItem",
         content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
       },
       {
-        id: "daily-5",
-        type: "heading",
-        content: [{ type: "text", text: "Notes & Thoughts", styles: { bold: true } }],
-        props: { level: 2 }
+        id: "daily-notes",
+        type: "paragraph",
+        content: [{ type: "text", text: "📝 Notes & Thoughts", styles: { bold: true } }]
       },
       {
-        id: "daily-6",
+        id: "daily-notes-content",
         type: "paragraph",
         content: []
-      },
-      {
-        id: "daily-7",
-        type: "heading",
-        content: [{ type: "text", text: "Tomorrow's Plan", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "daily-8",
-        type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
       }
     ]
   },
   project: {
     title: "Project Plan",
-    description: "Structured template for project planning",
+    description: "Simple project planning",
     icon: "📊",
     content: [
       {
-        id: "project-1",
-        type: "heading",
-        content: [{ type: "text", text: "Project Overview", styles: { bold: true } }],
-        props: { level: 1 }
-      },
-      {
-        id: "project-2",
-        type: "heading",
-        content: [{ type: "text", text: "Project Details", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "project-3",
+        id: "project-overview",
         type: "paragraph",
-        content: [
-          { type: "text", text: "Project Name: ", styles: { bold: true } },
-          { type: "text", text: "", styles: {} }
-        ]
+        content: [{ type: "text", text: "🎯 Project: ", styles: { bold: true } }]
       },
       {
-        id: "project-4",
+        id: "project-dates",
         type: "paragraph",
-        content: [
-          { type: "text", text: "Start Date: ", styles: { bold: true } },
-          { type: "text", text: "", styles: {} }
-        ]
+        content: [{ type: "text", text: "📅 Timeline: ", styles: { bold: true } }]
       },
       {
-        id: "project-5",
+        id: "project-goals",
         type: "paragraph",
-        content: [
-          { type: "text", text: "End Date: ", styles: { bold: true } },
-          { type: "text", text: "", styles: {} }
-        ]
+        content: [{ type: "text", text: "🎯 Goals", styles: { bold: true } }]
       },
       {
-        id: "project-6",
-        type: "heading",
-        content: [{ type: "text", text: "Objectives", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "project-7",
+        id: "project-goals-items",
         type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "project-8",
-        type: "heading",
-        content: [{ type: "text", text: "Timeline & Milestones", styles: { bold: true } }],
-        props: { level: 2 }
+        id: "project-tasks",
+        type: "paragraph",
+        content: [{ type: "text", text: "✅ Tasks", styles: { bold: true } }]
       },
       {
-        id: "project-9",
+        id: "project-tasks-items",
         type: "checkListItem",
         content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
-      }
-    ]
-  },
-  class: {
-    title: "Class Notes",
-    description: "Template for taking notes during class",
-    icon: "📚",
-    content: [
-      {
-        id: "class-1",
-        type: "heading",
-        content: [{ type: "text", text: "Class Notes", styles: { bold: true } }],
-        props: { level: 1 }
-      },
-      {
-        id: "class-2",
-        type: "paragraph",
-        content: [
-          { type: "text", text: "Course: ", styles: { bold: true } },
-          { type: "text", text: "", styles: {} }
-        ]
-      },
-      {
-        id: "class-3",
-        type: "paragraph",
-        content: [
-          { type: "text", text: "Date: ", styles: { bold: true } },
-          { type: "text", text: "", styles: {} }
-        ]
-      },
-      {
-        id: "class-4",
-        type: "heading",
-        content: [{ type: "text", text: "Topics Covered", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "class-5",
-        type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
-      },
-      {
-        id: "class-6",
-        type: "heading",
-        content: [{ type: "text", text: "Key Points", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "class-7",
-        type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
-      },
-      {
-        id: "class-8",
-        type: "heading",
-        content: [{ type: "text", text: "Questions", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "class-9",
-        type: "bulletListItem",
-        content: [{ type: "text", text: "", styles: {} }]
       }
     ]
   },
   todo: {
     title: "Todo List",
-    description: "Simple checklist for tasks and todos",
+    description: "Simple task tracking",
     icon: "✅",
     content: [
       {
-        id: "todo-1",
-        type: "heading",
-        content: [{ type: "text", text: "Todo List", styles: { bold: true } }],
-        props: { level: 1 }
+        id: "todo-now",
+        type: "paragraph",
+        content: [{ type: "text", text: "🔥 Now", styles: { bold: true } }]
       },
       {
-        id: "todo-2",
-        type: "heading",
-        content: [{ type: "text", text: "High Priority", styles: { bold: true, textColor: "red" } }],
-        props: { level: 2 }
-      },
-      {
-        id: "todo-3",
+        id: "todo-now-items",
         type: "checkListItem",
         content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
       },
       {
-        id: "todo-4",
-        type: "heading",
-        content: [{ type: "text", text: "Medium Priority", styles: { bold: true, textColor: "orange" } }],
-        props: { level: 2 }
+        id: "todo-next",
+        type: "paragraph",
+        content: [{ type: "text", text: "⏱️ Next", styles: { bold: true } }]
       },
       {
-        id: "todo-5",
+        id: "todo-next-items",
         type: "checkListItem",
         content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
       },
       {
-        id: "todo-6",
-        type: "heading",
-        content: [{ type: "text", text: "Low Priority", styles: { bold: true, textColor: "green" } }],
-        props: { level: 2 }
+        id: "todo-later",
+        type: "paragraph",
+        content: [{ type: "text", text: "📋 Later", styles: { bold: true } }]
       },
       {
-        id: "todo-7",
+        id: "todo-later-items",
         type: "checkListItem",
         content: [{ type: "text", text: "", styles: {} }],
         props: { checked: false }
       }
     ]
   },
-  codeSnippet: {
-    title: "Code Documentation",
-    description: "Template for code documentation with syntax highlighting",
+  code: {
+    title: "Code Snippet",
+    description: "Document code with syntax highlighting",
     icon: "💻",
     content: [
       {
-        id: "code-1",
-        type: "heading",
-        content: [{ type: "text", text: "Code Documentation", styles: { bold: true } }],
-        props: { level: 1 }
+        id: "code-description",
+        type: "paragraph",
+        content: [{ type: "text", text: "📝 Description", styles: { bold: true } }]
       },
       {
-        id: "code-2",
+        id: "code-description-content",
         type: "paragraph",
-        content: [{ type: "text", text: "Description:", styles: { bold: true } }]
+        content: []
       },
       {
-        id: "code-3",
+        id: "code-snippet",
+        type: "codeBlock",
+        content: [{ type: "text", text: "// Add code here", styles: {} }],
+        props: { language: "typescript" }
+      },
+      {
+        id: "code-notes",
         type: "paragraph",
+        content: [{ type: "text", text: "📌 Notes", styles: { bold: true } }]
+      },
+      {
+        id: "code-notes-items",
+        type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
-      },
-      {
-        id: "code-4",
-        type: "heading",
-        content: [{ type: "text", text: "Implementation", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "code-5",
-        type: "codeBlock",
-        content: [{ type: "text", text: "// Add your code here", styles: {} }],
-        props: { language: "typescript" }
-      },
-      {
-        id: "code-6",
-        type: "heading",
-        content: [{ type: "text", text: "Usage Example", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "code-7",
-        type: "codeBlock",
-        content: [{ type: "text", text: "// Usage example", styles: {} }],
-        props: { language: "typescript" }
       }
     ]
   },
   research: {
-    title: "Research Notes",
-    description: "Template for research and study notes",
+    title: "Research Note",
+    description: "Capture research and findings",
     icon: "🔍",
     content: [
       {
-        id: "research-1",
-        type: "heading",
-        content: [{ type: "text", text: "Research Topic", styles: { bold: true } }],
-        props: { level: 1 }
+        id: "research-topic",
+        type: "paragraph",
+        content: [{ type: "text", text: "🔍 Topic: ", styles: { bold: true } }]
       },
       {
-        id: "research-2",
-        type: "heading",
-        content: [{ type: "text", text: "Key Concepts", styles: { bold: true } }],
-        props: { level: 2 }
+        id: "research-summary",
+        type: "paragraph",
+        content: [{ type: "text", text: "📝 Key Points", styles: { bold: true } }]
       },
       {
-        id: "research-3",
+        id: "research-points",
         type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
       },
       {
-        id: "research-4",
-        type: "heading",
-        content: [{ type: "text", text: "Summary", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "research-5",
+        id: "research-sources",
         type: "paragraph",
-        content: [{ type: "text", text: "", styles: {} }]
+        content: [{ type: "text", text: "📚 Sources", styles: { bold: true } }]
       },
       {
-        id: "research-6",
-        type: "heading",
-        content: [{ type: "text", text: "References", styles: { bold: true } }],
-        props: { level: 2 }
-      },
-      {
-        id: "research-7",
-        type: "numberedListItem",
+        id: "research-sources-items",
+        type: "bulletListItem",
         content: [{ type: "text", text: "", styles: {} }]
       }
     ]
