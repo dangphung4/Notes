@@ -11,6 +11,7 @@ import {
   query,
   where,
   documentId,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { auth, db as firestore } from "../Auth/firebase";
 
@@ -55,6 +56,7 @@ export interface Folder {
 }
 
 export interface Note {
+  type: string;
   id?: number;
   firebaseId?: string;
   title: string;
@@ -762,63 +764,37 @@ class NotesDB extends Dexie {
       const createdByQuery = query(eventsRef, where("createdBy", "==", user.email));
       const createdBySnapshot = await getDocs(createdByQuery);
       
-      // Get all events to check for shares
-      const allEventsSnapshot = await getDocs(eventsRef);
+      // Get events shared with the user
+      const sharedQuery = query(
+        eventsRef,
+        where(`sharedWith`, "array-contains", {
+          email: user.email,
+          permission: "view",
+          status: "accepted"
+        })
+      );
+      const sharedSnapshot = await getDocs(sharedQuery);
 
       const events: CalendarEvent[] = [];
-      const syncPromises: Promise<void>[] = [];
 
-      // Add events created by the user
-      createdBySnapshot.docs.forEach(doc => {
+      // Process all events from both queries
+      const processDoc = async (doc: QueryDocumentSnapshot) => {
         const eventData = doc.data();
         const startDate = eventData.startDate?.toDate() || new Date();
         const endDate = eventData.endDate?.toDate() || new Date();
         const lastModifiedAt = eventData.lastModifiedAt?.toDate();
 
-        events.push({
-          id: this.generateUniqueId(),
-          firebaseId: doc.id,
-          title: eventData.title || "",
-          startDate,
-          endDate,
-          description: eventData.description,
-          location: eventData.location,
-          allDay: eventData.allDay || false,
-          color: eventData.color,
-          reminderMinutes: eventData.reminderMinutes,
-          createdBy: eventData.createdBy,
-          createdByPhotoURL: eventData.createdByPhotoURL,
-          lastModifiedBy: eventData.lastModifiedBy,
-          lastModifiedByDisplayName: eventData.lastModifiedByDisplayName,
-          lastModifiedByPhotoURL: eventData.lastModifiedByPhotoURL,
-          lastModifiedAt,
-          sharedWith: eventData.sharedWith || [],
-          tags: eventData.tags || [],
-        });
-      });
+        // Only add if we haven't added this event already
+        if (!events.some(e => e.firebaseId === doc.id)) {
+          // Check if we already have this event in local DB
+          const existingEvent = await this.calendarEvents
+            .where('firebaseId')
+            .equals(doc.id)
+            .first();
 
-      // Add shared events where user is not the creator
-      allEventsSnapshot.docs.forEach(doc => {
-        // Skip if we already added this event (user is creator)
-        if (events.some(e => e.firebaseId === doc.id)) {
-          return;
-        }
-
-        const eventData = doc.data();
-        const sharedWith = eventData.sharedWith || [];
-
-        // Check if current user is in sharedWith array
-        const userShare = sharedWith.find(
-          (share: CalendarEventShare) => share.email === user.email
-        );
-
-        if (userShare) {
-          const startDate = eventData.startDate?.toDate() || new Date();
-          const endDate = eventData.endDate?.toDate() || new Date();
-          const lastModifiedAt = eventData.lastModifiedAt?.toDate();
-
-          events.push({
-            id: this.generateUniqueId(),
+          const event: CalendarEvent = {
+            // If we have the event locally, use its ID, otherwise generate new one
+            id: existingEvent?.id || this.generateUniqueId(),
             firebaseId: doc.id,
             title: eventData.title || "",
             startDate,
@@ -834,14 +810,34 @@ class NotesDB extends Dexie {
             lastModifiedByDisplayName: eventData.lastModifiedByDisplayName,
             lastModifiedByPhotoURL: eventData.lastModifiedByPhotoURL,
             lastModifiedAt,
-            sharedWith,
+            sharedWith: eventData.sharedWith || [],
             tags: eventData.tags || [],
-          });
+          };
+
+          // Update or add to local DB
+          if (existingEvent) {
+            await this.calendarEvents.update(existingEvent.id, event);
+          } else {
+            await this.calendarEvents.add(event);
+          }
+
+          events.push(event);
         }
-      });
+      };
+
+      // Process events sequentially to maintain consistency
+      for (const doc of createdBySnapshot.docs) {
+        await processDoc(doc);
+      }
+      
+      for (const doc of sharedSnapshot.docs) {
+        await processDoc(doc);
+      }
 
       // Sort events by date
       events.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+      console.log('Firebase events:', events); // Debug log
 
       return events;
     } catch (error) {
@@ -973,100 +969,78 @@ class NotesDB extends Dexie {
    * @param id
    * @param updates
    */
-  async updateCalendarEvent(id: number, updates: Partial<CalendarEvent>) {
+  async updateCalendarEvent(id: number | string, updates: Partial<CalendarEvent>) {
     console.log("Updating event:", { id, updates });
-    const event = await this.calendarEvents.get(id);
     const user = auth.currentUser;
-
-    if (!event || !user) {
-      console.error("Event not found or user not authenticated:", {
-        event,
-        user,
-      });
-      throw new Error("Event not found or user not authenticated");
-    }
+    if (!user) throw new Error("User not authenticated");
 
     try {
-      const updatedEvent: CalendarEvent = {
-        ...event,
+      // First get the event from local DB
+      let localEvent: CalendarEvent | undefined;
+      
+      if (typeof id === 'number') {
+        localEvent = await this.calendarEvents.get(id);
+      } else {
+        // If we got a firebaseId, look it up in local DB
+        localEvent = await this.calendarEvents
+          .where('firebaseId')
+          .equals(id)
+          .first();
+      }
+
+      if (!localEvent || !localEvent.firebaseId) {
+        throw new Error("Event not found in local database");
+      }
+
+      // Get the event from Firebase
+      const eventRef = doc(firestore, "calendarEvents", localEvent.firebaseId);
+      const eventDoc = await getDoc(eventRef);
+
+      if (!eventDoc.exists()) {
+        throw new Error("Event not found in Firebase");
+      }
+
+      const eventData = eventDoc.data();
+
+      // Check permissions
+      const isCreator = eventData.createdBy === user.email;
+      const hasEditPermission = eventData.sharedWith?.some(
+        (share: CalendarEventShare) => 
+          share.email === user.email && 
+          share.permission === "edit" &&
+          share.status === "accepted"
+      );
+
+      if (!isCreator && !hasEditPermission) {
+        throw new Error("No permission to edit this event");
+      }
+
+      const updatedEvent = {
         ...updates,
-        id: event.id,
-        title: updates.title || event.title,
-        startDate: updates.startDate || event.startDate,
-        createdBy: event.createdBy,
-        sharedWith: updates.sharedWith || event.sharedWith || [],
         lastModifiedBy: user.email || "",
         lastModifiedByDisplayName: user.displayName || "",
         lastModifiedByPhotoURL: user.photoURL || "",
-        lastModifiedAt: new Date(),
+        lastModifiedAt: new Date()
       };
 
-      if (event.firebaseId) {
-        const eventRef = doc(firestore, "calendarEvents", event.firebaseId);
-        const eventDoc = await getDoc(eventRef);
+      // Update in Firebase
+      await updateDoc(eventRef, updatedEvent);
 
-        if (eventDoc.exists()) {
-          const firebaseData = eventDoc.data();
-          const existingShares = firebaseData.sharedWith || [];
-          const newShares = updates.sharedWith || existingShares;
+      // Update locally
+      await this.calendarEvents.update(localEvent.id, {
+        ...updatedEvent,
+        firebaseId: localEvent.firebaseId,
+        id: localEvent.id
+      } as Partial<CalendarEvent>);
 
-          const shareMap = new Map();
-          existingShares.forEach((share: CalendarEventShare) => {
-            shareMap.set(share.email, share);
-          });
-
-          const mergedShares = newShares.map((share: CalendarEventShare) => {
-            const existingShare = shareMap.get(share.email);
-            if (existingShare) {
-              return { ...share, status: existingShare.status };
-            }
-            return { ...share, status: "pending" };
-          });
-
-          updatedEvent.sharedWith = mergedShares;
-
-          // properly remove the id field for firestore
-          const { id: _, ...firestoreData } = updatedEvent;
-          console.log("Updating Firestore with:", firestoreData);
-          await updateDoc(eventRef, firestoreData);
-
-          // update local copies for all users who have accepted the share
-          const acceptedShares = mergedShares.filter(
-            (share: { status: string }) => share.status === "accepted"
-          );
-          for (const _share of acceptedShares) {
-            const sharedEventRef = await this.calendarEvents
-              .where("firebaseId")
-              .equals(event.firebaseId)
-              .first();
-
-            if (sharedEventRef) {
-              await this.calendarEvents.update(sharedEventRef.id, (obj) => {
-                Object.assign(obj, {
-                  ...updatedEvent,
-                  id: sharedEventRef.id,
-                  sharedWith: mergedShares,
-                });
-              });
-            }
-          }
-        }
-      }
-
-      // update locally
-      await this.calendarEvents.update(id, (obj) => {
-        Object.assign(obj, updatedEvent);
-      });
-
-      if (updates.startDate || updates.reminderMinutes) {
-        await this.scheduleEventReminder(updatedEvent);
-      }
-
-      await this.loadFromFirebase();
-
-      return updatedEvent;
+      return {
+        ...localEvent,
+        ...updatedEvent,
+        id: localEvent.id,
+        firebaseId: localEvent.firebaseId
+      };
     } catch (error) {
-      console.error("Detailed error in updateCalendarEvent:", error);
+      console.error("Error updating calendar event:", error);
       throw error;
     }
   }
