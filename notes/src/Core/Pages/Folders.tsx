@@ -343,7 +343,7 @@ const FolderTreeItem = ({
                           )}
 
                           {/* Note Stats */}
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-3 gap-4">
                             <div className="p-4 border rounded-lg">
                               <div className="text-2xl font-bold">
                                 {note.content ? getBlockNoteContent(note.content).split(/\s+/).filter(Boolean).length : 0}
@@ -355,6 +355,18 @@ const FolderTreeItem = ({
                                 {note.content ? getBlockNoteContent(note.content).split('\n').filter(Boolean).length : 0}
                               </div>
                               <div className="text-xs text-muted-foreground">Lines</div>
+                            </div>
+                            <div className="p-4 border rounded-lg">
+                              <div className="text-2xl font-bold">
+                                {(() => {
+                                  if (!note.content) return '0';
+                                  const parsedText = getBlockNoteContent(note.content);
+                                  const charCount = parsedText.length;
+                                  if (charCount < 1000) return charCount;
+                                  return `${(charCount / 1000).toFixed(1)}K`;
+                                })()}
+                              </div>
+                              <div className="text-xs text-muted-foreground">Characters</div>
                             </div>
                           </div>
 
@@ -379,28 +391,112 @@ const FolderTreeItem = ({
                             </div>
                           )}
 
-                          {/* Note Details */}
+                          {/* Contributors */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium">Details</h4>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Created</span>
-                                <span>{formatTimeAgo(note.createdAt)}</span>
+                            <h4 className="text-sm font-medium">Contributors</h4>
+                            <div className="space-y-3">
+                              {/* Owner */}
+                              <div className="flex items-center gap-3 p-3 border rounded-lg">
+                                <div className="relative">
+                                  {note.ownerPhotoURL ? (
+                                    <img
+                                      src={note.ownerPhotoURL}
+                                      alt={note.ownerDisplayName}
+                                      className="w-10 h-10 rounded-full"
+                                    />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                      <span className="text-lg font-medium text-primary">
+                                        {note.ownerDisplayName?.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="absolute -bottom-1 -right-1 bg-primary text-white text-xs px-1 rounded">
+                                    Owner
+                                  </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium truncate">
+                                    {note.ownerDisplayName}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Created {formatTimeAgo(note.createdAt)}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Last updated</span>
-                                <span>{formatTimeAgo(note.updatedAt)}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Owner</span>
-                                <span>{note.ownerDisplayName}</span>
-                              </div>
-                              {note.lastEditedByDisplayName && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Last edited by</span>
-                                  <span>{note.lastEditedByDisplayName}</span>
+
+                              {/* Last Editor (if different from owner) */}
+                              {note.lastEditedByDisplayName && note.lastEditedByUserId !== note.ownerUserId && (
+                                <div className="flex items-center gap-3 p-3 border rounded-lg">
+                                  <div className="relative">
+                                    {note.lastEditedByPhotoURL ? (
+                                      <img
+                                        src={note.lastEditedByPhotoURL}
+                                        alt={note.lastEditedByDisplayName}
+                                        className="w-10 h-10 rounded-full"
+                                      />
+                                    ) : (
+                                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <span className="text-lg font-medium text-primary">
+                                          {note.lastEditedByDisplayName?.charAt(0).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="absolute -bottom-1 -right-1 bg-muted-foreground text-white text-xs px-1 rounded">
+                                      Editor
+                                    </div>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium truncate">
+                                      {note.lastEditedByDisplayName}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Modified {formatTimeAgo(note.updatedAt)}
+                                    </div>
+                                  </div>
                                 </div>
                               )}
+                            </div>
+                          </div>
+
+                          {/* Note Activity */}
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-medium">Activity</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                  <PencilIcon className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium">Created</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {new Date(note.createdAt).toLocaleString()}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="h-4 w-4 text-primary"
+                                  >
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium">Last Modified</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {new Date(note.updatedAt).toLocaleString()}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
 
