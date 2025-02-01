@@ -53,7 +53,7 @@ const FolderTreeItem = ({
     <div>
       <div
         className={cn(
-          "group flex items-center gap-2 py-2 px-2 hover:bg-muted/50 rounded-lg cursor-pointer relative",
+          "group flex items-center gap-2 py-3 px-3 hover:bg-muted/50 rounded-lg cursor-pointer relative transition-all",
           level > 0 && "ml-6",
           folder.isExpanded && "bg-muted/50"
         )}
@@ -66,8 +66,10 @@ const FolderTreeItem = ({
         <div className="h-6 w-6 shrink-0 flex items-center justify-center">
           <ChevronRightIcon 
             className={cn(
-              "h-4 w-4 transition-transform",
-              folder.isExpanded && "rotate-90"
+              "h-4 w-4 transition-transform duration-200",
+              folder.isExpanded && "rotate-90",
+              // Only hide arrow if folder has no children AND no notes
+              (folder.children.length === 0 && folderNotes.length === 0) && "opacity-0"
             )}
           />
         </div>
@@ -81,12 +83,12 @@ const FolderTreeItem = ({
         <div className="flex items-center gap-3">
           {/* Folder Stats */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 bg-muted/50 px-2 py-0.5 rounded-md">
               <FileTextIcon className="h-3.5 w-3.5" />
               <span>{folderNotes.length}</span>
             </div>
             {folder.children.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 bg-muted/50 px-2 py-0.5 rounded-md">
                 <FolderIcon className="h-3.5 w-3.5" />
                 <span>{folder.children.length}</span>
               </div>
@@ -99,46 +101,46 @@ const FolderTreeItem = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-7 w-7 rounded-full hover:bg-background"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate('/notes/new', { state: { folderId: folder.id } });
                 }}
               >
-                <PlusIcon className="h-3 w-3" />
+                <PlusIcon className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-7 w-7 rounded-full hover:bg-background"
                 onClick={(e) => {
                   e.stopPropagation();
                   onCreateSubfolder(folder);
                 }}
               >
-                <FolderIcon className="h-3 w-3" />
+                <FolderIcon className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-7 w-7 rounded-full hover:bg-background"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(folder);
                 }}
               >
-                <PencilIcon className="h-3 w-3" />
+                <PencilIcon className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
+                className="h-7 w-7 rounded-full hover:bg-destructive/10 hover:text-destructive"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(folder.id);
                 }}
               >
-                <TrashIcon className="h-3 w-3" />
+                <TrashIcon className="h-3.5 w-3.5" />
               </Button>
             </div>
           )}
@@ -153,7 +155,7 @@ const FolderTreeItem = ({
               {folderNotes.map(note => (
                 <div
                   key={note.firebaseId}
-                  className="flex flex-col gap-2 p-3 hover:bg-muted/50 rounded-lg cursor-pointer text-sm group"
+                  className="flex flex-col gap-2 p-3 hover:bg-muted/50 rounded-lg cursor-pointer text-sm group transition-all"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/notes/${note.firebaseId}`);
@@ -167,7 +169,7 @@ const FolderTreeItem = ({
                       {note.title || 'Untitled'}
                     </span>
                     <div className="flex items-center gap-2 text-muted-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <span className="text-xs">
+                      <span className="text-xs bg-muted/50 px-2 py-0.5 rounded-md">
                         {formatTimeAgo(note.updatedAt)}
                       </span>
                     </div>
@@ -184,7 +186,8 @@ const FolderTreeItem = ({
                       {note.tags.map(tag => (
                         <Badge
                           key={tag.id}
-                          className="text-[10px] px-1"
+                          variant="secondary"
+                          className="text-[10px] px-1.5 py-0 h-4"
                           style={{
                             backgroundColor: tag.color + '20',
                             color: tag.color
@@ -420,11 +423,18 @@ export default function Folders() {
     if (!newFolderName.trim()) return;
 
     try {
-      await db.createFolder({
+      // Create folder data object, omitting parentId if it's not set
+      const folderData: Partial<Folder> = {
         name: newFolderName.trim(),
         color: newFolderColor,
-        parentId: selectedFolder?.id
-      });
+      };
+
+      // Only add parentId if we're creating a subfolder
+      if (selectedFolder?.id) {
+        folderData.parentId = selectedFolder.id;
+      }
+
+      await db.createFolder(folderData);
       setNewFolderName('');
       setNewFolderColor('#4f46e5');
       setIsCreatingFolder(false);
@@ -494,15 +504,15 @@ export default function Folders() {
     <div className="container max-w-5xl mx-auto px-4 py-6">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold">Folders</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">Folders</h1>
+          <p className="text-muted-foreground mt-1">
             Organize your notes in a hierarchical structure
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Button 
             size="lg"
-            className="w-full sm:w-auto bg-primary/10 hover:bg-primary/20 text-primary"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90"
             onClick={() => navigate('/notes/new')}
           >
             <PlusIcon className="h-4 w-4 mr-2" />
@@ -510,7 +520,8 @@ export default function Folders() {
           </Button>
           <Button
             size="lg"
-            className="w-full sm:w-auto"
+            variant="outline"
+            className="w-full sm:w-auto border-dashed"
             onClick={() => {
               setSelectedFolder(null);
               setIsCreatingFolder(true);
@@ -522,7 +533,7 @@ export default function Folders() {
         </div>
       </div>
 
-      <Card className="p-4">
+      <Card className="p-4 border-dashed">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -543,7 +554,7 @@ export default function Folders() {
                 onDelete={(folderId) => setFolderToDelete(folderId)}
                 onCreateSubfolder={(folder) => {
                   setSelectedFolder(folder);
-                  setNewFolderName(folder.name);
+                  setNewFolderName('');
                   setNewFolderColor(folder.color || '#4f46e5');
                   setIsCreatingFolder(true);
                 }}
@@ -552,9 +563,9 @@ export default function Folders() {
             ))}
           </div>
         ) : (
-          <div className="text-center text-muted-foreground py-8">
-            <FolderIcon className="mx-auto h-12 w-12 mb-4" />
-            <h3 className="font-semibold mb-2">No folders yet</h3>
+          <div className="text-center text-muted-foreground py-12">
+            <FolderIcon className="mx-auto h-16 w-16 mb-4 opacity-50" />
+            <h3 className="font-semibold text-lg mb-2">No folders yet</h3>
             <p>Create your first folder to organize your notes</p>
           </div>
         )}
