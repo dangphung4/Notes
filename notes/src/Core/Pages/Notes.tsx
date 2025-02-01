@@ -264,7 +264,7 @@ const NoteCard = ({
                   </h4>
 
                   {/* Add Folder Selection */}
-                  {hasEditAccess(note, user, shares) && (
+                  {localNote.ownerUserId === user?.uid && (
                     <div className="mb-4">
                       <div className="text-sm text-muted-foreground mb-2">Folder</div>
                       <Select
