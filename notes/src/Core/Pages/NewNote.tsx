@@ -6,12 +6,19 @@ import { db } from '../Database/db';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../Auth/AuthContext';
-import type { Note } from '../Database/db';
+import type { Note, Folder } from '../Database/db';
 import { NoteTemplate, noteTemplates } from '../Components/NoteTemplates';
 import TemplateDialog from '../Components/TemplateDialog';
-import { SaveIcon, LayoutTemplateIcon } from 'lucide-react';
+import { SaveIcon, LayoutTemplateIcon, FolderIcon } from 'lucide-react';
 import { BlockNoteEditor } from '@blocknote/core';
 import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   BoldIcon,
   ItalicIcon,
@@ -34,6 +41,8 @@ export default function NewNote() {
   const navigate = useNavigate();
   const titleInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<BlockNoteEditor | null>(null);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
   const [activeStyles, setActiveStyles] = useState({
     bold: false,
     italic: false,
@@ -61,10 +70,24 @@ export default function NewNote() {
       ownerEmail: user?.email || '',
       ownerDisplayName: user?.displayName || 'Unknown',
       ownerPhotoURL: user?.photoURL || undefined,
-      tags: []
+      tags: [],
+      folderId: null
     };
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load folders
+  useEffect(() => {
+    const loadFolders = async () => {
+      try {
+        const userFolders = await db.getFolders();
+        setFolders(userFolders);
+      } catch (error) {
+        console.error('Error loading folders:', error);
+      }
+    };
+    loadFolders();
+  }, []);
 
   // Save draft to localStorage whenever note changes
   useEffect(() => {
@@ -214,11 +237,12 @@ export default function NewNote() {
       setIsSaving(true);
       const firebaseId = await db.createNote({
         ...note,
+        folderId: selectedFolderId,
         updatedAt: new Date()
       });
       
       if (firebaseId) {
-        localStorage.removeItem('draft-note'); // Clear draft after successful save
+        localStorage.removeItem('draft-note');
         navigate(`/notes/${firebaseId}`);
       }
     } catch (error) {
@@ -226,7 +250,7 @@ export default function NewNote() {
     } finally {
       setIsSaving(false);
     }
-  }, [note, user, navigate]);
+  }, [note, selectedFolderId, user, navigate]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -251,8 +275,42 @@ export default function NewNote() {
                 );
               }}
             />
-            {/* Desktop buttons */}
+
+            {/* Folder Selection - Desktop */}
             <div className="hidden md:flex items-center gap-2">
+              <Select
+                value={selectedFolderId || "root"}
+                onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select folder">
+                    <div className="flex items-center gap-2">
+                      <FolderIcon className="h-4 w-4" />
+                      {selectedFolderId 
+                        ? folders.find(f => f.id === selectedFolderId)?.name || "Select folder"
+                        : "Select folder"
+                      }
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="root">
+                    <div className="flex items-center gap-2">
+                      <FolderIcon className="h-4 w-4" />
+                      Root
+                    </div>
+                  </SelectItem>
+                  {folders.map(folder => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      <div className="flex items-center gap-2">
+                        <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
+                        {folder.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <TemplateDialog onSelectTemplate={handleTemplateSelect}>
                 <Button variant="outline">Choose Template</Button>
               </TemplateDialog>
@@ -263,8 +321,33 @@ export default function NewNote() {
                 {isSaving ? 'Saving...' : 'Save Note'}
               </Button>
             </div>
-            {/* Mobile buttons */}
+
+            {/* Mobile buttons and folder selection */}
             <div className="flex md:hidden items-center gap-2">
+              <Select
+                value={selectedFolderId || "root"}
+                onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
+              >
+                <SelectTrigger className="w-10 px-0">
+                  <FolderIcon className="h-5 w-5" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="root">
+                    <div className="flex items-center gap-2">
+                      <FolderIcon className="h-4 w-4" />
+                      Root
+                    </div>
+                  </SelectItem>
+                  {folders.map(folder => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      <div className="flex items-center gap-2">
+                        <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
+                        {folder.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <TemplateDialog onSelectTemplate={handleTemplateSelect}>
                 <Button variant="default" size="icon" className="h-9 w-9">
                   <LayoutTemplateIcon className="h-5 w-5" />
