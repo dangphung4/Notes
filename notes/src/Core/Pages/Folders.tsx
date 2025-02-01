@@ -57,24 +57,20 @@ const FolderTreeItem = ({
           level > 0 && "ml-6",
           folder.isExpanded && "bg-muted/50"
         )}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(folder.id);
+        }}
       >
         {/* Expand/Collapse Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 shrink-0"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(folder.id);
-          }}
-        >
+        <div className="h-6 w-6 shrink-0 flex items-center justify-center">
           <ChevronRightIcon 
             className={cn(
               "h-4 w-4 transition-transform",
               folder.isExpanded && "rotate-90"
             )}
           />
-        </Button>
+        </div>
         
         <FolderIcon 
           className="h-4 w-4 shrink-0" 
@@ -153,11 +149,11 @@ const FolderTreeItem = ({
         <div>
           {/* Notes in this folder */}
           {folderNotes.length > 0 && (
-            <div className="ml-12 space-y-1 mt-1">
+            <div className="ml-12 space-y-2 mt-2">
               {folderNotes.map(note => (
                 <div
                   key={note.firebaseId}
-                  className="flex flex-col gap-1 p-2 hover:bg-muted/50 rounded-lg cursor-pointer text-sm group"
+                  className="flex flex-col gap-2 p-3 hover:bg-muted/50 rounded-lg cursor-pointer text-sm group"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/notes/${note.firebaseId}`);
@@ -178,7 +174,7 @@ const FolderTreeItem = ({
                   </div>
 
                   {/* Note Preview */}
-                  <div className="ml-8 text-xs text-muted-foreground line-clamp-2">
+                  <div className="ml-8 text-xs text-muted-foreground line-clamp-3 leading-relaxed">
                     {note.content ? getBlockNoteContent(note.content) : 'Empty note'}
                   </div>
 
