@@ -27,9 +27,12 @@ import Folders from './Core/Pages/Folders';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, Command } from "@/components/ui/command";
 import { ThemeProvider } from './Core/Theme/ThemeProvider';
 
-// Separate component for command palette
 /**
- *
+ * CommandPalette component provides a command dialog for quick navigation and actions.
+ * It listens for keyboard shortcuts and displays a command palette with various options.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered CommandPalette component.
  */
 function CommandPalette() {
   const navigate = useNavigate();
@@ -210,7 +213,31 @@ function CommandPalette() {
   );
 }
 
-// Add FooterWrapper component
+/**
+ * A functional component that conditionally renders the Footer component
+ * based on the current location's pathname. The footer is hidden for specific
+ * routes defined in the `hideFooterPaths` array.
+ *
+ * The following paths will hide the footer:
+ * - '/notes/new'
+ * - '/notes/:id' (where :id can be any value)
+ *
+ * It uses the `useLocation` hook from React Router to access the current
+ * location and determine if the footer should be displayed.
+ *
+ * @returns {JSX.Element | null} Returns the Footer component if the current
+ * location does not match any of the hide paths; otherwise, returns null.
+ *
+ * @example
+ * // Example usage within a parent component
+ * const App = () => (
+ *   <div>
+ *     <Header />
+ *     <FooterWrapper />
+ *     <MainContent />
+ *   </div>
+ * );
+ */
 function FooterWrapper() {
   const location = useLocation();
   const hideFooterPaths = ['/notes/new', '/notes/:id'];
@@ -229,9 +256,28 @@ function FooterWrapper() {
   return <Footer />;
 }
 
-// Main App component
 /**
+ * The main application component that serves as the entry point for the application.
+ * It wraps the application in a theme provider and sets up routing and layout.
  *
+ * This component includes:
+ * - A theme provider to manage styling.
+ * - A router for handling navigation.
+ * - A desktop navigation component.
+ * - A mobile navigation component.
+ * - Application routes defined in the AppRoutes component.
+ * - A footer wrapper for the application's footer content.
+ * - A PWA badge for progressive web app features.
+ *
+ * @returns {JSX.Element} The rendered application component.
+ *
+ * @example
+ * // Usage of the App component in a React application
+ * import React from 'react';
+ * import ReactDOM from 'react-dom';
+ * import App from './App';
+ *
+ * ReactDOM.render(<App />, document.getElementById('root'));
  */
 function App() {
   return (
@@ -250,7 +296,11 @@ function App() {
 }
 
 /**
- *
+ * LogoutHandler component handles user logout by signing out the user
+ * and navigating back to the home page.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered LogoutHandler component.
  */
 function LogoutHandler() {
   const navigate = useNavigate();
@@ -264,9 +314,12 @@ function LogoutHandler() {
   return <div>Logging out...</div>;
 }
 
-// Routes configuration component
 /**
- *
+ * AppRoutes component defines the application's routes and renders the appropriate
+ * components based on the current URL. It includes both public and private routes.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered AppRoutes component.
  */
 function AppRoutes() {
   return (
@@ -336,9 +389,13 @@ function AppRoutes() {
 }
 
 /**
- *
- * @param root0
- * @param root0.children
+ * PrivateRoute component restricts access to certain routes based on user authentication.
+ * If the user is not authenticated, they are redirected to the authentication page.
+ * 
+ * @component
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to render if authenticated.
+ * @returns {JSX.Element} The rendered PrivateRoute component.
  */
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

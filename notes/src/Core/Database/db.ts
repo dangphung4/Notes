@@ -180,8 +180,19 @@ class NotesDB extends Dexie {
       const mySharesSnapshot = await getDocs(
         query(sharesRef, where("email", "==", user.email))
       );
-
-      // Get all shared notes
+      /**
+       * Asynchronously loads notes and folders from Firebase Firestore for the currently authenticated user.
+       *
+       * This method retrieves all notes owned by the user and all notes shared with the user via their email.
+       * It also fetches folders owned by the user. The existing notes and folders in the local state are cleared
+       * before loading new data from Firestore.
+       *
+       * @throws {Error} Throws an error if there is an issue retrieving data from Firebase.
+       *
+       * @example
+       * // Usage example:
+       * await this.loadFromFirebase();
+       */
       const sharedNoteIds = mySharesSnapshot.docs.map(
         (doc) => doc.data().noteId
       );
@@ -633,6 +644,32 @@ class NotesDB extends Dexie {
         lastModifiedAt: new Date(),
         startDate: event.startDate || new Date(),
         endDate: event.endDate || new Date(),
+        
+        /**
+         * Asynchronously creates a calendar event and stores it in Firestore.
+         *
+         * This function takes a partial calendar event object, enriches it with user information,
+         * and saves it to the Firestore database. If a reminder is set for the event, it schedules
+         * the reminder as well.
+         *
+         * @param {Partial<CalendarEvent>} event - The event details to be created. This can include
+         * various properties of a calendar event such as start date, end date, tags, and shared users.
+         *
+         * @returns {Promise<CalendarEvent>} A promise that resolves to the created calendar event,
+         * which includes the generated Firebase ID and other enriched properties.
+         *
+         * @throws {Error} Throws an error if the user is not authenticated or if there is an issue
+         * during the event creation process.
+         *
+         * @example
+         * const newEvent = await createCalendarEvent({
+         *   title: "Team Meeting",
+         *   startDate: new Date("2023-10-01T10:00:00"),
+         *   endDate: new Date("2023-10-01T11:00:00"),
+         *   reminderMinutes: 30,
+         * });
+         * console.log("Created Event:", newEvent);
+         */
         sharedWith: event.sharedWith || [],
         tags: event.tags || [],
       };
@@ -779,6 +816,30 @@ class NotesDB extends Dexie {
           permission: "view",
           status: "pending"
         })
+      /**
+       * Retrieves all calendar events that the current user has access to, including events they own, events shared with them, and pending invitations.
+       *
+       * This method performs the following actions:
+       * - Fetches events created by the user.
+       * - Fetches events shared with the user that are either pending or accepted.
+       * - Fetches events where the user has edit permissions.
+       *
+       * The results are processed to ensure that duplicate events are not included, and pending invitations are handled appropriately.
+       *
+       * @returns {Promise<CalendarEvent[]>} A promise that resolves to an array of calendar events.
+       *
+       * @throws {Error} Throws an error if the user is not authenticated or if there is an issue fetching events from the database.
+       *
+       * @example
+       * async function loadEvents() {
+       *   try {
+       *     const events = await getSharedEvents();
+       *     console.log(events);
+       *   } catch (error) {
+       *     console.error("Failed to load events:", error);
+       *   }
+       * }
+       */
       );
       const sharedSnapshot = await getDocs(sharedQuery);
 
@@ -796,6 +857,25 @@ class NotesDB extends Dexie {
       const events: CalendarEvent[] = [];
 
       // Process all events from both queries
+      /**
+       * Processes a Firestore document snapshot and updates the local calendar events
+       * based on the data contained within the document.
+       *
+       * This function checks if the event represented by the document snapshot has already
+       * been added to the local events list. If not, it retrieves or generates a unique ID
+       * for the event, constructs an event object, and updates the local database accordingly.
+       *
+       * @param {QueryDocumentSnapshot} doc - The Firestore document snapshot containing event data.
+       *
+       * @throws {Error} Throws an error if there is an issue accessing the Firestore document data
+       *                 or if the database operations fail.
+       *
+       * @returns {Promise<void>} A promise that resolves when the processing is complete.
+       *
+       * @example
+       * const docSnapshot = await firestore.collection('events').doc('eventId').get();
+       * await processDoc(docSnapshot);
+       */
       const processDoc = async (doc: QueryDocumentSnapshot) => {
         const eventData = doc.data();
         const startDate = eventData.startDate?.toDate() || new Date();
@@ -940,10 +1020,25 @@ class NotesDB extends Dexie {
   }
 
   /**
+   * Updates the sharing status of a calendar event for a specified user.
    *
-   * @param eventId
-   * @param email
-   * @param status
+   * This asynchronous function allows the current user to update the sharing status
+   * of a calendar event identified by its ID. The function checks if the user is authenticated,
+   * retrieves the event from Firestore, and updates the sharing status accordingly.
+   *
+   * @param {number | string} eventId - The ID of the event to be updated. This can be either a number or a string.
+   * @param {string} email - The email address of the user with whom the event is shared.
+   * @param {"accepted" | "declined"} status - The new sharing status for the event, either "accepted" or "declined".
+   *
+   * @throws {Error} Throws an error if the user is not authenticated.
+   * @throws {Error} Throws an error if the Firebase ID for the event cannot be determined.
+   * @throws {Error} Throws an error if the event does not exist in Firebase.
+   *
+   * @returns {Promise<boolean>} Returns a promise that resolves to true if the update was successful.
+   *
+   * @example
+   * const result = await updateEventShare(123, 'user@example.com', 'accepted');
+   * console.log(result); // true
    */
   async updateEventShare(
     eventId: number | string,
@@ -1016,9 +1111,24 @@ class NotesDB extends Dexie {
   }
 
   /**
+   * Updates a calendar event in both local storage and Firebase.
    *
-   * @param id
-   * @param updates
+   * This asynchronous method retrieves an event by its ID or Firebase ID, checks the user's permissions,
+   * and applies the provided updates to the event. It handles both local and remote updates and returns
+   * the updated event data.
+   *
+   * @param {number | string} id - The unique identifier of the event to be updated. This can be either a numeric ID
+   *                                or a Firebase ID (string).
+   * @param {Partial<CalendarEvent>} updates - An object containing the properties of the calendar event that need to be updated.
+   *                                            Only the properties that are included in this object will be modified.
+   * @returns {Promise<CalendarEvent>} A promise that resolves to the updated calendar event object.
+   *
+   * @throws {Error} Throws an error if the user is not authenticated, if the event is not found in the local database,
+   *                 if the event is not found in Firebase, or if the user does not have permission to edit the event.
+   *
+   * @example
+   * const updatedEvent = await updateCalendarEvent(123, { title: "New Event Title" });
+   * console.log("Updated Event:", updatedEvent);
    */
   async updateCalendarEvent(id: number | string, updates: Partial<CalendarEvent>) {
     console.log("Updating event:", { id, updates });
