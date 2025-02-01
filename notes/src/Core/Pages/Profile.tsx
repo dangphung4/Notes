@@ -208,10 +208,11 @@ export default function Profile() {
   const groupThemes = () => {
     const groups = {
       'Default': ['default'],
-      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine'],
+      'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine', 'discord'],
       'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
-      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple'],
-      'Natural': ['horizon', 'palenight', 'ayu'],
+      'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple', 'yuzuMarmalade'],
+      'Natural': ['horizon', 'palenight', 'ayu', 'tuscanWallAmpala', 'vesper', 'coffeeTime'],
+      'Mechanical': ['gmkOlivia', 'denim', 'gmk9009', 'tiramisu'], // New group for keyboard-inspired themes
       'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
     };
     
