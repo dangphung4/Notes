@@ -970,6 +970,13 @@ const FloatingActionBar = ({
   );
 };
 
+// Add interface for stored preferences
+interface StoredFoldersPreferences {
+  viewMode: 'list' | 'grid';
+  sortOption: 'name' | 'updated' | 'created' | 'notes';
+  sortDirection: 'asc' | 'desc';
+}
+
 export default function Folders() {
   const navigate = useNavigate();
   const [folders, setFolders] = useState<FolderNode[]>([]);
@@ -983,9 +990,30 @@ export default function Folders() {
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileSearch, setIsMobileSearch] = useState(false);
-  const [sortOption, setSortOption] = useState<'name' | 'updated' | 'created' | 'notes'>('name');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
+    const stored = localStorage.getItem('folders-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredFoldersPreferences;
+      return preferences.viewMode;
+    }
+    return 'list';
+  });
+  const [sortOption, setSortOption] = useState<'name' | 'updated' | 'created' | 'notes'>(() => {
+    const stored = localStorage.getItem('folders-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredFoldersPreferences;
+      return preferences.sortOption;
+    }
+    return 'name';
+  });
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(() => {
+    const stored = localStorage.getItem('folders-preferences');
+    if (stored) {
+      const preferences = JSON.parse(stored) as StoredFoldersPreferences;
+      return preferences.sortDirection;
+    }
+    return 'asc';
+  });
 
   const sortFolders = (foldersToSort: FolderNode[]): FolderNode[] => {
     return foldersToSort.sort((a, b) => {
@@ -1083,6 +1111,16 @@ export default function Folders() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Add effect to persist preferences
+  useEffect(() => {
+    const preferences: StoredFoldersPreferences = {
+      viewMode,
+      sortOption,
+      sortDirection,
+    };
+    localStorage.setItem('folders-preferences', JSON.stringify(preferences));
+  }, [viewMode, sortOption, sortDirection]);
 
   const toggleFolder = (folderId: string) => {
     const toggleNode = (nodes: FolderNode[]): FolderNode[] => {
