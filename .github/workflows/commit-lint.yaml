@@ -22,12 +22,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 10
-          
-      - name: Checkout PR
-        if: github.event_name == 'pull_request_target'
-        run: |
-          git fetch origin "pull/${{ github.event.pull_request.number }}/head:pr-${{ github.event.pull_request.number }}"
-          git checkout "pr-${{ github.event.pull_request.number }}"
+          ref: ${{ github.event.pull_request.head.sha }}
           
       - uses: actions/setup-node@v4
         with:
@@ -47,34 +42,21 @@ jobs:
       - name: Validate commits
         working-directory: notes
         run: |
+          # Fetch main branch for comparison
+          git fetch origin main:main
+          
           if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            # For PRs, get the base branch
-            git fetch origin main
-            
-            # Get all commits in the PR
-            for commit in $(git rev-list HEAD ^origin/main); do
-              COMMIT_MSG=$(git log -1 --format="%s" $commit)
-              AUTHOR_EMAIL=$(git log -1 --format="%ae" $commit)
-              if [[ ! $AUTHOR_EMAIL =~ .*\[bot\]@.*|.*bot@.* ]]; then
-                echo "Checking commit: $COMMIT_MSG"
-                echo "$COMMIT_MSG" | npx commitlint --verbose || true
-              else
-                echo "Skipping bot commit: $COMMIT_MSG"
-              fi
-            done
+            echo "Checking PR commits..."
+            npx commitlint --from main --to HEAD --verbose || true
           else
-            # For pushes, check only the latest commit if not from a bot
-            AUTHOR_EMAIL=$(git log -1 --format="%ae")
-            if [[ ! $AUTHOR_EMAIL =~ .*\[bot\]@.*|.*bot@.* ]]; then
-              npx commitlint --from HEAD~1 --to HEAD --verbose
-            fi
+            echo "Checking push commits..."
+            npx commitlint --from HEAD~1 --to HEAD --verbose || true
           fi
         
       - name: Check PR title
         if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
         working-directory: notes
         run: |
-          # Skip PR title check if PR is from a bot
           if [[ ! "${{ github.event.pull_request.user.login }}" =~ .*\[bot\]$ ]]; then
             echo "${{ github.event.pull_request.title }}" | npx commitlint --verbose
           fi
