@@ -211,9 +211,9 @@ export default function Profile() {
       'Modern': ['materialDesign', 'tokyoNight', 'catppuccin', 'rosePine', 'discord'],
       'Classic': ['solarized', 'gruvbox', 'oneDark', 'monokaiPro'],
       'Vibrant': ['synthwave', 'cyberpunk', 'shadesOfPurple', 'yuzuMarmalade'],
-      'Natural': ['horizon', 'palenight', 'ayu', 'tuscanWallAmpala', 'vesper', 'coffeeTime', 'disciplinarySunCrate'],
-      'Mechanical': ['gmkOlivia', 'denim', 'gmk9009', 'tiramisu'], // New group for keyboard-inspired themes
-      'Professional': ['github', 'nord', 'cobalt', 'winterIsComing'],
+      'Natural': ['horizon', 'palenight', 'ayu', 'tuscanWallAmpala', 'vesper', 'coffeeTime', 'disciplinarySunCrate', 'provincialCalmingRetro'],
+      'Mechanical': ['gmkOlivia', 'denim', 'gmk9009', 'tiramisu'],
+      'Professional': ['github', 'nord', 'cobalt', 'winterIsComing', 'bleachedLink', 'darcula'],
     };
     
     return Object.entries(groups).map(([groupName, themeNames]) => ({
