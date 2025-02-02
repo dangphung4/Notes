@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { Timer, BarChart2, Calendar as CalendarIcon, Filter, Bell, BellOff, Settings, Trash2 } from 'lucide-react';
+import { Timer, BarChart2, Calendar as CalendarIcon, Filter, Bell, BellOff, Settings, Trash2, Play, Pause, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { NewTaskDialog } from '../Components/Productivity/NewTaskDialog';
 import { NewHabitDialog } from '../Components/Productivity/NewHabitDialog';
@@ -36,7 +36,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Zap, Target, TrendingUp } from 'lucide-react';
+import { Sparkles, Zap, Target, TrendingUp, Coffee, Battery } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import React from 'react';
 
@@ -177,6 +177,65 @@ export function ProductivityDashboard() {
   const [pomodoroType, setPomodoroType] = useState<'work' | 'short-break' | 'long-break'>('work');
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [daysWithActivity, setDaysWithActivity] = useState<DayWithActivity[]>([]);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pausedTimeLeft, setPausedTimeLeft] = useState<number | null>(null);
+
+  const togglePause = useCallback(() => {
+    if (isPaused) {
+      // Resume
+      const newStartTime = new Date();
+      if (activePomodoro) {
+        setActivePomodoro({
+          ...activePomodoro,
+          startTime: newStartTime
+        });
+      }
+      setPausedTimeLeft(null);
+    } else {
+      // Pause
+      setPausedTimeLeft(timeLeft);
+    }
+    setIsPaused(!isPaused);
+  }, [isPaused, activePomodoro, timeLeft]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.code === 'Space' && !activePomodoro) {
+        e.preventDefault();
+        startPomodoro('work');
+      } else if (e.code === 'KeyP' && activePomodoro) {
+        e.preventDefault();
+        togglePause();
+      } else if (e.code === 'Escape' && activePomodoro) {
+        e.preventDefault();
+        completePomodoro();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [activePomodoro, togglePause]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activePomodoro && !isPaused) {
+      interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - (activePomodoro.startTime.getTime() + (pausedTimeLeft ? activePomodoro.duration * 60 - pausedTimeLeft : 0))) / 1000);
+        const total = activePomodoro.duration * 60;
+        const remaining = Math.max(0, total - elapsed);
+        setTimeLeft(remaining);
+
+        if (remaining === 0) {
+          completePomodoro();
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [activePomodoro, isPaused, pausedTimeLeft]);
 
   useEffect(() => {
     loadData();
@@ -200,42 +259,6 @@ export function ProductivityDashboard() {
       document.title = 'Notes';
     };
   }, [timeLeft, activePomodoro]);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      if (e.code === 'Space' && !activePomodoro) {
-        e.preventDefault();
-        startPomodoro('work');
-      } else if (e.code === 'KeyP' && activePomodoro) {
-        e.preventDefault();
-        completePomodoro();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [activePomodoro]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (activePomodoro) {
-      interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - activePomodoro.startTime.getTime()) / 1000);
-        const total = activePomodoro.duration * 60;
-        const remaining = Math.max(0, total - elapsed);
-        setTimeLeft(remaining);
-
-        if (remaining === 0) {
-          completePomodoro();
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [activePomodoro]);
 
   const loadProgressForDate = async (date: Date) => {
     if (!user) return;
@@ -739,22 +762,34 @@ export function ProductivityDashboard() {
                 <Timer className="h-6 w-6" />
                 Pomodoro Timer
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsTimerModalOpen(true)}
-                title="Timer Settings"
-                className="h-10 w-10 transition-transform hover:scale-110"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsTimerModalOpen(true)}
+                  title="Timer Settings"
+                  className="h-10 w-10 transition-transform hover:scale-110"
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </div>
             </motion.div>
-            <CardDescription className="text-base">Focus on your work in timed sessions</CardDescription>
+            <CardDescription className="text-base">
+              {activePomodoro ? (
+                <div className="flex items-center gap-2 text-primary">
+                  <span className="animate-pulse">●</span>
+                  {pomodoroType === 'work' ? 'Work Session' : pomodoroType === 'short-break' ? 'Short Break' : 'Long Break'}
+                  {isPaused && ' (Paused)'}
+                </div>
+              ) : (
+                'Focus on your work in timed sessions'
+              )}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center space-y-8">
               <motion.div 
-                className="w-48 h-48 md:w-56 md:h-56"
+                className="w-48 h-48 md:w-56 md:h-56 relative group"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
               >
@@ -765,11 +800,27 @@ export function ProductivityDashboard() {
                     pathColor: pomodoroType === 'work' ? '#ef4444' : '#22c55e',
                     textColor: 'currentColor',
                     trailColor: 'rgba(0,0,0,0.1)',
-                    textSize: '20px',
+                    textSize: '24px',
                     pathTransitionDuration: 0.3,
                     strokeLinecap: 'round',
                   })}
                 />
+                {activePomodoro && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-full">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={togglePause}
+                      className="h-12 w-12 rounded-full hover:scale-110 transition-transform"
+                    >
+                      {isPaused ? (
+                        <Play className="h-6 w-6" />
+                      ) : (
+                        <Pause className="h-6 w-6" />
+                      )}
+                    </Button>
+                  </div>
+                )}
               </motion.div>
               <AnimatePresence mode="wait">
                 <motion.div 
@@ -783,7 +834,7 @@ export function ProductivityDashboard() {
                       <Button 
                         onClick={() => startPomodoro('work')} 
                         variant="default"
-                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105"
+                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105 bg-primary/90 hover:bg-primary"
                       >
                         <Zap className="mr-2 h-4 w-4" />
                         Work ({customWorkDuration}m)
@@ -791,31 +842,56 @@ export function ProductivityDashboard() {
                       <Button 
                         onClick={() => startPomodoro('short-break')} 
                         variant="outline"
-                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105"
+                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105 border-green-500/20 text-green-500 hover:bg-green-500/10"
                       >
+                        <Coffee className="mr-2 h-4 w-4" />
                         Short ({customShortBreak}m)
                       </Button>
                       <Button 
                         onClick={() => startPomodoro('long-break')} 
                         variant="outline"
-                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105"
+                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105 border-blue-500/20 text-blue-500 hover:bg-blue-500/10"
                       >
+                        <Battery className="mr-2 h-4 w-4" />
                         Long ({customLongBreak}m)
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      onClick={completePomodoro} 
-                      variant="destructive"
-                      className="w-full h-11 max-w-[200px] transition-transform hover:scale-105"
-                    >
-                      Stop Timer
-                    </Button>
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={togglePause} 
+                        variant="outline"
+                        className="h-11 px-6 transition-transform hover:scale-105"
+                      >
+                        {isPaused ? (
+                          <>
+                            <Play className="mr-2 h-4 w-4" />
+                            Resume
+                          </>
+                        ) : (
+                          <>
+                            <Pause className="mr-2 h-4 w-4" />
+                            Pause
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        onClick={completePomodoro} 
+                        variant="destructive"
+                        className="h-11 px-6 transition-transform hover:scale-105"
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        Stop
+                      </Button>
+                    </div>
                   )}
                 </motion.div>
               </AnimatePresence>
               <div className="text-sm text-muted-foreground text-center bg-muted/50 px-4 py-2 rounded-lg">
-                <p>Press <kbd className="px-2 py-0.5 bg-background rounded border mx-1">Space</kbd> to start/stop timer</p>
+                <div className="flex flex-col gap-1">
+                  <p>Press <kbd className="px-2 py-0.5 bg-background rounded border mx-1">Space</kbd> to start/stop</p>
+                  <p>Press <kbd className="px-2 py-0.5 bg-background rounded border mx-1">P</kbd> to pause/resume</p>
+                </div>
               </div>
             </div>
           </CardContent>
