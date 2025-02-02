@@ -38,6 +38,21 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Zap, Target, TrendingUp } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
+import React from 'react';
+
+interface DayWithActivity {
+  date: Date;
+  hasPomodoros: boolean;
+  hasTasks: boolean;
+  hasHabits: boolean;
+}
+
+interface CustomDayProps {
+  date: Date;
+  selected?: boolean;
+  today?: boolean;
+  disabled?: boolean;
+}
 
 const TimerSettingsModal = ({
   open,
@@ -110,14 +125,20 @@ const TimerSettingsModal = ({
   </Dialog>
 );
 
-const StatCard = ({ icon: Icon, label, value, total, color }: { 
+const StatCard = ({ icon: Icon, label, value, total, color, className, labelClassName, valueClassName }: { 
   icon: LucideIcon, 
   label: string, 
   value: number, 
   total?: number,
-  color: string 
+  color: string,
+  className?: string,
+  labelClassName?: string,
+  valueClassName?: string
 }) => (
-  <div className="relative overflow-hidden rounded-xl border bg-background p-4 hover:bg-muted/50 transition-colors">
+  <div className={cn(
+    "relative overflow-hidden rounded-xl border bg-background p-4 hover:bg-muted/50 transition-colors",
+    className
+  )}>
     <div className="flex items-center gap-4">
       <div className={cn(
         "rounded-full p-2.5",
@@ -126,9 +147,9 @@ const StatCard = ({ icon: Icon, label, value, total, color }: {
         <Icon className="h-5 w-5" />
       </div>
       <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className={cn("text-sm font-medium text-muted-foreground", labelClassName)}>{label}</p>
         <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold">{value}</p>
+          <p className={cn("text-2xl font-bold", valueClassName)}>{value}</p>
           {total && <p className="text-sm text-muted-foreground">/ {total}</p>}
         </div>
       </div>
@@ -155,6 +176,7 @@ export function ProductivityDashboard() {
   const [customLongBreak, setCustomLongBreak] = useState(15);
   const [pomodoroType, setPomodoroType] = useState<'work' | 'short-break' | 'long-break'>('work');
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
+  const [daysWithActivity, setDaysWithActivity] = useState<DayWithActivity[]>([]);
 
   useEffect(() => {
     loadData();
@@ -532,6 +554,98 @@ export function ProductivityDashboard() {
     }
   }, [notificationsEnabled, playNotificationSound]);
 
+  const loadMonthActivity = async (month: Date) => {
+    if (!user?.email) return;
+
+    const startOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
+    const endOfMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+
+    try {
+      // Load all daily progress for the month
+      const progress = await db.dailyProgress
+        .where('createdBy')
+        .equals(user.email)
+        .and(p => {
+          const date = new Date(p.date);
+          return date >= startOfMonth && date <= endOfMonth;
+        })
+        .toArray();
+
+      const activityDays = progress.map(p => ({
+        date: new Date(p.date),
+        hasPomodoros: (p.pomodorosCompleted || 0) > 0,
+        hasTasks: (p.tasksCompleted || 0) > 0,
+        hasHabits: (p.habitsCompleted || 0) > 0
+      }));
+
+      setDaysWithActivity(activityDays);
+    } catch (error) {
+      console.error('Error loading month activity:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadMonthActivity(selectedDate);
+  }, [selectedDate, user?.email]);
+
+  const CustomDay = (props: any) => {
+    const { date, selected, today, disabled } = props;
+    const activity = daysWithActivity.find(d => 
+      d.date.toDateString() === date.toDateString()
+    );
+
+    const isFutureDate = date > new Date();
+    const isDisabled = disabled || isFutureDate;
+
+    return (
+      <div
+        className={cn(
+          "w-full h-full",
+          "flex flex-col items-center justify-center gap-1",
+          "rounded-md transition-all duration-200",
+          "hover:bg-muted/50",
+          selected && "bg-primary hover:bg-primary",
+          today && !selected && "border-2 border-primary",
+          isDisabled && "opacity-50 pointer-events-none",
+          !isDisabled && !selected && activity && "bg-muted/30"
+        )}
+        role="button"
+        aria-disabled={isDisabled}
+      >
+        <span className={cn(
+          "text-base font-medium",
+          selected && "text-primary-foreground",
+          !selected && isDisabled && "text-muted-foreground",
+          !selected && !isDisabled && "text-foreground"
+        )}>
+          {date.getDate()}
+        </span>
+        {activity && (
+          <div className="flex gap-1">
+            {activity.hasPomodoros && (
+              <div className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                selected ? "bg-primary-foreground/70" : "bg-blue-500"
+              )} />
+            )}
+            {activity.hasTasks && (
+              <div className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                selected ? "bg-primary-foreground/70" : "bg-green-500"
+              )} />
+            )}
+            {activity.hasHabits && (
+              <div className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                selected ? "bg-primary-foreground/70" : "bg-purple-500"
+              )} />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -563,24 +677,33 @@ export function ProductivityDashboard() {
       </div>
 
       {/* Quick Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <StatCard 
           icon={Timer} 
           label="Focus Time Today" 
           value={dailyProgress?.totalWorkMinutes || 0} 
           color="blue"
+          className="p-3 sm:p-4"
+          labelClassName="text-xs sm:text-sm"
+          valueClassName="text-lg sm:text-2xl"
         />
         <StatCard 
           icon={Target} 
           label="Tasks Completed" 
           value={dailyProgress?.tasksCompleted || 0} 
           color="green"
+          className="p-3 sm:p-4"
+          labelClassName="text-xs sm:text-sm"
+          valueClassName="text-lg sm:text-2xl"
         />
         <StatCard 
           icon={Sparkles} 
           label="Habits Streak" 
           value={Math.max(...habits.map(h => h.currentStreak), 0)}
           color="purple"
+          className="p-3 sm:p-4"
+          labelClassName="text-xs sm:text-sm"
+          valueClassName="text-lg sm:text-2xl"
         />
         <StatCard 
           icon={TrendingUp} 
@@ -588,6 +711,9 @@ export function ProductivityDashboard() {
           value={dailyProgress?.pomodorosCompleted || 0} 
           total={8}
           color="orange"
+          className="p-3 sm:p-4"
+          labelClassName="text-xs sm:text-sm"
+          valueClassName="text-lg sm:text-2xl"
         />
       </div>
 
@@ -759,7 +885,7 @@ export function ProductivityDashboard() {
         </Card>
 
         {/* Calendar View Card */}
-        <Card className="col-span-1 border-2">
+        <Card className="col-span-1 border-2 hover:border-primary/50 transition-colors">
           <CardHeader className="space-y-3 pb-6">
             <CardTitle className="flex items-center gap-3 text-xl">
               <CalendarIcon className="h-6 w-6" />
@@ -767,60 +893,166 @@ export function ProductivityDashboard() {
             </CardTitle>
             <CardDescription className="text-base">View your productivity history</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border-2 p-3"
-              disabled={{ after: new Date() }}
-              initialFocus
-            />
-            <div className="mt-6 space-y-3 bg-muted p-4 rounded-lg">
-              <p className="text-base font-medium">{format(selectedDate, 'PPPP')}</p>
-              {dailyProgress && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Pomodoros</p>
-                    <p className="text-2xl font-semibold">{dailyProgress.pomodorosCompleted}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Tasks</p>
-                    <p className="text-2xl font-semibold">{dailyProgress.tasksCompleted}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Habits</p>
-                    <p className="text-2xl font-semibold">{dailyProgress.habitsCompleted}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Focus Time</p>
-                    <p className="text-2xl font-semibold">{dailyProgress.totalWorkMinutes}m</p>
-                  </div>
+          <CardContent className="p-0">
+            <div className="p-4 border-y bg-muted/50">
+              <div className="overflow-hidden">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  disabled={{ after: new Date() }}
+                  initialFocus
+                  components={{
+                    Day: CustomDay
+                  }}
+                  className="w-full"
+                  classNames={{
+                    months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                    month: "space-y-4 w-full",
+                    caption: "flex justify-center pt-1 relative items-center mb-4",
+                    caption_label: "text-base font-medium",
+                    nav: "space-x-1 flex items-center",
+                    nav_button: "h-9 w-9 bg-transparent p-0 hover:bg-muted rounded-md transition-colors disabled:opacity-50",
+                    nav_button_previous: "absolute left-1",
+                    nav_button_next: "absolute right-1",
+                    table: "w-full border-collapse",
+                    head_row: "flex w-full",
+                    head_cell: "text-muted-foreground rounded-md w-full font-normal text-sm",
+                    row: "flex w-full mt-2",
+                    cell: "relative w-full h-[45px] sm:h-[60px] p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                    day: "w-full h-full p-0 font-normal",
+                    day_range_end: "day-range-end",
+                    day_selected: "bg-primary text-primary-foreground hover:bg-primary focus:bg-primary focus:text-primary-foreground",
+                    day_today: "bg-accent text-accent-foreground",
+                    day_outside: "text-muted-foreground opacity-50",
+                    day_disabled: "text-muted-foreground opacity-50",
+                    day_hidden: "invisible",
+                  }}
+                />
+              </div>
+            </div>
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base sm:text-lg font-semibold">{format(selectedDate, 'PPPP')}</h3>
+                {selectedDate.toDateString() === new Date().toDateString() && (
+                  <Badge variant="secondary">Today</Badge>
+                )}
+              </div>
+              {dailyProgress ? (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <motion.div 
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full p-1.5 sm:p-2 bg-blue-500/10">
+                        <Timer className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Pomodoros</p>
+                        <p className="text-lg sm:text-2xl font-bold">{dailyProgress.pomodorosCompleted}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  <motion.div 
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full p-1.5 sm:p-2 bg-green-500/10">
+                        <Target className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Tasks</p>
+                        <p className="text-lg sm:text-2xl font-bold">{dailyProgress.tasksCompleted}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  <motion.div 
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full p-1.5 sm:p-2 bg-purple-500/10">
+                        <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Habits</p>
+                        <p className="text-lg sm:text-2xl font-bold">{dailyProgress.habitsCompleted}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                  <motion.div 
+                    className="space-y-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full p-1.5 sm:p-2 bg-orange-500/10">
+                        <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
+                      </div>
+                      <div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Focus Time</p>
+                        <p className="text-lg sm:text-2xl font-bold">{dailyProgress.totalWorkMinutes}m</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              ) : (
+                <div className="text-center py-4 sm:py-6">
+                  <p className="text-sm text-muted-foreground">No activity recorded for this day</p>
                 </div>
               )}
+              <div className="pt-3 sm:pt-4 border-t">
+                <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-500" />
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500" />
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-purple-500" />
+                    </div>
+                    <span>Activity indicators</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 sm:h-8 text-xs sm:text-sm px-2 sm:px-3" 
+                    onClick={() => setSelectedDate(new Date())}
+                  >
+                    Today
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Enhanced Tasks and Habits Card */}
         <Card className="col-span-1 lg:col-span-3 border-2">
-          <CardHeader className="space-y-3 pb-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <CardHeader className="space-y-3 pb-4 sm:pb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
               <div>
-                <CardTitle className="text-xl">Tasks & Habits</CardTitle>
-                <CardDescription className="text-base">Manage your daily tasks and habits</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Tasks & Habits</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Manage your daily tasks and habits</CardDescription>
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Input
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 sm:w-[250px] h-11"
+                  className="flex-1 sm:w-[250px] h-9 sm:h-11 text-sm"
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-11 w-11">
-                      <Filter className="h-5 w-5" />
+                    <Button variant="outline" size="icon" className="h-9 w-9 sm:h-11 sm:w-11">
+                      <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-[200px]">
@@ -850,9 +1082,9 @@ export function ProductivityDashboard() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="tasks" className="w-full">
-              <TabsList className="w-full sm:w-auto mb-6">
-                <TabsTrigger value="tasks" className="flex-1 sm:flex-none">Tasks</TabsTrigger>
-                <TabsTrigger value="habits" className="flex-1 sm:flex-none">Habits</TabsTrigger>
+              <TabsList className="w-full sm:w-auto mb-4 sm:mb-6 h-9 sm:h-10">
+                <TabsTrigger value="tasks" className="text-sm sm:text-base">Tasks</TabsTrigger>
+                <TabsTrigger value="habits" className="text-sm sm:text-base">Habits</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tasks">
