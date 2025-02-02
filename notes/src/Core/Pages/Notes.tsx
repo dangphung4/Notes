@@ -34,7 +34,7 @@ import { format } from "date-fns";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import ShareDialog from '../Components/ShareDialog';
@@ -161,6 +161,8 @@ const NoteCard = ({
   const [isEditingTags, setIsEditingTags] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Tags[]>(note.tags || []);
   const [localNote, setLocalNote] = useState<Note>(note);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareAccess, setShareAccess] = useState<'view' | 'edit'>('view');
 
   // Add function to load shares
   const loadShares = async () => {
@@ -232,7 +234,7 @@ const NoteCard = ({
         />
       )}
 
-      {/* Action buttons with updated styling */}
+      {/* Action buttons with updated styling - Always visible */}
       <div className={cn(
         "absolute right-2 top-2 z-10 flex gap-1.5",
         view === 'list' && "top-1/2 -translate-y-1/2 right-4"
@@ -243,10 +245,8 @@ const NoteCard = ({
             size="icon"
             className={cn(
               "h-8 w-8 rounded-full",
-              "opacity-0 group-hover:opacity-100 transition-opacity",
               "hover:bg-background/80 backdrop-blur-sm",
-              localNote.isPinned && "opacity-100 text-primary",
-              view === 'list' && "sm:opacity-100"
+              localNote.isPinned && "text-primary",
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -264,9 +264,7 @@ const NoteCard = ({
               size="icon"
               className={cn(
                 "h-8 w-8 rounded-full",
-                "opacity-0 group-hover:opacity-100 transition-opacity",
-                "hover:bg-background/80 backdrop-blur-sm",
-                view === 'list' && "opacity-100"
+                "hover:bg-background/80 backdrop-blur-sm"
               )}
               onClick={(e) => e.stopPropagation()}
             >
@@ -280,132 +278,276 @@ const NoteCard = ({
                 View and manage note details, statistics, and sharing settings
               </DialogDescription>
             </SheetHeader>
-            <div className="space-y-6 mt-6">
-              {/* Note Stats */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <BarChart2Icon className="h-4 w-4 text-primary" />
-                  Note Statistics
-                </h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2 bg-muted/50 rounded-lg">
-                    <div className="text-lg font-semibold">
-                      {getBlockNoteContent(localNote.content).length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Characters</div>
-                  </div>
-                  <div className="p-2 bg-muted/50 rounded-lg">
-                    <div className="text-lg font-semibold">
-                      {getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Words</div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Timeline */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <ClockIcon className="h-4 w-4 text-primary" />
-                  Timeline
-                </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">Created</span>
-                    <span className="ml-auto">{formatTimeAgo(localNote.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-primary" />
-                    <span className="text-muted-foreground">Last updated</span>
-                    <span className="ml-auto">{formatTimeAgo(localNote.updatedAt)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tags Section */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <TagIcon className="h-4 w-4 text-primary" />
-                  Tags
-                </h4>
-                {isEditingTags ? (
-                  <div className="space-y-4">
-                    <TagSelector
-                      selectedTags={selectedTags}
-                      onTagsChange={(tags: Tags[]) => {
-                        setSelectedTags(tags);
-                        // Handle async operation after state update
-                        db.updateNoteTags(note.firebaseId!, tags)
-                          .then(() => {
-                            toast({
-                              title: "Tags updated",
-                              description: "Your note's tags have been updated successfully"
-                            });
-                          })
-                          .catch((error) => {
-                            console.error('Error updating tags:', error);
-                            toast({
-                              title: "Error",
-                              description: "Failed to update tags",
-                              variant: "destructive"
-                            });
-                            // Revert on error
-                            setSelectedTags(note.tags || []);
-                          });
-                      }}
-                      onCreateTag={async (tag: Partial<Tags>) => {
-                        try {
-                          const newTag = await db.createTag(tag);
-                          return newTag;
-                        } catch (error) {
-                          console.error('Error creating tag:', error);
-                          throw error;
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {localNote.tags?.map(tag => (
-                      <div
-                        key={tag.id}
-                        className="px-2 py-0.5 rounded-full text-xs"
-                        style={{
-                          backgroundColor: tag.color + '20',
-                          color: tag.color
-                        }}
-                      >
-                        {tag.name}
+            <ScrollArea className="h-[calc(100vh-8rem)] pr-4">
+              <div className="space-y-6 py-6">
+                {/* Enhanced Note Stats */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <BarChart2Icon className="h-4 w-4 text-primary" />
+                    Note Statistics
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-lg font-semibold">
+                        {getBlockNoteContent(localNote.content).length}
                       </div>
-                    ))}
-                    {hasEditAccess(note, user, shares) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-6"
-                        onClick={() => setIsEditingTags(true)}
-                      >
-                        Edit Tags
-                      </Button>
+                      <div className="text-xs text-muted-foreground">Characters</div>
+                    </div>
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-lg font-semibold">
+                        {getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Words</div>
+                    </div>
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-lg font-semibold">
+                        {getBlockNoteContent(localNote.content).split(/\n/).filter(Boolean).length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Lines</div>
+                    </div>
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-lg font-semibold">
+                        {Math.ceil(getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length / 200)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Min Read</div>
+                    </div>
+                    <div className="p-2 bg-muted/50 rounded-lg col-span-2">
+                      <div className="text-lg font-semibold">
+                        {localNote.tags?.length || 0} Tags · {noteShares.length} Shares
+                      </div>
+                      <div className="text-xs text-muted-foreground">Metadata</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Recent Activity */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <ClockIcon className="h-4 w-4 text-primary" />
+                    Recent Activity
+                  </h4>
+                  <div className="space-y-3">
+                    {/* Creation */}
+                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <PlusIcon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm">
+                          Created by {localNote.ownerDisplayName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(localNote.createdAt, 'MMM d, yyyy h:mm a')}
+                        </div>
+                      </div>
+                      {localNote.ownerPhotoURL && (
+                        <img 
+                          src={localNote.ownerPhotoURL} 
+                          alt={localNote.ownerDisplayName}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      )}
+                    </div>
+
+                    {/* Last Edit */}
+                    {localNote.lastEditedAt && localNote.lastEditedByUserId && (
+                      <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <FileTextIcon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm">
+                            Edited by {localNote.lastEditedByDisplayName}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(localNote.lastEditedAt, 'MMM d, yyyy h:mm a')}
+                          </div>
+                        </div>
+                        {localNote.lastEditedByPhotoURL && (
+                          <img 
+                            src={localNote.lastEditedByPhotoURL} 
+                            alt={localNote.lastEditedByDisplayName || ''}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Recent Shares */}
+                    {noteShares.length > 0 && (
+                      <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Share2Icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm">
+                            Shared with {noteShares.length} {noteShares.length === 1 ? 'person' : 'people'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Most recent: {format(Math.max(...noteShares.map(s => s.createdAt.getTime())), 'MMM d, yyyy')}
+                          </div>
+                        </div>
+                        <div className="flex -space-x-2">
+                          {noteShares.slice(0, 3).map(share => (
+                            share.photoURL ? (
+                              <img 
+                                key={share.id}
+                                src={share.photoURL} 
+                                alt={share.displayName || share.email}
+                                className="w-6 h-6 rounded-full ring-2 ring-background"
+                              />
+                            ) : (
+                              <div key={share.id} className="w-6 h-6 rounded-full bg-muted ring-2 ring-background flex items-center justify-center">
+                                <UserIcon className="h-3 w-3" />
+                              </div>
+                            )
+                          ))}
+                          {noteShares.length > 3 && (
+                            <div className="w-6 h-6 rounded-full bg-primary/10 ring-2 ring-background flex items-center justify-center">
+                              <span className="text-xs">+{noteShares.length - 3}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
 
-              {/* Sharing Section */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <Share2Icon className="h-4 w-4 text-primary" />
-                  Sharing
-                </h4>
+                {/* Tags Section */}
                 <div className="space-y-2">
-                  {noteShares.map(share => (
-                    <div key={share.id} className="flex items-center gap-2">
-                      {share.photoURL ? (
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <TagIcon className="h-4 w-4 text-primary" />
+                    Tags
+                  </h4>
+                  {isEditingTags ? (
+                    <div className="space-y-4">
+                      <TagSelector
+                        selectedTags={selectedTags}
+                        onTagsChange={(tags: Tags[]) => {
+                          setSelectedTags(tags);
+                          // Handle async operation after state update
+                          db.updateNoteTags(note.firebaseId!, tags)
+                            .then(() => {
+                              toast({
+                                title: "Tags updated",
+                                description: "Your note's tags have been updated successfully"
+                              });
+                            })
+                            .catch((error) => {
+                              console.error('Error updating tags:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to update tags",
+                                variant: "destructive"
+                              });
+                              // Revert on error
+                              setSelectedTags(note.tags || []);
+                            });
+                        }}
+                        onCreateTag={async (tag: Partial<Tags>) => {
+                          try {
+                            const newTag = await db.createTag(tag);
+                            return newTag;
+                          } catch (error) {
+                            console.error('Error creating tag:', error);
+                            throw error;
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {localNote.tags?.map(tag => (
+                        <div
+                          key={tag.id}
+                          className="px-2 py-0.5 rounded-full text-xs"
+                          style={{
+                            backgroundColor: tag.color + '20',
+                            color: tag.color
+                          }}
+                        >
+                          {tag.name}
+                        </div>
+                      ))}
+                      {hasEditAccess(note, user, shares) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-6"
+                          onClick={() => setIsEditingTags(true)}
+                        >
+                          Edit Tags
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Related Notes */}
+                {localNote.tags && localNote.tags.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <FileTextIcon className="h-4 w-4 text-primary" />
+                      Related Notes
+                    </h4>
+                    <div className="space-y-2">
+                      {allNotes
+                        .filter((n: Note) => 
+                          n.firebaseId !== note.firebaseId && 
+                          n.tags?.some((t: Tags) => 
+                            localNote.tags?.some(lt => lt.id === t.id)
+                          )
+                        )
+                        .slice(0, 3)
+                        .map((relatedNote: Note) => (
+                          <Button
+                            key={relatedNote.firebaseId}
+                            variant="outline"
+                            className="w-full justify-start text-left h-auto py-2"
+                            onClick={() => {
+                              setIsSheetOpen(false);
+                              navigate(`/notes/${relatedNote.firebaseId}`);
+                            }}
+                          >
+                            <div className="flex flex-col gap-1 items-start">
+                              <div className="font-medium text-sm">{relatedNote.title}</div>
+                              <div className="flex flex-wrap gap-1">
+                                {relatedNote.tags?.filter(tag => 
+                                  localNote.tags?.some(t => t.id === tag.id)
+                                ).map(tag => (
+                                  <div
+                                    key={tag.id}
+                                    className="px-1.5 py-0.5 rounded-full text-[10px]"
+                                    style={{
+                                      backgroundColor: tag.color + '20',
+                                      color: tag.color
+                                    }}
+                                  >
+                                    {tag.name}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </Button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sharing Section */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <Share2Icon className="h-4 w-4 text-primary" />
+                    Sharing
+                  </h4>
+                  <div className="space-y-2">
+                    {/* Owner */}
+                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                      {localNote.ownerPhotoURL ? (
                         <img 
-                          src={share.photoURL} 
-                          alt={share.displayName || share.email}
+                          src={localNote.ownerPhotoURL} 
+                          alt={localNote.ownerDisplayName}
                           className="w-6 h-6 rounded-full"
                         />
                       ) : (
@@ -415,17 +557,140 @@ const NoteCard = ({
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">
-                          {share.displayName || share.email}
+                          {localNote.ownerDisplayName}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {share.access === 'edit' ? 'Can edit' : 'Can view'}
+                          Owner
                         </div>
                       </div>
                     </div>
-                  ))}
+
+                    {/* Shared Users */}
+                    {noteShares.map(share => (
+                      <div key={share.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                        {share.photoURL ? (
+                          <img 
+                            src={share.photoURL} 
+                            alt={share.displayName || share.email}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                            <UserIcon className="h-4 w-4" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">
+                            {share.displayName || share.email}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {share.access === 'edit' ? 'Can edit' : 'Can view'}
+                          </div>
+                        </div>
+                        {isOwner && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={async () => {
+                              try {
+                                // Remove the share using the shares collection
+                                const shareRef = doc(firestore, 'shares', share.id!);
+                                await deleteDoc(shareRef);
+                                await loadShares(); // Refresh the shares list
+                                toast({
+                                  title: "Access removed",
+                                  description: `Removed access for ${share.email}`
+                                });
+                              } catch (error) {
+                                console.error('Error removing share:', error);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to remove access",
+                                  variant: "destructive"
+                                });
+                              }
+                            }}
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Share Button */}
+                    {isOwner && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button className="w-full mt-2" variant="outline">
+                            <Share2Icon className="h-4 w-4 mr-2" />
+                            Share Note
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Share Note</DialogTitle>
+                            <DialogDescription>
+                              Share this note with others by email
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Email</label>
+                              <Input
+                                type="email"
+                                placeholder="Enter email address"
+                                value={shareEmail}
+                                onChange={(e) => setShareEmail(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Permission</label>
+                              <Select
+                                value={shareAccess}
+                                onValueChange={(value: 'view' | 'edit') => setShareAccess(value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select permission" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="view">Can view</SelectItem>
+                                  <SelectItem value="edit">Can edit</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              onClick={async () => {
+                                if (!shareEmail) return;
+                                try {
+                                  await db.shareNote(note.firebaseId!, shareEmail, shareAccess);
+                                  toast({
+                                    title: "Note shared",
+                                    description: `Shared with ${shareEmail} successfully`
+                                  });
+                                  setShareEmail('');
+                                } catch (error) {
+                                  console.error('Error sharing note:', error);
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to share note",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }}
+                            >
+                              Share
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
           </SheetContent>
         </Sheet>
       </div>
