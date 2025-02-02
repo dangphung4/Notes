@@ -20,6 +20,8 @@ interface SharePermission {
 
 interface ShareDialogProps {
   note: Note;
+  variant?: 'icon' | 'full';
+  children?: React.ReactNode;
   onShare?: () => void;
   onError?: (error: string) => void;
 }
@@ -28,10 +30,12 @@ interface ShareDialogProps {
  *
  * @param root0
  * @param root0.note
+ * @param root0.variant
+ * @param root0.children
  * @param root0.onShare
  * @param root0.onError
  */
-export default function ShareDialog({ note, onShare, onError }: ShareDialogProps) {
+export default function ShareDialog({ note, variant = 'icon', children, onShare, onError }: ShareDialogProps) {
   const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [access, setAccess] = useState<'view' | 'edit'>('view');
@@ -116,9 +120,16 @@ export default function ShareDialog({ note, onShare, onError }: ShareDialogProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Share className="h-4 w-4" />
-        </Button>
+        {children || (
+          <Button 
+            variant="outline" 
+            size={variant === 'icon' ? 'icon' : 'sm'}
+            className={variant === 'full' ? 'gap-2' : ''}
+          >
+            <Share className="h-4 w-4" />
+            {variant === 'full' && <span>Share Note</span>}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

@@ -48,3 +48,41 @@ export default tseslint.config({
   },
 })
 ```
+
+#### Core Features
+
+- [X] Command palette with note search
+- [ ] Enhanced calendar integration
+  - [ ] Note-calendar event linking
+  - [ ] In-note deadline commands (e.g., `$calendar 12/9/2025 1330`)
+  - [ ] Automatic calendar sync
+- [ ] Real-time collaboration
+- [ ] Scheduling templates
+- [ ] Theme customization system
+- [ ] AI-Powered Features
+  - [ ] Smart note summarization
+  - [ ] Auto-tagging and categorization
+  - [ ] Content suggestions and completion
+  - [ ] Meeting notes templates with AI structuring
+- [ ] Advanced Organization
+  - [ ] Kanban board view for tasks and notes
+  - [ ] Mind map visualization of connected notes
+  - [ ] Custom note relationships and backlinks
+  - [ ] Automated table of contents generation
+- [ ] Enhanced Media Support
+  - [ ] Voice notes with transcription
+  - [ ] Sketch/drawing capabilities
+  - [ ] PDF annotation and highlighting
+  - [ ] Image OCR and searchable screenshots
+- [ ] Productivity Features
+  - [ ] Pomodoro timer integration
+  - [ ] Daily/weekly note templates
+  - [ ] Task dependencies and subtasks
+  - [ ] Progress tracking and habit monitoring
+- [ ] Cross-Platform Integration
+  - [ ] Email to note conversion
+  - [ ] Calendar event note generation
+  - [ ] Browser extension for web clipping
+  - [ ] Share to external apps (Slack, Teams, etc.)
+
+#### Infrastructure

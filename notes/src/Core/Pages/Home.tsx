@@ -575,6 +575,198 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Productivity Features Section */}
+      <section className="container mx-auto px-4 py-20 bg-muted/30">
+        <h2 className="text-3xl font-bold text-center mb-12">Productivity Tools</h2>
+        <div className="space-y-16">
+          {/* Pomodoro Timer */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12">
+            <div className="flex-1 space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                  1
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Pomodoro Timer</h3>
+                  <p className="text-muted-foreground">
+                    Stay focused with customizable work sessions and breaks. Track your productivity with detailed statistics and progress indicators.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                  2
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Task Management</h3>
+                  <p className="text-muted-foreground">
+                    Create and organize tasks with priorities, due dates, and Pomodoro estimates. Track completion and progress over time.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center shrink-0">
+                  3
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Habit Tracking</h3>
+                  <p className="text-muted-foreground">
+                    Build and maintain habits with daily, weekly, or monthly tracking. Monitor streaks and celebrate consistency.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 rounded-lg overflow-hidden shadow-xl">
+              <div className="bg-card p-8 rounded-lg border">
+                <div className="space-y-8">
+                  <div className="flex justify-center">
+                    <div className="w-48 h-48 rounded-full border-8 border-primary flex items-center justify-center">
+                      <div className="text-4xl font-bold">25:00</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">8</div>
+                      <div className="text-sm text-muted-foreground">Sessions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">200</div>
+                      <div className="text-sm text-muted-foreground">Minutes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">5</div>
+                      <div className="text-sm text-muted-foreground">Tasks</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <ClockIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Custom Timers</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Customize work and break durations to match your productivity rhythm. Set short and long break intervals.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <MixIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Task Integration</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Link Pomodoro sessions to specific tasks. Track time spent and progress on each task automatically.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <UpdateIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Progress Tracking</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  View detailed statistics about your productivity. Track daily goals and celebrate achievements.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <DrawingPinIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Task Priorities</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Set task priorities and organize your work. Focus on what matters most with clear visual indicators.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <RocketIcon className="h-6 w-6 text-primary" />
+                  <CardTitle>Habit Streaks</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Build consistency with habit tracking. Monitor your streaks and get motivated by your progress.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <Share2Icon className="h-6 w-6 text-primary" />
+                  <CardTitle>Progress Sharing</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>
+                  Share your productivity achievements. Inspire and get inspired by others' progress.
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Daily Progress */}
+          <div className="bg-card p-8 rounded-lg border mt-12">
+            <h3 className="text-2xl font-bold text-center mb-8">Daily Progress Overview</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">8/10</div>
+                <div className="text-sm text-muted-foreground">Pomodoros</div>
+                <div className="mt-2 h-2 bg-muted rounded-full">
+                  <div className="h-full bg-primary rounded-full" style={{ width: '80%' }}></div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">5/7</div>
+                <div className="text-sm text-muted-foreground">Tasks</div>
+                <div className="mt-2 h-2 bg-muted rounded-full">
+                  <div className="h-full bg-primary rounded-full" style={{ width: '71%' }}></div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">3/3</div>
+                <div className="text-sm text-muted-foreground">Habits</div>
+                <div className="mt-2 h-2 bg-muted rounded-full">
+                  <div className="h-full bg-primary rounded-full" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">200</div>
+                <div className="text-sm text-muted-foreground">Minutes Focused</div>
+                <div className="mt-2 h-2 bg-muted rounded-full">
+                  <div className="h-full bg-primary rounded-full" style={{ width: '83%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Additional Features Section */}
       <section className="container mx-auto px-4 py-20">
         <h3 className="text-2xl font-bold text-center mb-8">

@@ -1037,6 +1037,9 @@ interface StoredFoldersPreferences {
   sortDirection: 'asc' | 'desc';
 }
 
+/**
+ *
+ */
 export default function Folders() {
   const navigate = useNavigate();
   const [folders, setFolders] = useState<FolderNode[]>([]);

@@ -123,6 +123,72 @@ export interface CalendarEvent {
   tags?: Tags[];
 }
 
+export interface PomodoroSession {
+  id?: number;
+  firebaseId?: string;
+  noteId?: string;
+  taskId?: string;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in minutes
+  status: 'active' | 'completed' | 'interrupted';
+  type: 'work' | 'short-break' | 'long-break';
+  createdBy: string;
+  createdAt: Date;
+}
+
+export interface Task {
+  id?: number;
+  firebaseId?: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in-progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+  completedAt?: Date;
+  noteId?: string;
+  parentTaskId?: string;
+  subtasks?: Task[];
+  pomodoroEstimate?: number; // estimated pomodoros needed
+  pomodoroCompleted?: number; // completed pomodoros
+  tags?: Tags[];
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface HabitTracker {
+  id?: number;
+  firebaseId?: string;
+  habitName: string;
+  description?: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  targetCount: number;
+  currentStreak: number;
+  longestStreak: number;
+  startDate: Date;
+  completedDates: Date[];
+  reminderTime?: string;
+  tags?: Tags[];
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DailyProgress {
+  id?: number;
+  firebaseId?: string;
+  date: Date;
+  pomodorosCompleted: number;
+  tasksCompleted: number;
+  habitsCompleted: number;
+  totalWorkMinutes: number;
+  notes?: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Add to your existing interface for user preferences
 interface UserPreferences {
   editorFont?: string;
@@ -140,23 +206,35 @@ class NotesDB extends Dexie {
   tags: Dexie.Table<Tags, string>;
   users?: Dexie.Table<User, string>;
   folders: Dexie.Table<Folder, string>;
+  pomodoroSessions!: Dexie.Table<PomodoroSession, number>;
+  tasks!: Dexie.Table<Task, number>;
+  habitTrackers!: Dexie.Table<HabitTracker, number>;
+  dailyProgress!: Dexie.Table<DailyProgress, number>;
 
   /**
    *
    */
   constructor() {
     super("NotesDB");
-    this.version(6).stores({
+    this.version(8).stores({
       notes: "++id, firebaseId, title, updatedAt, folderId",
       calendarEvents: "++id, firebaseId, startDate, endDate, ownerUserId",
       tags: "++id, name, group",
       users: "++userId, email, displayName, photoURL, lastLoginAt, preferences",
-      folders: "++id, name, parentId, ownerUserId, isFavorite"
+      folders: "++id, name, parentId, ownerUserId, isFavorite",
+      pomodoroSessions: "++id, firebaseId, noteId, taskId, startTime, status, createdBy",
+      tasks: "++id, firebaseId, title, status, dueDate, noteId, parentTaskId, createdBy",
+      habitTrackers: "++id, firebaseId, habitName, frequency, startDate, createdBy",
+      dailyProgress: "++id, firebaseId, date, createdBy"
     });
     this.notes = this.table("notes");
     this.tags = this.table("tags");
     this.users = this.table("users");
     this.folders = this.table("folders");
+    this.pomodoroSessions = this.table("pomodoroSessions");
+    this.tasks = this.table("tasks");
+    this.habitTrackers = this.table("habitTrackers");
+    this.dailyProgress = this.table("dailyProgress");
   }
 
   // Load notes from Firebase
@@ -1428,6 +1506,10 @@ class NotesDB extends Dexie {
   }
 
   // Folder Methods
+  /**
+   *
+   * @param folder
+   */
   async createFolder(folder: Partial<Folder>): Promise<string> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1452,6 +1534,11 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param folderId
+   * @param updates
+   */
   async updateFolder(folderId: string, updates: Partial<Folder>) {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1482,6 +1569,10 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param folderId
+   */
   async deleteFolder(folderId: string) {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1517,6 +1608,9 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   */
   async getFolders(): Promise<Folder[]> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1537,6 +1631,319 @@ class NotesDB extends Dexie {
       })) as Folder[];
     } catch (error) {
       console.error("Error fetching folders:", error);
+      throw error;
+    }
+  }
+
+  // Pomodoro Methods
+  /**
+   *
+   * @param session
+   */
+  async startPomodoroSession(session: Partial<PomodoroSession>): Promise<PomodoroSession> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const sessionData = {
+        ...session,
+        startTime: new Date(),
+        status: 'active',
+        createdBy: user.email || "",
+        createdAt: new Date()
+      } as PomodoroSession;
+
+      const docRef = await addDoc(collection(firestore, "pomodoroSessions"), sessionData);
+      const newSession = { ...sessionData, firebaseId: docRef.id };
+      await this.pomodoroSessions.add(newSession);
+
+      return newSession;
+    } catch (error) {
+      console.error("Error starting pomodoro session:", error);
+      throw error;
+    }
+  }
+
+  /**
+   *
+   * @param sessionId
+   */
+  async completePomodoroSession(sessionId: number): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const session = await this.pomodoroSessions.get(sessionId);
+      if (!session || !session.firebaseId) throw new Error("Session not found");
+
+      const updateData = {
+        status: 'completed' as const,
+        endTime: new Date()
+      };
+
+      await updateDoc(doc(firestore, "pomodoroSessions", session.firebaseId), updateData);
+      await this.pomodoroSessions.update(sessionId, updateData);
+
+      // Update daily progress
+      await this.updateDailyProgress();
+    } catch (error) {
+      console.error("Error completing pomodoro session:", error);
+      throw error;
+    }
+  }
+
+  // Task Methods
+  /**
+   *
+   * @param task
+   */
+  async createTask(task: Partial<Task>): Promise<Task> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const taskData = {
+        ...task,
+        status: task.status || 'todo',
+        createdBy: user.email || "",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as Task;
+
+      const docRef = await addDoc(collection(firestore, "tasks"), taskData);
+      const newTask = { ...taskData, firebaseId: docRef.id };
+      await this.tasks.add(newTask);
+
+      return newTask;
+    } catch (error) {
+      console.error("Error creating task:", error);
+      throw error;
+    }
+  }
+
+  /**
+   *
+   * @param taskId
+   * @param updates
+   */
+  async updateTask(taskId: number, updates: Partial<Task>): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const task = await this.tasks.get(taskId);
+      if (!task || !task.firebaseId) throw new Error("Task not found");
+
+      const updateData = {
+        ...updates,
+        updatedAt: new Date()
+      };
+
+      await updateDoc(doc(firestore, "tasks", task.firebaseId), updateData);
+      await this.tasks.update(taskId, updateData);
+
+      if (updates.status === 'completed') {
+        await this.updateDailyProgress();
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+      throw error;
+    }
+  }
+
+  // Habit Tracking Methods
+  /**
+   *
+   * @param habit
+   */
+  async createHabit(habit: Partial<HabitTracker>): Promise<HabitTracker> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const habitData = {
+        ...habit,
+        currentStreak: 0,
+        longestStreak: 0,
+        completedDates: [],
+        createdBy: user.email || "",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as HabitTracker;
+
+      const docRef = await addDoc(collection(firestore, "habitTrackers"), habitData);
+      const newHabit = { ...habitData, firebaseId: docRef.id };
+      await this.habitTrackers.add(newHabit);
+
+      return newHabit;
+    } catch (error) {
+      console.error("Error creating habit:", error);
+      throw error;
+    }
+  }
+
+  /**
+   *
+   * @param habitId
+   * @param date
+   */
+  async completeHabit(habitId: number, date: Date = new Date()): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    try {
+      const habit = await this.habitTrackers.get(habitId);
+      if (!habit || !habit.firebaseId) throw new Error("Habit not found");
+
+      const completedDates = [...(habit.completedDates || []), date];
+      const { currentStreak, longestStreak } = this.calculateHabitStreaks(completedDates);
+
+      const updateData = {
+        completedDates,
+        currentStreak,
+        longestStreak,
+        updatedAt: new Date()
+      };
+
+      await updateDoc(doc(firestore, "habitTrackers", habit.firebaseId), updateData);
+      await this.habitTrackers.update(habitId, updateData);
+
+      await this.updateDailyProgress();
+    } catch (error) {
+      console.error("Error completing habit:", error);
+      throw error;
+    }
+  }
+
+  /**
+   *
+   * @param completedDates
+   */
+  private calculateHabitStreaks(completedDates: Date[]): { currentStreak: number; longestStreak: number } {
+    const sortedDates = completedDates
+      .map(date => new Date(date).toISOString().split('T')[0])
+      .sort();
+    
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+    
+    for (let i = 0; i < sortedDates.length; i++) {
+      if (i === 0 || this.isConsecutiveDay(sortedDates[i-1], sortedDates[i])) {
+        tempStreak++;
+      } else {
+        tempStreak = 1;
+      }
+      
+      longestStreak = Math.max(longestStreak, tempStreak);
+      if (i === sortedDates.length - 1) {
+        const today = new Date().toISOString().split('T')[0];
+        if (this.isConsecutiveDay(sortedDates[i], today) || sortedDates[i] === today) {
+          currentStreak = tempStreak;
+        }
+      }
+    }
+
+    return { currentStreak, longestStreak };
+  }
+
+  /**
+   *
+   * @param date1
+   * @param date2
+   */
+  private isConsecutiveDay(date1: string, date2: string): boolean {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    const diffTime = Math.abs(d2.getTime() - d1.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays === 1;
+  }
+
+  // Daily Progress Methods
+  /**
+   *
+   */
+  private async updateDailyProgress(): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User not authenticated");
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    try {
+      // Get today's progress or create new
+      const progressRef = collection(firestore, "dailyProgress");
+      const q = query(
+        progressRef,
+        where("createdBy", "==", user.email),
+        where("date", "==", today)
+      );
+      const snapshot = await getDocs(q);
+
+      // Calculate metrics
+      const pomodorosCompleted = await this.pomodoroSessions
+        .where("createdBy")
+        .equals(user.email || "")
+        .and(session => {
+          const sessionDate = new Date(session.startTime);
+          return sessionDate.toDateString() === today.toDateString();
+        })
+        .count();
+
+      const tasksCompleted = await this.tasks
+        .where("createdBy")
+        .equals(user.email || "")
+        .and(task => {
+          if (!task.completedAt) return false;
+          const taskDate = new Date(task.completedAt);
+          return taskDate.toDateString() === today.toDateString();
+        })
+        .count();
+
+      const habits = await this.habitTrackers
+        .where("createdBy")
+        .equals(user.email || "")
+        .toArray();
+
+      const habitsCompleted = habits.reduce((count, habit) => {
+        const completedToday = habit.completedDates?.some(
+          date => new Date(date).toDateString() === today.toDateString()
+        );
+        return completedToday ? count + 1 : count;
+      }, 0);
+
+      const totalWorkMinutes = pomodorosCompleted * 25; // assuming 25-minute pomodoros
+
+      const progressData = {
+        date: today,
+        pomodorosCompleted,
+        tasksCompleted,
+        habitsCompleted,
+        totalWorkMinutes,
+        createdBy: user.email || "",
+        updatedAt: new Date(),
+        createdAt: new Date() // Add this for new entries
+      };
+
+      if (snapshot.empty) {
+        // Create new progress entry
+        const docRef = await addDoc(progressRef, progressData);
+        await this.dailyProgress.add({ ...progressData, firebaseId: docRef.id });
+      } else {
+        // Update existing progress
+        const docRef = snapshot.docs[0];
+        await updateDoc(docRef.ref, progressData);
+        const localProgress = await this.dailyProgress
+          .where("firebaseId")
+          .equals(docRef.id)
+          .first();
+        if (localProgress) {
+          await this.dailyProgress.update(localProgress.id!, progressData);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating daily progress:", error);
       throw error;
     }
   }
