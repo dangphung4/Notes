@@ -93,6 +93,34 @@ const getBlockNoteContent = (jsonString: string): string => {
   }
 };
 
+/**
+ * Renders a folder tree item with its associated notes and subfolders.
+ *
+ * @param {Object} props - The properties for the folder tree item.
+ * @param {FolderNode} props.folder - The folder data to display.
+ * @param {number} [props.level=0] - The indentation level of the folder.
+ * @param {function} props.onToggle - Callback function to toggle the folder's expanded state.
+ * @param {function} props.onEdit - Callback function to edit the folder.
+ * @param {function} props.onDelete - Callback function to delete the folder.
+ * @param {function} props.onCreateSubfolder - Callback function to create a new subfolder.
+ * @param {function} props.onToggleFavorite - Callback function to toggle the folder's favorite status.
+ * @param {Note[]} props.notes - An array of notes associated with the folder.
+ * @param {boolean} [props.isCompact=false] - Flag to render in compact mode.
+ *
+ * @returns {JSX.Element} The rendered folder tree item component.
+ *
+ * @example
+ * <FolderTreeItem
+ *   folder={folderData}
+ *   level={1}
+ *   onToggle={handleToggle}
+ *   onEdit={handleEdit}
+ *   onDelete={handleDelete}
+ *   onCreateSubfolder={handleCreateSubfolder}
+ *   onToggleFavorite={handleToggleFavorite}
+ *   notes={notesArray}
+ * />
+ */
 const FolderTreeItem = ({ 
   folder, 
   level = 0,
@@ -525,6 +553,34 @@ const findFolderInTree = (folders: FolderNode[], folderId: string): FolderNode |
   return undefined;
 };
 
+/**
+ * A functional component that represents a folder item in a grid view.
+ * It displays the folder's name, notes, and provides options to manage the folder.
+ *
+ * @param {Object} props - The properties for the component.
+ * @param {FolderNode} props.folder - The folder object containing details such as id, name, color, and children.
+ * @param {Note[]} props.notes - An array of notes associated with the folder.
+ * @param {function(string): void} props.onToggle - Callback function to toggle the folder's expanded state.
+ * @param {function(string): void} props.onToggleFavorite - Callback function to toggle the folder's favorite status.
+ * @param {function(FolderNode): void} props.onEdit - Callback function to edit the folder.
+ * @param {function(string): void} props.onDelete - Callback function to delete the folder.
+ * @param {function(FolderNode): void} props.onCreateSubfolder - Callback function to create a new subfolder within the folder.
+ *
+ * @returns {JSX.Element} The rendered folder item component.
+ *
+ * @example
+ * <GridFolderItem
+ *   folder={folder}
+ *   notes={notes}
+ *   onToggle={handleToggle}
+ *   onToggleFavorite={handleToggleFavorite}
+ *   onEdit={handleEdit}
+ *   onDelete={handleDelete}
+ *   onCreateSubfolder={handleCreateSubfolder}
+ * />
+ *
+ * @throws {Error} Throws an error if the folder data is invalid or missing required properties.
+ */
 const GridFolderItem = ({ folder, notes, onToggle, onToggleFavorite, onEdit, onDelete, onCreateSubfolder }: {
   folder: FolderNode;
   notes: Note[];

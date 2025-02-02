@@ -42,22 +42,12 @@ jobs:
         working-directory: notes
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            # For PRs, check only the commits in the PR
-            git fetch origin ${{ github.event.pull_request.base.ref }} --depth=10
-            COMMITS_COUNT=$(git rev-list --count HEAD)
-            if [ "$COMMITS_COUNT" -gt 10 ]; then
-              npx commitlint --from HEAD~10 --to HEAD --verbose
-            else
-              npx commitlint --from HEAD~$COMMITS_COUNT --to HEAD --verbose
-            fi
+            # For PRs, check only commits in the PR
+            BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+            npx commitlint --from $BASE_SHA --to ${{ github.event.pull_request.head.sha }} --verbose
           else
-            # For pushes, check only recent commits
-            COMMITS_COUNT=$(git rev-list --count HEAD)
-            if [ "$COMMITS_COUNT" -gt 10 ]; then
-              npx commitlint --from HEAD~10 --to HEAD --verbose
-            else
-              npx commitlint --from HEAD~$COMMITS_COUNT --to HEAD --verbose
-            fi
+            # For pushes, check only the latest commit
+            npx commitlint --from HEAD~1 --to HEAD --verbose
           fi
         
       - name: Check PR title
