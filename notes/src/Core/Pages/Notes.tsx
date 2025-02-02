@@ -4,7 +4,7 @@ import { SharePermission, Folder } from '../Database/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon, ChevronRightIcon, TrashIcon } from '@radix-ui/react-icons';
+import { PlusIcon, MagnifyingGlassIcon, AvatarIcon, FileTextIcon, Share2Icon,TrashIcon } from '@radix-ui/react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../Auth/AuthContext';
 import { onSnapshot, collection, query, where, getDocs, documentId, deleteDoc, doc } from 'firebase/firestore';
@@ -594,10 +594,9 @@ const NoteCard = ({
                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             onClick={async () => {
                               try {
-                                // Remove the share using the shares collection
                                 const shareRef = doc(firestore, 'shares', share.id!);
                                 await deleteDoc(shareRef);
-                                await loadShares(); // Refresh the shares list
+                                await loadShares();
                                 toast({
                                   title: "Access removed",
                                   description: `Removed access for ${share.email}`
@@ -612,80 +611,33 @@ const NoteCard = ({
                               }
                             }}
                           >
-                            <XIcon className="h-4 w-4" />
+                            <TrashIcon className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
                     ))}
 
-                    {/* Share Button */}
+                    {/* Share Button using ShareDialog */}
                     {isOwner && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button className="w-full mt-2" variant="outline">
-                            <Share2Icon className="h-4 w-4 mr-2" />
-                            Share Note
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Share Note</DialogTitle>
-                            <DialogDescription>
-                              Share this note with others by email
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium">Email</label>
-                              <Input
-                                type="email"
-                                placeholder="Enter email address"
-                                value={shareEmail}
-                                onChange={(e) => setShareEmail(e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium">Permission</label>
-                              <Select
-                                value={shareAccess}
-                                onValueChange={(value: 'view' | 'edit') => setShareAccess(value)}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select permission" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="view">Can view</SelectItem>
-                                  <SelectItem value="edit">Can edit</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button
-                              onClick={async () => {
-                                if (!shareEmail) return;
-                                try {
-                                  await db.shareNote(note.firebaseId!, shareEmail, shareAccess);
-                                  toast({
-                                    title: "Note shared",
-                                    description: `Shared with ${shareEmail} successfully`
-                                  });
-                                  setShareEmail('');
-                                } catch (error) {
-                                  console.error('Error sharing note:', error);
-                                  toast({
-                                    title: "Error",
-                                    description: "Failed to share note",
-                                    variant: "destructive"
-                                  });
-                                }
-                              }}
-                            >
-                              Share
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                      <ShareDialog
+                        note={localNote}
+                        onShare={loadShares}
+                        onError={(error) => {
+                          toast({
+                            title: "Error",
+                            description: error,
+                            variant: "destructive"
+                          });
+                        }}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full mt-2 text-sm"
+                        >
+                          <Share2Icon className="h-4 w-4 mr-2" />
+                          Share Note
+                        </Button>
+                      </ShareDialog>
                     )}
                   </div>
                 </div>
