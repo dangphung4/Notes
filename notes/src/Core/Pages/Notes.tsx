@@ -450,7 +450,7 @@ const NoteCard = ({
                       <span className="text-muted-foreground">Created</span>
                       <span className="ml-auto">{formatTimeAgo(localNote.createdAt)}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap- text-sm">
                       <div className="w-1 h-1 rounded-full bg-primary" />
                       <span className="text-muted-foreground">Last updated</span>
                       <span className="ml-auto">{formatTimeAgo(localNote.updatedAt)}</span>
@@ -1475,27 +1475,16 @@ export default function Notes() {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
-      {/* Enhanced Header with better mobile layout */}
+      {/* Enhanced Header with better mobile optimization */}
       <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-        {/* Top row with search and actions */}
+        {/* Top row with search and actions - Mobile optimized */}
         <div className="flex items-center gap-2">
-          {/* Mobile Menu Button - New! */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 sm:hidden rounded-xl hover:bg-muted"
-          >
-            <MenuIcon className="h-5 w-5" />
-          </Button>
-
-          {/* Search with enhanced mobile styling */}
-          <div className="relative flex-1">
-            <div className="sm:max-w-md">
-              <NoteSearch 
-                notes={notes} 
-                onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
-              />
-            </div>
+          {/* Search with enhanced styling */}
+          <div className="flex-1 max-w-2xl">
+            <NoteSearch 
+              notes={notes} 
+              onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
+            />
           </div>
 
           {/* Mobile Actions */}
@@ -1503,31 +1492,32 @@ export default function Notes() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-xl hover:bg-muted"
+              className="h-9 w-9 rounded-full"
               onClick={() => setShowViewOptions(!showViewOptions)}
             >
               {view === 'grid' ? 
-                <LayoutGridIcon className="h-5 w-5" /> : 
-                <LayoutListIcon className="h-5 w-5" />
+                <LayoutGridIcon className="h-4 w-4" /> : 
+                <LayoutListIcon className="h-4 w-4" />
               }
             </Button>
             <Button
+              variant="default"
               size="icon"
-              className="h-10 w-10 rounded-xl bg-primary hover:bg-primary/90"
+              className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90"
               onClick={() => navigate('/notes/new')}
             >
-              <PlusIcon className="h-5 w-5" />
+              <PlusIcon className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden sm:flex items-center gap-2">
-            <div className="flex items-center bg-muted/50 rounded-xl p-1">
+            <div className="flex items-center bg-muted/50 rounded-lg p-1">
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-9 w-9 rounded-lg",
+                  "h-8 w-8 rounded-md",
                   view === 'grid' && "bg-background shadow-sm"
                 )}
                 onClick={() => setView('grid')}
@@ -1538,7 +1528,7 @@ export default function Notes() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-9 w-9 rounded-lg",
+                  "h-8 w-8 rounded-md",
                   view === 'list' && "bg-background shadow-sm"
                 )}
                 onClick={() => setView('list')}
@@ -1546,10 +1536,9 @@ export default function Notes() {
                 <LayoutListIcon className="h-4 w-4" />
               </Button>
             </div>
-
             <Button 
               onClick={() => navigate('/notes/new')} 
-              className="bg-primary hover:bg-primary/90 h-10 px-4 rounded-xl"
+              className="bg-primary hover:bg-primary/90"
             >
               <PlusIcon className="mr-2 h-4 w-4" /> New Note
             </Button>
@@ -1558,10 +1547,10 @@ export default function Notes() {
 
         {/* Mobile View Options Dropdown */}
         {showViewOptions && (
-          <div className="absolute right-2 top-16 p-1.5 bg-popover border rounded-xl shadow-lg z-50 sm:hidden">
+          <div className="sm:hidden absolute right-4 mt-2 p-1.5 bg-popover border rounded-lg shadow-lg z-50">
             <Button
               variant="ghost"
-              className="w-full justify-start rounded-lg"
+              className="w-full justify-start rounded-md"
               onClick={() => {
                 setView('grid');
                 setShowViewOptions(false);
@@ -1572,7 +1561,7 @@ export default function Notes() {
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start rounded-lg"
+              className="w-full justify-start rounded-md"
               onClick={() => {
                 setView('list');
                 setShowViewOptions(false);
@@ -1584,178 +1573,186 @@ export default function Notes() {
           </div>
         )}
 
-        {/* Enhanced Mobile Filters */}
-        <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
-          {/* Folder Selection with updated mobile styling */}
-          <Select
-            value={selectedFolderId || "root"}
-            onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
-          >
-            <SelectTrigger className="min-w-[140px] sm:w-[200px] h-10 bg-background rounded-xl">
-              <SelectValue placeholder="All folders">
-                <div className="flex items-center gap-2">
-                  <FolderIcon 
-                    className="h-4 w-4" 
-                    style={{ 
-                      color: selectedFolderId ? 
-                        folders.find(f => f.id === selectedFolderId)?.color : 
-                        undefined 
-                    }}
-                  />
-                  <span className="truncate">
-                    {selectedFolderId 
-                      ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
-                      : "All folders"
-                    }
-                  </span>
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="root">
-                <div className="flex items-center gap-2">
-                  <FolderIcon className="h-4 w-4" />
-                  All folders
-                </div>
-              </SelectItem>
-              {folders.map(folder => (
-                <SelectItem key={folder.id} value={folder.id}>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-2">
-                      <FolderIcon 
-                        className="h-4 w-4" 
-                        style={{ color: folder.color }} 
-                      />
-                      {folder.name}
-                    </div>
+        {/* Filters Row - Mobile Optimized */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
+            {/* Folder Selection - Mobile Optimized */}
+            <Select
+              value={selectedFolderId || "root"}
+              onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
+            >
+              <SelectTrigger className="w-[140px] sm:w-[200px] h-9 bg-background">
+                <SelectValue placeholder="All folders">
+                  <div className="flex items-center gap-2">
+                    <FolderIcon 
+                      className="h-4 w-4 flex-shrink-0" 
+                      style={{ 
+                        color: selectedFolderId ? 
+                          folders.find(f => f.id === selectedFolderId)?.color : 
+                          undefined 
+                      }}
+                    />
+                    <span className="truncate">
+                      {selectedFolderId 
+                        ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
+                        : "All folders"
+                      }
+                    </span>
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="root">
+                  <div className="flex items-center gap-2">
+                    <FolderIcon className="h-4 w-4" />
+                    All folders
                   </div>
                 </SelectItem>
-              ))}
-              <Button
-                variant="ghost"
-                className="w-full justify-start mt-2 rounded-md"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsCreatingFolder(true);
-                }}
-              >
-                <FolderPlusIcon className="h-4 w-4 mr-2" />
-                New Folder
-              </Button>
-            </SelectContent>
-          </Select>
+                {folders.map(folder => (
+                  <SelectItem key={folder.id} value={folder.id}>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        <FolderIcon 
+                          className="h-4 w-4" 
+                          style={{ color: folder.color }} 
+                        />
+                        {folder.name}
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start mt-2 rounded-md"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsCreatingFolder(true);
+                  }}
+                >
+                  <FolderPlusIcon className="h-4 w-4 mr-2" />
+                  New Folder
+                </Button>
+              </SelectContent>
+            </Select>
 
-          {/* Sort dropdown with mobile styling */}
-          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-            <SelectTrigger className="min-w-[120px] h-10 bg-background rounded-xl">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="updated">Last Updated</SelectItem>
-              <SelectItem value="created">Created Date</SelectItem>
-              <SelectItem value="title">Title</SelectItem>
-            </SelectContent>
-          </Select>
+            {/* Sort dropdown - Mobile Optimized */}
+            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+              <SelectTrigger className="w-[120px] h-9 bg-background">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="updated">Last Updated</SelectItem>
+                <SelectItem value="created">Created Date</SelectItem>
+                <SelectItem value="title">Title</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Date Filter with mobile styling */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={dateFilter ? "default" : "outline"}
-                className={cn(
-                  "h-10 rounded-xl whitespace-nowrap",
-                  dateFilter && "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                <CalendarIcon className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">
-                  {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-xl" align="start">
-              <Calendar
-                mode="single"
-                selected={dateFilter}
-                onSelect={setDateFilter}
-                initialFocus
-                className="rounded-xl"
-              />
-            </PopoverContent>
-          </Popover>
-
-          {/* Tag filter with mobile styling */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-10 rounded-xl whitespace-nowrap",
-                  selectedTagFilters.length > 0 && "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-              >
-                <TagIcon className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Tags</span>
-                {selectedTagFilters.length > 0 && (
-                  <Badge 
-                    variant="secondary" 
+            {/* Mobile Filter Actions */}
+            <div className="flex items-center gap-1.5">
+              {/* Date Filter Button - Mobile Optimized */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={dateFilter ? "default" : "outline"}
+                    size="icon"
                     className={cn(
-                      "ml-1 h-5 px-1.5",
-                      "bg-primary-foreground/20 text-primary-foreground"
+                      "h-9 w-9 sm:w-auto sm:px-3",
+                      dateFilter && "bg-primary text-primary-foreground hover:bg-primary/90"
                     )}
                   >
-                    {selectedTagFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0 rounded-xl" align="start">
-              <div className="p-2 border-b">
-                <Input
-                  placeholder="Search tags..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-8 text-sm"
-                />
-              </div>
-              <ScrollArea className="h-52">
-                <div className="p-2">
-                  {allTags
-                    .filter(tag => 
-                      tag.name.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map(tag => (
-                      <div
-                        key={tag.id}
-                        className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-md cursor-pointer"
-                        onClick={() => {
-                          setSelectedTagFilters(prev => {
-                            const isSelected = prev.some(t => t.id === tag.id);
-                            return isSelected
-                              ? prev.filter(t => t.id !== tag.id)
-                              : [...prev, tag];
-                          });
-                        }}
-                      >
-                        <Checkbox
-                          checked={selectedTagFilters.some(t => t.id === tag.id)}
-                        />
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: tag.color }}
-                        />
-                        <span className="text-sm">{tag.name}</span>
+                    <CalendarIcon className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">
+                      {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dateFilter}
+                    onSelect={setDateFilter}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Tag Filter Button - Mobile Optimized */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={cn(
+                      "h-9 w-9 sm:w-auto sm:px-3 relative",
+                      selectedTagFilters.length > 0 && "bg-primary text-primary-foreground hover:bg-primary/90"
+                    )}
+                  >
+                    <TagIcon className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Tags</span>
+                    {selectedTagFilters.length > 0 && (
+                      <div className="absolute -top-1 -right-1 sm:static sm:ml-1">
+                        <Badge 
+                          variant="secondary" 
+                          className={cn(
+                            "h-4 w-4 sm:h-5 sm:w-auto sm:px-1.5 p-0 flex items-center justify-center",
+                            selectedTagFilters.length > 0 && "bg-primary-foreground/20 text-primary-foreground"
+                          )}
+                        >
+                          {selectedTagFilters.length}
+                        </Badge>
                       </div>
-                    ))}
-                </div>
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0" align="start">
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="Search tags..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <ScrollArea className="h-52">
+                    <div className="p-2">
+                      {allTags
+                        .filter(tag => 
+                          tag.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map(tag => (
+                          <div
+                            key={tag.id}
+                            className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-md cursor-pointer"
+                            onClick={() => {
+                              setSelectedTagFilters(prev => {
+                                const isSelected = prev.some(t => t.id === tag.id);
+                                return isSelected
+                                  ? prev.filter(t => t.id !== tag.id)
+                                  : [...prev, tag];
+                              });
+                            }}
+                          >
+                            <Checkbox
+                              checked={selectedTagFilters.some(t => t.id === tag.id)}
+                            />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span className="text-sm">{tag.name}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
         </div>
 
-        {/* Active Filters Display with mobile optimization */}
+        {/* Active Filters - Mobile Optimized */}
         {(selectedTags.length > 0 || dateFilter || selectedFolderId || selectedTagFilters.length > 0) && (
-          <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
             {selectedFolderId && (
               <Badge
                 variant="secondary"
@@ -1818,18 +1815,18 @@ export default function Notes() {
           </div>
         )}
 
-        {/* Tabs with mobile optimization */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 -mx-2 sm:mx-0">
+        {/* Tabs and Clear Filters - Mobile Optimized */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <Tabs 
             value={activeTab} 
             onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
             className="flex-1"
           >
-            <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-muted/50 rounded-xl">
+            <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-muted/50">
               <TabsTrigger 
                 value="my-notes" 
                 className={cn(
-                  "text-sm rounded-lg",
+                  "text-sm rounded-md",
                   activeTab === 'my-notes' && "bg-background shadow-sm"
                 )}
               >
@@ -1838,7 +1835,7 @@ export default function Notes() {
               <TabsTrigger 
                 value="shared" 
                 className={cn(
-                  "text-sm rounded-lg",
+                  "text-sm rounded-md",
                   activeTab === 'shared' && "bg-background shadow-sm"
                 )}
               >
@@ -1847,16 +1844,15 @@ export default function Notes() {
             </TabsList>
           </Tabs>
 
-          {/* Clear Filters Button */}
           {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated') && (
             <Button
               variant="outline"
               size="sm"
               onClick={clearFilters}
-              className="h-11 gap-2 whitespace-nowrap rounded-xl hover:bg-destructive hover:text-destructive-foreground hidden sm:flex"
+              className="h-10 gap-2 whitespace-nowrap hover:bg-destructive hover:text-destructive-foreground"
             >
               <XCircleIcon className="h-4 w-4" />
-              Clear Filters
+              <span className="hidden sm:inline">Clear Filters</span>
             </Button>
           )}
         </div>
