@@ -1,4 +1,3 @@
- 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useMemo } from "react";
 import { SharePermission, Folder } from "../Database/db";
@@ -150,20 +149,8 @@ const getBlockNoteContent = (jsonString: string) => {
   }
 };
 
-const hasEditAccess = (note: Note, user: any, shares: SharePermission[]) => {
-  if (!user) return false;
-  if (note.ownerUserId === user.uid) return true;
-  return shares.some(
-    (share) =>
-      share.noteId === note.firebaseId &&
-      share.email === user.email &&
-      share.access === "edit"
-  );
-};
-
 const NoteCard = ({
   note,
-  shares,
   user,
   view,
   onClick,
@@ -172,14 +159,12 @@ const NoteCard = ({
   folders,
 }: {
   note: Note;
-  shares: SharePermission[];
   user: any;
   view: "grid" | "list";
   onClick: () => void;
   allNotes: Note[];
   navigate: (path: string) => void;
   folders: Folder[];
-  allTags: Tags[];
 }) => {
   const isOwner = note.ownerUserId === user?.uid;
   const [noteShares, setNoteShares] = useState<SharePermission[]>([]);
@@ -525,33 +510,152 @@ const NoteCard = ({
                           }
                         }}
                       />
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {localNote.tags?.map((tag) => (
-                        <div
-                          key={tag.id}
-                          className="px-2 py-0.5 rounded-full text-xs"
-                          style={{
-                            backgroundColor: tag.color + "20",
-                            color: tag.color,
-                          }}
-                        >
-                          {tag.name}
-                        </div>
-                      ))}
-                      {hasEditAccess(note, user, shares) && (
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="text-xs h-6"
-                          onClick={() => setIsEditingTags(true)}
+                          className="w-full"
+                          onClick={() => setIsEditingTags(false)}
                         >
-                          Edit Tags
+                          Done
                         </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedTags.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {selectedTags.map((tag) => (
+                            <div
+                              key={tag.id}
+                              className="px-2 py-1 rounded-full text-xs"
+                              style={{
+                                backgroundColor: tag.color + "20",
+                                color: tag.color,
+                              }}
+                            >
+                              {tag.name}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No tags added yet
+                        </p>
                       )}
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setIsEditingTags(true)}
+                      >
+                        {selectedTags.length > 0 ? "Edit Tags" : "Add Tags"}
+                      </Button>
                     </div>
                   )}
+                </div>
+
+                {/* Add Folder Section */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <FolderIcon className="h-4 w-4 text-primary" />
+                    Folder
+                  </h4>
+                  <div className="space-y-2">
+                    {isOwner ? (
+                      <>
+                        <Select
+                          value={localNote.folderId || "none"}
+                          onValueChange={(value) => {
+                            const folderId = value === "none" ? undefined : value;
+                            db.updateNote(note.firebaseId!, { folderId })
+                              .then(() => {
+                                setLocalNote({ ...localNote, folderId });
+                                toast({
+                                  title: "Folder updated",
+                                  description: folderId
+                                    ? `Note moved to ${folders.find((f) => f.id === folderId)?.name}`
+                                    : "Note removed from folder",
+                                });
+                              })
+                              .catch((error) => {
+                                console.error("Error updating folder:", error);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update folder",
+                                  variant: "destructive",
+                                });
+                              });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a folder" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              <div className="flex items-center gap-2">
+                                <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                                <span>No Folder</span>
+                              </div>
+                            </SelectItem>
+                            {folders.map((folder) => (
+                              <SelectItem key={folder.id} value={folder.id}>
+                                <div className="flex items-center gap-2">
+                                  <FolderIcon
+                                    className="h-4 w-4"
+                                    style={{ color: folder.color }}
+                                  />
+                                  <span>{folder.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {localNote.folderId && (
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => {
+                              db.updateNote(note.firebaseId!, { folderId: undefined })
+                                .then(() => {
+                                  setLocalNote({ ...localNote, folderId: undefined });
+                                  toast({
+                                    title: "Folder removed",
+                                    description: "Note removed from folder",
+                                  });
+                                })
+                                .catch((error) => {
+                                  console.error("Error removing folder:", error);
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to remove folder",
+                                    variant: "destructive",
+                                  });
+                                });
+                            }}
+                          >
+                            Remove from Folder
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        {localNote.folderId ? (
+                          <div className="flex items-center gap-2">
+                            <FolderIcon
+                              className="h-4 w-4"
+                              style={{ 
+                                color: folders.find(f => f.id === localNote.folderId)?.color 
+                              }}
+                            />
+                            <span>
+                              {folders.find(f => f.id === localNote.folderId)?.name}
+                            </span>
+                          </div>
+                        ) : (
+                          <span>No folder</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Related Notes */}
@@ -2233,14 +2337,12 @@ export default function Notes() {
                   <NoteCard
                     key={note.firebaseId}
                     note={note}
-                    shares={shares}
                     user={user}
                     view={view}
                     onClick={() => navigate(`/notes/${note.firebaseId}`)}
                     allNotes={notes}
                     navigate={navigate}
                     folders={folders}
-                    allTags={allTags}
                   />
                 ))}
               </div>
