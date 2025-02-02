@@ -52,120 +52,37 @@ const getBlockNoteContent = (jsonString: string) => {
     let text = '';
     
     const extractText = (block: any) => {
-      // Handle different block types
-      switch (block.type) {
-        case 'heading':
-          // Add heading style based on level
-          const level = block.props?.level || 1;
-          const fontSize = {
-            1: 'text-2xl font-bold',
-            2: 'text-xl font-bold',
-            3: 'text-lg font-bold',
-            4: 'text-base font-bold',
-            5: 'text-sm font-bold',
-            6: 'text-xs font-bold'
-          }[level] || 'text-2xl font-bold';
-          text += `<div class="${fontSize}">`;
-          break;
-          
-        case 'table':
-          if (Array.isArray(block.content)) {
-            text += '<div class="table">';
-            block.content.forEach((row: any) => {
-              if (Array.isArray(row.content)) {
-                const cellTexts = row.content.map((cell: any) => {
-                  if (Array.isArray(cell.content)) {
-                    return cell.content
-                      .filter((item: any) => item.type === 'text')
-                      .map((item: any) => item.text || '')
-                      .join('');
-                  }
-                  return '';
-                });
-                text += `<div class="table-row">${cellTexts.map(cell => `<div class="table-cell px-2">${cell}</div>`).join('')}</div>`;
-              }
-            });
-            text += '</div>';
-          }
-          return;
-          
-        case 'bulletListItem':
-          text += '<div class="flex gap-2">• ';
-          break;
-          
-        case 'numberedListItem':
-          text += '<div class="flex gap-2">1. ';
-          break;
-          
-        case 'checkListItem':
-          const checkbox = block.props?.checked ? '☒' : '☐';
-          text += `<div class="flex gap-2">${checkbox} `;
-          break;
-          
-        case 'quote':
-          text += '<div class="pl-4 border-l-4 border-gray-300 italic">';
-          break;
-          
-        default:
-          text += '<div>';
-      }
-      
-      // Process block content
+      // Check if block has content array
       if (Array.isArray(block.content)) {
         block.content.forEach((item: any) => {
           if (item.type === 'text') {
-            let itemText = item.text || '';
-            
-            // Apply text styling
-            if (item.styles) {
-              if (item.styles.includes('bold')) {
-                itemText = `<strong>${itemText}</strong>`;
-              }
-              if (item.styles.includes('italic')) {
-                itemText = `<em>${itemText}</em>`;
-              }
-              if (item.styles.includes('underline')) {
-                itemText = `<u>${itemText}</u>`;
-              }
-              if (item.styles.includes('strike')) {
-                itemText = `<del>${itemText}</del>`;
-              }
-              if (item.styles.includes('code')) {
-                itemText = `<code class="bg-gray-100 px-1 rounded">${itemText}</code>`;
-              }
-            }
-            text += itemText;
+            text += item.text || '';
           }
         });
       } else if (block.text) {
+        // Some blocks might have direct text property
         text += block.text;
       }
       
-      // Close div tags
-      text += '</div>';
-      
-      // Add appropriate spacing after blocks
-      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem', 'heading', 'quote'].includes(block.type)) {
+      // Add newline after certain block types
+      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem'].includes(block.type)) {
         text += '\n';
       }
-      
+
       // Process children recursively
       if (Array.isArray(block.children)) {
         block.children.forEach(extractText);
       }
     };
-    
+
     // Handle if blocks is not an array (single block)
     if (!Array.isArray(blocks)) {
       extractText(blocks);
     } else {
       blocks.forEach(extractText);
     }
-    
-    // Clean up extra newlines and trim
-    return text
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+
+    return text.trim();
   } catch (error) {
     console.error('Error parsing BlockNote content:', error);
     return '';
