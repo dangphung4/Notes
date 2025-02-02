@@ -501,6 +501,9 @@ const HabitDetailDialog = ({
   );
 };
 
+/**
+ *
+ */
 export function ProductivityDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();

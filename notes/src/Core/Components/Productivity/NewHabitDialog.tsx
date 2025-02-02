@@ -26,6 +26,11 @@ interface NewHabitDialogProps {
   onHabitCreated: () => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onHabitCreated
+ */
 export function NewHabitDialog({ onHabitCreated }: NewHabitDialogProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);

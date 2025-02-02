@@ -1396,6 +1396,10 @@ class NotesDB extends Dexie {
   }
 
   // Folder Methods
+  /**
+   *
+   * @param folder
+   */
   async createFolder(folder: Partial<Folder>): Promise<string> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1420,6 +1424,11 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param folderId
+   * @param updates
+   */
   async updateFolder(folderId: string, updates: Partial<Folder>) {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1450,6 +1459,10 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param folderId
+   */
   async deleteFolder(folderId: string) {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1485,6 +1498,9 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   */
   async getFolders(): Promise<Folder[]> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1510,6 +1526,10 @@ class NotesDB extends Dexie {
   }
 
   // Pomodoro Methods
+  /**
+   *
+   * @param session
+   */
   async startPomodoroSession(session: Partial<PomodoroSession>): Promise<PomodoroSession> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1534,6 +1554,10 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param sessionId
+   */
   async completePomodoroSession(sessionId: number): Promise<void> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1559,6 +1583,10 @@ class NotesDB extends Dexie {
   }
 
   // Task Methods
+  /**
+   *
+   * @param task
+   */
   async createTask(task: Partial<Task>): Promise<Task> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1583,6 +1611,11 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param taskId
+   * @param updates
+   */
   async updateTask(taskId: number, updates: Partial<Task>): Promise<void> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1609,6 +1642,10 @@ class NotesDB extends Dexie {
   }
 
   // Habit Tracking Methods
+  /**
+   *
+   * @param habit
+   */
   async createHabit(habit: Partial<HabitTracker>): Promise<HabitTracker> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1635,6 +1672,11 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param habitId
+   * @param date
+   */
   async completeHabit(habitId: number, date: Date = new Date()): Promise<void> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");
@@ -1663,6 +1705,10 @@ class NotesDB extends Dexie {
     }
   }
 
+  /**
+   *
+   * @param completedDates
+   */
   private calculateHabitStreaks(completedDates: Date[]): { currentStreak: number; longestStreak: number } {
     const sortedDates = completedDates
       .map(date => new Date(date).toISOString().split('T')[0])
@@ -1691,6 +1737,11 @@ class NotesDB extends Dexie {
     return { currentStreak, longestStreak };
   }
 
+  /**
+   *
+   * @param date1
+   * @param date2
+   */
   private isConsecutiveDay(date1: string, date2: string): boolean {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -1700,6 +1751,9 @@ class NotesDB extends Dexie {
   }
 
   // Daily Progress Methods
+  /**
+   *
+   */
   private async updateDailyProgress(): Promise<void> {
     const user = auth.currentUser;
     if (!user) throw new Error("User not authenticated");

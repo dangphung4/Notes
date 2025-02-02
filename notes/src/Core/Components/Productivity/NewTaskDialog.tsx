@@ -31,6 +31,11 @@ interface NewTaskDialogProps {
   onTaskCreated: () => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onTaskCreated
+ */
 export function NewTaskDialog({ onTaskCreated }: NewTaskDialogProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);

@@ -1,5 +1,10 @@
 import { cn } from "@/lib/utils"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 function Skeleton({
   className,
   ...props

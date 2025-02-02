@@ -221,6 +221,9 @@ function CommandPalette() {
 }
 
 // Add FooterWrapper component
+/**
+ *
+ */
 function FooterWrapper() {
   const location = useLocation();
   const hideFooterPaths = ['/notes/new', '/notes/:id'];
