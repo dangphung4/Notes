@@ -26,6 +26,7 @@ import Calendar from './Core/Pages/Calendar';
 import Folders from './Core/Pages/Folders';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, Command } from "@/components/ui/command";
 import { ThemeProvider } from './Core/Theme/ThemeProvider';
+import { ProductivityDashboard } from './Core/Pages/Productivity';
 
 // Separate component for command palette
 /**
@@ -129,6 +130,15 @@ function CommandPalette() {
                 shortcut: ["G", "N"],
                 action: () => {
                   navigate("/notes");
+                  setOpen(false);
+                },
+              },
+              {
+                id: "productivity",
+                name: "Productivity",
+                shortcut: ["G", "D"],
+                action: () => {
+                  navigate("/productivity");
                   setOpen(false);
                 },
               },
@@ -278,6 +288,14 @@ function AppRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/productivity"
+              element={
+                <PrivateRoute>
+                  <ProductivityDashboard />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/folders"
               element={

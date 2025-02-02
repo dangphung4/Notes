@@ -13,6 +13,7 @@ import {
   SunIcon,
   GlobeIcon,
   CalendarIcon,
+  ClockIcon,
 } from "@radix-ui/react-icons";
 import {
   Avatar,
@@ -77,22 +78,24 @@ export function DesktopNav({ darkMode }: NavProps) {
               <span className="ml-2">Home</span>
             </Button>
             {user && (
-              <Button variant="ghost" onClick={() => navigate('/notes')}>
-                <FileTextIcon className="h-5 w-5" />
-                <span className="ml-2">Notes</span>
-              </Button>
-            )}
-            {user && (
-              <Button variant="ghost" onClick={() => navigate('/folders')}>
-                <FolderIcon className="h-5 w-5" />
-                <span className="ml-2">Folders</span>
-              </Button>
-            )}
-            {user && (
-              <Button variant="ghost" onClick={() => navigate('/calendar')}>
-                <CalendarIcon className="h-5 w-5" />
-                <span className="ml-2">Calendar</span>
-              </Button>
+              <>
+                <Button variant="ghost" onClick={() => navigate('/notes')}>
+                  <FileTextIcon className="h-5 w-5" />
+                  <span className="ml-2">Notes</span>
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/folders')}>
+                  <FolderIcon className="h-5 w-5" />
+                  <span className="ml-2">Folders</span>
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/calendar')}>
+                  <CalendarIcon className="h-5 w-5" />
+                  <span className="ml-2">Calendar</span>
+                </Button>
+                <Button variant="ghost" onClick={() => navigate('/productivity')}>
+                  <ClockIcon className="h-5 w-5" />
+                  <span className="ml-2">Productivity</span>
+                </Button>
+              </>
             )}
             {!user && (
               <Button variant="ghost" asChild>
@@ -148,6 +151,10 @@ export function DesktopNav({ darkMode }: NavProps) {
                   <DropdownMenuItem onClick={() => navigate('/calendar')}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     <span>Calendar</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/productivity')}>
+                    <ClockIcon className="mr-2 h-4 w-4" />
+                    <span>Productivity</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/logout')}>
@@ -252,6 +259,14 @@ export function MobileNav({ darkMode }: NavProps) {
                 onClick={() => handleNavigation('/calendar')}
               >
                 <CalendarIcon className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="default"
+                size="icon"
+                className="rounded-full shadow-lg"
+                onClick={() => handleNavigation('/productivity')}
+              >
+                <ClockIcon className="h-5 w-5" />
               </Button>
               <Button
                 variant="default"

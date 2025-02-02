@@ -216,15 +216,15 @@ class NotesDB extends Dexie {
    */
   constructor() {
     super("NotesDB");
-    this.version(7).stores({
+    this.version(8).stores({
       notes: "++id, firebaseId, title, updatedAt, folderId",
       calendarEvents: "++id, firebaseId, startDate, endDate, ownerUserId",
       tags: "++id, name, group",
       users: "++userId, email, displayName, photoURL, lastLoginAt, preferences",
       folders: "++id, name, parentId, ownerUserId, isFavorite",
-      pomodoroSessions: "++id, firebaseId, noteId, taskId, startTime, status",
-      tasks: "++id, firebaseId, title, status, dueDate, noteId, parentTaskId",
-      habitTrackers: "++id, firebaseId, habitName, frequency, startDate",
+      pomodoroSessions: "++id, firebaseId, noteId, taskId, startTime, status, createdBy",
+      tasks: "++id, firebaseId, title, status, dueDate, noteId, parentTaskId, createdBy",
+      habitTrackers: "++id, firebaseId, habitName, frequency, startDate, createdBy",
       dailyProgress: "++id, firebaseId, date, createdBy"
     });
     this.notes = this.table("notes");
