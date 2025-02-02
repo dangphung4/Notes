@@ -905,8 +905,7 @@ export default function EditNote() {
 
       {/* Mobile bottom toolbar */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between px-4 py-2">
-          {/* Center - Formatting Options */}
+        <div className="flex items-center justify-center px-4 py-2">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -986,9 +985,6 @@ export default function EditNote() {
               <CodeIcon className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Right side - Empty div to maintain spacing */}
-          <div className="w-[72px]" /> {/* Approximate width of removed share button */}
         </div>
       </div>
 
