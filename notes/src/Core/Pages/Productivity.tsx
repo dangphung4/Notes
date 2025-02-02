@@ -47,7 +47,7 @@ interface DayWithActivity {
   hasHabits: boolean;
 }
 
-interface CustomDayProps {
+interface DayProps {
   date: Date;
   selected?: boolean;
   today?: boolean;
@@ -588,8 +588,7 @@ export function ProductivityDashboard() {
     loadMonthActivity(selectedDate);
   }, [selectedDate, user?.email]);
 
-  const CustomDay = (props: any) => {
-    const { date, selected, today, disabled } = props;
+  const CustomDay = ({ date, selected, today, disabled }: DayProps) => {
     const activity = daysWithActivity.find(d => 
       d.date.toDateString() === date.toDateString()
     );
@@ -919,14 +918,14 @@ export function ProductivityDashboard() {
                     head_row: "flex w-full",
                     head_cell: "text-muted-foreground rounded-md w-full font-normal text-sm",
                     row: "flex w-full mt-2",
-                    cell: "relative w-full h-[45px] sm:h-[60px] p-0 text-center text-sm focus-within:relative focus-within:z-20",
-                    day: "w-full h-full p-0 font-normal",
-                    day_range_end: "day-range-end",
-                    day_selected: "bg-primary text-primary-foreground hover:bg-primary focus:bg-primary focus:text-primary-foreground",
-                    day_today: "bg-accent text-accent-foreground",
+                    cell: "relative w-full h-[45px] sm:h-[60px] p-0.5",
+                    day: "h-full rounded-md",
                     day_outside: "text-muted-foreground opacity-50",
                     day_disabled: "text-muted-foreground opacity-50",
                     day_hidden: "invisible",
+                    day_range_end: "day-range-end",
+                    day_selected: "bg-primary text-primary-foreground hover:bg-primary focus:bg-primary focus:text-primary-foreground",
+                    day_today: "bg-accent text-accent-foreground"
                   }}
                 />
               </div>
