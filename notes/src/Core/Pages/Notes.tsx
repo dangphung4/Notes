@@ -221,7 +221,7 @@ const NoteCard = ({
         "hover:shadow-lg hover:border-primary/20",
         "bg-gradient-to-br from-background to-background/50",
         localNote.isPinned && note.ownerUserId === user?.uid && "border-primary/30",
-        view === 'grid' ? "h-[280px]" : "h-auto"
+        view === 'grid' ? "h-[280px]" : "h-[120px]"
       )}
     >
       {/* Folder indicator - New! */}
@@ -233,7 +233,10 @@ const NoteCard = ({
       )}
 
       {/* Action buttons with updated styling */}
-      <div className="absolute right-2 top-2 z-10 flex gap-1.5">
+      <div className={cn(
+        "absolute right-2 top-2 z-10 flex gap-1.5",
+        view === 'list' && "top-1/2 -translate-y-1/2 right-4"
+      )}>
         {note.ownerUserId === user?.uid && (
           <Button
             variant="ghost"
@@ -242,7 +245,8 @@ const NoteCard = ({
               "h-8 w-8 rounded-full",
               "opacity-0 group-hover:opacity-100 transition-opacity",
               "hover:bg-background/80 backdrop-blur-sm",
-              localNote.isPinned && "opacity-100 text-primary"
+              localNote.isPinned && "opacity-100 text-primary",
+              view === 'list' && "sm:opacity-100"
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -260,8 +264,9 @@ const NoteCard = ({
               size="icon"
               className={cn(
                 "h-8 w-8 rounded-full",
-                "opacity-0 group-hover:opacity-100 transition-opacity sm:opacity-100",
-                "hover:bg-background/80 backdrop-blur-sm"
+                "opacity-0 group-hover:opacity-100 transition-opacity",
+                "hover:bg-background/80 backdrop-blur-sm",
+                view === 'list' && "opacity-100"
               )}
               onClick={(e) => e.stopPropagation()}
             >
@@ -430,26 +435,33 @@ const NoteCard = ({
         className={cn(
           "cursor-pointer h-full",
           "transition-transform duration-200",
-          "hover:scale-[0.995]"
+          "hover:scale-[0.995]",
+          view === 'list' && "pr-24"
         )} 
         onClick={onClick}
       >
         <CardContent 
           className={cn(
             "p-4 h-full",
-            view === 'list' ? "flex gap-4" : "flex flex-col"
+            view === 'list' ? "flex items-center gap-6" : "flex flex-col"
           )}
         >
           {/* Content wrapper */}
-          <div className="flex-1 min-w-0 flex flex-col h-full">
+          <div className={cn(
+            "flex-1 min-w-0 flex flex-col h-full",
+            view === 'list' && "flex-row items-center gap-6"
+          )}>
             {/* Header section */}
-            <div className="space-y-3 mb-3">
+            <div className={cn(
+              "space-y-3 mb-3",
+              view === 'list' && "mb-0 flex-1 min-w-0 space-y-1"
+            )}>
               {/* Title and folder */}
               <div className="space-y-1">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className={cn(
-                    "font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2",
-                    view === 'list' ? "text-base" : "text-lg"
+                    "font-semibold leading-tight group-hover:text-primary transition-colors",
+                    view === 'list' ? "text-base line-clamp-1" : "text-lg line-clamp-2"
                   )}>
                     {localNote.title || 'Untitled'}
                   </h3>
@@ -472,7 +484,10 @@ const NoteCard = ({
               </div>
 
               {/* Owner and share info */}
-              <div className="flex items-center gap-2">
+              <div className={cn(
+                "flex items-center gap-2",
+                view === 'list' && "hidden sm:flex"
+              )}>
                 <div className="flex items-center gap-2 min-w-0">
                   {localNote.ownerPhotoURL ? (
                     <img 
@@ -504,32 +519,34 @@ const NoteCard = ({
             </div>
 
             {/* Preview with enhanced typography */}
-            <div className={cn(
-              "text-sm text-muted-foreground/90 space-y-1",
-              view === 'list' ? "line-clamp-1" : "line-clamp-3"
-            )}>
-              {getPreviewText(localNote.content, view === 'list' ? 100 : 150)
-                .split('\n')
-                .map((line, i) => (
-                  line && (
-                    <div 
-                      key={i} 
-                      className={cn(
-                        line.startsWith('#') && "font-medium text-foreground",
-                        line.startsWith('•') && "pl-4",
-                        line.startsWith('1.') && "pl-4",
-                        line.startsWith('☐') && "pl-4"
-                      )}
-                    >
-                      {line}
-                    </div>
-                  )
-                ))}
-            </div>
+            {view === 'grid' && (
+              <div className="text-sm text-muted-foreground/90 space-y-1 line-clamp-3">
+                {getPreviewText(localNote.content, 150)
+                  .split('\n')
+                  .map((line, i) => (
+                    line && (
+                      <div 
+                        key={i} 
+                        className={cn(
+                          line.startsWith('#') && "font-medium text-foreground",
+                          line.startsWith('•') && "pl-4",
+                          line.startsWith('1.') && "pl-4",
+                          line.startsWith('☐') && "pl-4"
+                        )}
+                      >
+                        {line}
+                      </div>
+                    )
+                  ))}
+              </div>
+            )}
 
             {/* Tags with updated styling */}
             {localNote.tags && localNote.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className={cn(
+                "flex flex-wrap gap-1.5",
+                view === 'grid' ? "mt-3" : "mt-0 ml-auto"
+              )}>
                 {localNote.tags.map(tag => (
                   <div
                     key={tag.id}
@@ -550,28 +567,30 @@ const NoteCard = ({
             )}
 
             {/* Footer with metadata */}
-            <div className={cn(
-              "mt-auto pt-3 flex items-center justify-between",
-              "text-xs text-muted-foreground/75"
-            )}>
-              <div className="flex items-center gap-2">
-                <span>Created {formatTimeAgo(localNote.createdAt)}</span>
-              </div>
-              {localNote.lastEditedByUserId && (
+            {view === 'grid' && (
+              <div className={cn(
+                "mt-auto pt-3 flex items-center justify-between",
+                "text-xs text-muted-foreground/75"
+              )}>
                 <div className="flex items-center gap-2">
-                  {localNote.lastEditedByPhotoURL && (
-                    <img 
-                      src={localNote.lastEditedByPhotoURL} 
-                      alt={localNote.lastEditedByDisplayName}
-                      className="w-4 h-4 rounded-full ring-1 ring-border"
-                    />
-                  )}
-                  <span>
-                    Edited {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
-                  </span>
+                  <span>Created {formatTimeAgo(localNote.createdAt)}</span>
                 </div>
-              )}
-            </div>
+                {localNote.lastEditedByUserId && (
+                  <div className="flex items-center gap-2">
+                    {localNote.lastEditedByPhotoURL && (
+                      <img 
+                        src={localNote.lastEditedByPhotoURL} 
+                        alt={localNote.lastEditedByDisplayName}
+                        className="w-4 h-4 rounded-full ring-1 ring-border"
+                      />
+                    )}
+                    <span>
+                      Edited {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </div>
