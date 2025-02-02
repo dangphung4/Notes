@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { Timer, BarChart2, Calendar as CalendarIcon, Filter, Bell, BellOff, Settings } from 'lucide-react';
+import { Timer, BarChart2, Calendar as CalendarIcon, Filter, Bell, BellOff, Settings, Trash2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { NewTaskDialog } from '../Components/Productivity/NewTaskDialog';
 import { NewHabitDialog } from '../Components/Productivity/NewHabitDialog';
@@ -403,14 +403,34 @@ export function ProductivityDashboard() {
     }
   };
 
-  const isHabitCompletedToday = (habit: HabitTracker): boolean => {
-    const today = new Date().toDateString();
-    return habit.completedDates.some(date => 
-      new Date(date).toDateString() === today
+  const handleDeleteHabit = async (habitId: number) => {
+    try {
+      await db.habitTrackers.delete(habitId);
+      await loadData();
+      
+      toast({
+        title: "Habit Deleted",
+        description: "Habit has been removed successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting habit:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete habit",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const isHabitCompletedOnDate = (habit: HabitTracker, date: Date): boolean => {
+    const dateStr = date.toDateString();
+    return habit.completedDates.some(d => 
+      new Date(d).toDateString() === dateStr
     );
   };
 
   const filteredTasks = tasks.filter(task => {
+    // First apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matches = (
@@ -420,18 +440,39 @@ export function ProductivityDashboard() {
       if (!matches) return false;
     }
 
+    const taskDate = task.dueDate ? new Date(task.dueDate) : null;
+    const selectedDateStr = selectedDate.toDateString();
+    const today = new Date().toDateString();
+    
     if (taskFilter === 'today') {
-      const isToday = task.dueDate && new Date(task.dueDate).toDateString() === new Date().toDateString();
-      return isToday || (task.completedAt && new Date(task.completedAt).toDateString() === new Date().toDateString());
+      // For 'today' filter, show:
+      // 1. Tasks due today (regardless of completion)
+      // 2. Tasks completed today
+      return (
+        (taskDate?.toDateString() === today) || 
+        (task.completedAt && new Date(task.completedAt).toDateString() === today)
+      );
     }
+    
     if (taskFilter === 'week') {
-      const today = new Date();
       const weekFromNow = new Date();
-      weekFromNow.setDate(today.getDate() + 7);
-      const isDueThisWeek = task.dueDate && new Date(task.dueDate) <= weekFromNow;
-      return isDueThisWeek || (task.completedAt && new Date(task.completedAt) >= today && new Date(task.completedAt) <= weekFromNow);
+      weekFromNow.setDate(new Date().getDate() + 7);
+      // For 'week' filter, show:
+      // 1. Incomplete tasks due within the next 7 days
+      // 2. Tasks completed within the selected week
+      return (
+        (taskDate && taskDate >= new Date() && taskDate <= weekFromNow && task.status !== 'completed') ||
+        (task.completedAt && new Date(task.completedAt) >= new Date() && new Date(task.completedAt) <= weekFromNow)
+      );
     }
-    return true;
+
+    // For 'all' filter, show:
+    // 1. All incomplete tasks
+    // 2. Tasks completed on the selected date
+    return (
+      task.status !== 'completed' ||
+      (task.completedAt && new Date(task.completedAt).toDateString() === selectedDateStr)
+    );
   }).sort((a, b) => {
     if (taskSort === 'priority') {
       const priorityOrder = { high: 0, medium: 1, low: 2 };
@@ -744,8 +785,9 @@ export function ProductivityDashboard() {
                     {habits.map((habit) => (
                       <div key={habit.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted">
                         <Switch
-                          checked={isHabitCompletedToday(habit)}
+                          checked={isHabitCompletedOnDate(habit, selectedDate)}
                           onCheckedChange={() => habit.id && handleHabitComplete(habit.id)}
+                          disabled={selectedDate.toDateString() !== new Date().toDateString()}
                         />
                         <div className="flex-1">
                           <h4 className="font-medium">{habit.habitName}</h4>
@@ -753,9 +795,19 @@ export function ProductivityDashboard() {
                             Streak: {habit.currentStreak} days | Best: {habit.longestStreak} days
                           </p>
                         </div>
-                        <Badge>
-                          {habit.frequency}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge>
+                            {habit.frequency}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => habit.id && handleDeleteHabit(habit.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
