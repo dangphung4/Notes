@@ -141,7 +141,8 @@ const NoteCard = ({
   onClick,
   allNotes,
   navigate,
-  folders
+  folders,
+  allTags
 }: { 
   note: Note, 
   shares: SharePermission[], 
@@ -150,7 +151,8 @@ const NoteCard = ({
   onClick: () => void,
   allNotes: Note[],
   navigate: (path: string) => void,
-  folders: Folder[]
+  folders: Folder[],
+  allTags: Tags[]
 }) => {
   const isOwner = note.ownerUserId === user?.uid;
   const [noteShares, setNoteShares] = useState<SharePermission[]>([]);
@@ -269,6 +271,9 @@ const NoteCard = ({
           <SheetContent>
             <SheetHeader>
               <SheetTitle>Note Details</SheetTitle>
+              <DialogDescription>
+                View and manage note details, statistics, and sharing settings
+              </DialogDescription>
             </SheetHeader>
             <div className="space-y-6 mt-6">
               {/* Note Stats */}
@@ -323,23 +328,34 @@ const NoteCard = ({
                   <div className="space-y-4">
                     <TagSelector
                       selectedTags={selectedTags}
-                      onChange={setSelectedTags}
-                      onClose={() => setIsEditingTags(false)}
-                      onSave={async (tags) => {
+                      onTagsChange={(tags: Tags[]) => {
+                        setSelectedTags(tags);
+                        // Handle async operation after state update
+                        db.updateNoteTags(note.firebaseId!, tags)
+                          .then(() => {
+                            toast({
+                              title: "Tags updated",
+                              description: "Your note's tags have been updated successfully"
+                            });
+                          })
+                          .catch((error) => {
+                            console.error('Error updating tags:', error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to update tags",
+                              variant: "destructive"
+                            });
+                            // Revert on error
+                            setSelectedTags(note.tags || []);
+                          });
+                      }}
+                      onCreateTag={async (tag: Partial<Tags>) => {
                         try {
-                          await db.updateNoteTags(note.firebaseId!, tags);
-                          setIsEditingTags(false);
-                          toast({
-                            title: "Tags updated",
-                            description: "Your note's tags have been updated successfully"
-                          });
+                          const newTag = await db.createTag(tag);
+                          return newTag;
                         } catch (error) {
-                          console.error('Error updating tags:', error);
-                          toast({
-                            title: "Error",
-                            description: "Failed to update tags",
-                            variant: "destructive"
-                          });
+                          console.error('Error creating tag:', error);
+                          throw error;
                         }
                       }}
                     />
@@ -1771,6 +1787,7 @@ export default function Notes() {
                   allNotes={notes}
                   navigate={navigate}
                   folders={folders}
+                  allTags={allTags}
                 />
               ))}
             </div>
