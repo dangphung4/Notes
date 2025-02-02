@@ -415,6 +415,7 @@ export default function EditNote() {
       <div className="flex items-center justify-between p-4 border-b shrink-0">
         {/* Left Section: Back Button + Title */}
         <div className="flex-1 flex items-center gap-4 min-w-0">
+          {/* Back button - Show on desktop, hide on mobile */}
           <Button
             variant="ghost"
             size="sm"
@@ -424,6 +425,17 @@ export default function EditNote() {
             <ChevronLeftIcon className="h-4 w-4" />
             <span>Back</span>
           </Button>
+
+          {/* Back button - Show on mobile only, positioned left of title */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/notes')}
+            className="sm:hidden flex items-center text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+          </Button>
+
           <Input
             type="text"
             value={title}
@@ -894,17 +906,6 @@ export default function EditNote() {
       {/* Mobile bottom toolbar */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between px-4 py-2">
-          {/* Left - Back button */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/notes')}
-            className="flex items-center gap-1"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Back</span>
-          </Button>
-
           {/* Center - Formatting Options */}
           <div className="flex items-center gap-2">
             <Button
