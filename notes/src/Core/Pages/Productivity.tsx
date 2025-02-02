@@ -588,7 +588,7 @@ export function ProductivityDashboard() {
     loadMonthActivity(selectedDate);
   }, [selectedDate, user?.email]);
 
-  const CustomDay = ({ date, selected, today, disabled }: DayProps) => {
+  const CustomDay = ({ date, selected, today, disabled }: DayProps & { onClick?: () => void }) => {
     const activity = daysWithActivity.find(d => 
       d.date.toDateString() === date.toDateString()
     );
@@ -596,20 +596,30 @@ export function ProductivityDashboard() {
     const isFutureDate = date > new Date();
     const isDisabled = disabled || isFutureDate;
 
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!isDisabled) {
+        setSelectedDate(date);
+      }
+    };
+
     return (
-      <div
+      <button
+        onClick={handleClick}
+        disabled={isDisabled}
+        type="button"
         className={cn(
           "w-full h-full",
           "flex flex-col items-center justify-center gap-1",
           "rounded-md transition-all duration-200",
-          "hover:bg-muted/50",
-          selected && "bg-primary hover:bg-primary",
+          "hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",
+          selected && "bg-primary hover:bg-primary/90",
           today && !selected && "border-2 border-primary",
-          isDisabled && "opacity-50 pointer-events-none",
-          !isDisabled && !selected && activity && "bg-muted/30"
+          isDisabled && "opacity-50 cursor-not-allowed hover:bg-transparent",
+          !isDisabled && !selected && activity && "bg-muted/30",
+          "disabled:pointer-events-none"
         )}
-        role="button"
-        aria-disabled={isDisabled}
       >
         <span className={cn(
           "text-base font-medium",
@@ -641,7 +651,7 @@ export function ProductivityDashboard() {
             )}
           </div>
         )}
-      </div>
+      </button>
     );
   };
 
@@ -919,13 +929,12 @@ export function ProductivityDashboard() {
                     head_cell: "text-muted-foreground rounded-md w-full font-normal text-sm",
                     row: "flex w-full mt-2",
                     cell: "relative w-full h-[45px] sm:h-[60px] p-0.5",
-                    day: "h-full rounded-md",
+                    day: "h-full rounded-md focus-visible:outline-none",
+                    day_selected: "bg-primary text-primary-foreground",
+                    day_today: "bg-accent text-accent-foreground",
                     day_outside: "text-muted-foreground opacity-50",
                     day_disabled: "text-muted-foreground opacity-50",
                     day_hidden: "invisible",
-                    day_range_end: "day-range-end",
-                    day_selected: "bg-primary text-primary-foreground hover:bg-primary focus:bg-primary focus:text-primary-foreground",
-                    day_today: "bg-accent text-accent-foreground"
                   }}
                 />
               </div>
