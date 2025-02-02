@@ -12,28 +12,35 @@ import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
 import type { Note, Tags } from '../Database/db';
-import { LayoutGridIcon, LayoutListIcon, FolderIcon, FolderPlusIcon, MenuIcon } from 'lucide-react';
+import { 
+  LayoutGridIcon, 
+  LayoutListIcon, 
+  FolderIcon, 
+  FolderPlusIcon,
+  UserIcon,
+  ClockIcon,
+  BarChart2Icon,
+  TagIcon,
+  InfoIcon,
+  PinIcon,
+  CalendarIcon,
+  XIcon
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, XIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
-import { PinIcon } from 'lucide-react';
-import { InfoIcon } from 'lucide-react';
-import { db } from '../Database/db';
-import { TagSelector } from '@/components/TagSelector';
-import { TagIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { XCircleIcon } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
-import { BarChart2Icon, ClockIcon, UserIcon, ActivityIcon, LinkIcon } from 'lucide-react';
 import ShareDialog from '../Components/ShareDialog';
 import { cn } from "@/lib/utils";
+import { db } from '../Database/db';
+import { TagSelector } from '@/components/TagSelector';
 
 interface StoredNotesPreferences {
   activeTab: 'my-notes' | 'shared';
@@ -243,493 +250,93 @@ const NoteCard = ({
             <PinIcon className="h-4 w-4" />
           </Button>
         )}
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetTrigger asChild>
+        <Popover>
+          <PopoverTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
               className={cn(
                 "h-8 w-8 rounded-full",
-                "opacity-0 group-hover:opacity-100 transition-opacity",
+                "opacity-0 group-hover:opacity-100 transition-opacity sm:opacity-100",
                 "hover:bg-background/80 backdrop-blur-sm"
               )}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsSheetOpen(true);
-              }}
+              onClick={(e) => e.stopPropagation()}
             >
               <InfoIcon className="h-4 w-4" />
             </Button>
-          </SheetTrigger>
-          <SheetContent 
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-80 p-4" 
+            align="end"
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-[440px] px-2 sm:px-6"
           >
-            <SheetHeader>
-              <SheetTitle>Note Details</SheetTitle>
-              <SheetDescription>
-                View insights and details about this note
-              </SheetDescription>
-            </SheetHeader>
-            
-            <ScrollArea 
-              className="h-[calc(100vh-8rem)] mt-6 pr-2 sm:pr-4"
-            >
-              <div className="space-y-6">
-                {/* Note Stats Section */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium flex items-center gap-2">
-                    <BarChart2Icon className="h-4 w-4 text-primary" />
-                    Note Statistics
-                  </h4>
-
-                  {/* Add Folder Selection */}
-                  {localNote.ownerUserId === user?.uid && (
-                    <div className="mb-4">
-                      <div className="text-sm text-muted-foreground mb-2">Folder</div>
-                      <Select
-                        value={localNote.folderId || "root"}
-                        onValueChange={async (value) => {
-                          try {
-                            const newFolderId = value === "root" ? undefined : value;
-                            await db.updateNote(note.firebaseId!, { folderId: newFolderId });
-                            setLocalNote(prev => ({
-                              ...prev,
-                              folderId: newFolderId
-                            }));
-                            toast({
-                              title: "Folder updated",
-                              description: "Note has been moved to the selected folder"
-                            });
-                          } catch (error) {
-                            console.error('Error updating folder:', error);
-                            toast({
-                              title: "Error",
-                              description: "Failed to update folder",
-                              variant: "destructive"
-                            });
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue>
-                            <div className="flex items-center gap-2">
-                              <FolderIcon className="h-4 w-4" style={{ 
-                                color: localNote.folderId ? 
-                                  folders.find((f: Folder) => f.id === localNote.folderId)?.color : undefined 
-                              }} />
-                              {localNote.folderId ? 
-                                folders.find((f: Folder) => f.id === localNote.folderId)?.name || "Select folder" : 
-                                "Root"
-                              }
-                            </div>
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="root">
-                            <div className="flex items-center gap-2">
-                              <FolderIcon className="h-4 w-4" />
-                              Root
-                            </div>
-                          </SelectItem>
-                          {folders.map((folder: Folder) => (
-                            <SelectItem key={folder.id} value={folder.id}>
-                              <div className="flex items-center gap-2">
-                                <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
-                                {folder.name}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+            <div className="space-y-4">
+              {/* Note Stats */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <BarChart2Icon className="h-4 w-4 text-primary" />
+                  Note Statistics
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-muted/50 rounded-lg">
+                    <div className="text-lg font-semibold">
+                      {getBlockNoteContent(localNote.content).length}
                     </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="p-3">
-                      <div className="text-2xl font-bold">
-                        {getBlockNoteContent(localNote.content).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Characters</div>
-                    </Card>
-                    <Card className="p-3">
-                      <div className="text-2xl font-bold">
-                        {getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Words</div>
-                    </Card>
-                    <Card className="p-3">
-                      <div className="text-2xl font-bold">
-                        {getBlockNoteContent(localNote.content).split('\n').filter(Boolean).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Lines</div>
-                    </Card>
-                    <Card className="p-3">
-                      <div className="text-2xl font-bold">
-                        {Math.ceil(getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length / 200)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Min Read</div>
-                    </Card>
-                    <Card className="p-3">
-                      <div className="text-2xl font-bold">
-                        {getBlockNoteContent(localNote.content).split('.').filter(Boolean).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Sentences</div>
-                    </Card>
-                    <Card className="p-3">
-                      <div className="text-2xl font-bold">
-                        {getBlockNoteContent(localNote.content).split(/\n\s*\n/).filter(Boolean).length}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Paragraphs</div>
-                    </Card>
+                    <div className="text-xs text-muted-foreground">Characters</div>
                   </div>
-                </div>
-
-                {/* Reading Level Analysis */}
-                <Card className="mt-4 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-medium">Reading Level</div>
-                    <div className="text-2xl font-bold">
-                      Grade {getReadingLevel(getBlockNoteContent(localNote.content))}
+                  <div className="p-2 bg-muted/50 rounded-lg">
+                    <div className="text-lg font-semibold">
+                      {getBlockNoteContent(localNote.content).split(/\s+/).filter(Boolean).length}
                     </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Based on Flesch-Kincaid Grade Level
-                  </div>
-                </Card>
-
-                {/* Tags Section */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium flex items-center gap-2">
-                    <TagIcon className="h-4 w-4 text-primary" />
-                    Tags
-                  </h4>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {localNote.tags && localNote.tags.length > 0 ? (
-                        localNote.tags.map(tag => (
-                          <div
-                            key={tag.id}
-                            className="px-2 py-0.5 rounded-full text-xs"
-                            style={{
-                              backgroundColor: tag.color + '20',
-                              color: tag.color
-                            }}
-                          >
-                            {tag.name}
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No tags added yet</p>
-                      )}
-                    </div>
-                    {hasEditAccess(note, user, shares) && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsEditingTags(true);
-                        }}
-                      >
-                        {localNote.tags?.length ? 'Edit Tags' : 'Add Tags'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Timeline Section */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium flex items-center gap-2">
-                    <ClockIcon className="h-4 w-4 text-primary" />
-                    Timeline
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-1 h-1 rounded-full bg-primary" />
-                      <span className="text-muted-foreground">Created</span>
-                      <span className="ml-auto">{formatTimeAgo(localNote.createdAt)}</span>
-                    </div>
-                    <div className="flex items-center gap- text-sm">
-                      <div className="w-1 h-1 rounded-full bg-primary" />
-                      <span className="text-muted-foreground">Last updated</span>
-                      <span className="ml-auto">{formatTimeAgo(localNote.updatedAt)}</span>
-                    </div>
-                    {localNote.lastEditedAt && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="w-1 h-1 rounded-full bg-primary" />
-                        <span className="text-muted-foreground">Last edited</span>
-                        <span className="ml-auto">{formatTimeAgo(localNote.lastEditedAt)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Ownership & Sharing Section */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium flex items-center gap-2">
-                    <UserIcon className="h-4 w-4 text-primary" />
-                    Ownership & Sharing
-                  </h4>
-                  <Card className="p-4 space-y-4">
-                    {/* Owner Info */}
-                    <div className="flex items-center gap-3">
-                      {localNote.ownerPhotoURL ? (
-                        <img 
-                          src={localNote.ownerPhotoURL} 
-                          alt={localNote.ownerDisplayName}
-                          className="w-8 h-8 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                          <UserIcon className="h-4 w-4" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{localNote.ownerDisplayName}</div>
-                        <div className="text-xs text-muted-foreground truncate">{localNote.ownerEmail}</div>
-                      </div>
-                      <Badge variant="secondary">Owner</Badge>
-                    </div>
-
-                    {/* Share Button */}
-                    {hasEditAccess(note, user, shares) && (
-                      <div className="flex justify-between items-center pt-2">
-                        <span className="text-sm text-muted-foreground">Share this note</span>
-                        <ShareDialog 
-                          note={note}
-                          onShare={() => {
-                            loadShares(); // Reload shares after new share is added
-                            toast({
-                              title: "Note shared",
-                              description: "The note has been shared successfully"
-                            });
-                          }}
-                          onError={(error) => {
-                            toast({
-                              title: "Error sharing note",
-                              description: error,
-                              variant: "destructive"
-                            });
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Shared Users List */}
-                    <div className="space-y-2 pt-2 border-t">
-                      <div className="text-sm text-muted-foreground">Shared with</div>
-                      <div className="space-y-2">
-                        {isLoadingShares ? (
-                          <div className="flex justify-center py-4">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                          </div>
-                        ) : noteShares.length > 0 ? (
-                          noteShares.map(share => (
-                            <div key={share.id} className="flex items-center gap-3">
-                              {share.photoURL ? (
-                                <img 
-                                  src={share.photoURL} 
-                                  alt={share.displayName}
-                                  className="w-8 h-8 rounded-full"
-                                />
-                              ) : (
-                                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                                  <UserIcon className="h-4 w-4" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium truncate">{share.displayName}</div>
-                                <div className="text-xs text-muted-foreground truncate">{share.email}</div>
-                              </div>
-                              <Badge variant="outline">{share.access}</Badge>
-                              {note.ownerUserId === user?.uid && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    try {
-                                      await deleteDoc(doc(firestore, 'shares', share.id!));
-                                      await loadShares(); // Reload shares after deletion
-                                      toast({
-                                        title: "Share removed",
-                                        description: "User's access has been removed"
-                                      });
-                                    } catch (error) {
-                                      console.error('Error removing share:', error);
-                                      toast({
-                                        title: "Error",
-                                        description: "Failed to remove share",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                >
-                                  <TrashIcon className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-sm text-muted-foreground text-center py-2">
-                            This note hasn't been shared with anyone yet
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-
-                {/* Activity Section */}
-                {localNote.lastEditedByUserId && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium flex items-center gap-2">
-                      <ActivityIcon className="h-4 w-4 text-primary" />
-                      Recent Activity
-                    </h4>
-                    <Card className="p-4">
-                      <div className="flex items-center gap-3">
-                        {localNote.lastEditedByPhotoURL ? (
-                          <img 
-                            src={localNote.lastEditedByPhotoURL} 
-                            alt={localNote.lastEditedByDisplayName}
-                            className="w-8 h-8 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                            <UserIcon className="h-4 w-4" />
-                          </div>
-                        )}
-                        <div>
-                          <div className="text-sm">
-                            <span className="font-medium">{localNote.lastEditedByDisplayName}</span>
-                            <span className="text-muted-foreground"> edited this note</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                )}
-
-                {/* Pin Status */}
-                {localNote.isPinned && note.ownerUserId === user?.uid && (
-                  <div className="pt-2 border-t">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <PinIcon className="h-4 w-4" />
-                      <span>This note is pinned to the top</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Related Notes Section */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium flex items-center gap-2">
-                    <LinkIcon className="h-4 w-4 text-primary" />
-                    Related Notes
-                  </h4>
-                  <div className="space-y-2">
-                    {getRelatedNotes(allNotes, localNote).length > 0 ? (
-                      getRelatedNotes(allNotes, localNote).map(note => (
-                        <Card 
-                          key={note.firebaseId} 
-                          className="p-3 cursor-pointer hover:bg-muted/50"
-                          onClick={() => navigate(`/notes/${note.firebaseId}`)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1">
-                              <div className="font-medium truncate">{note.title || 'Untitled'}</div>
-                              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-1">
-                                {note.tags?.map(tag => (
-                                  <span
-                                    key={tag.id}
-                                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
-                                    style={{
-                                      backgroundColor: tag.color + '20',
-                                      color: tag.color
-                                    }}
-                                  >
-                                    {tag.name}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </Card>
-                      ))
-                    ) : (
-                      <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg text-center">
-                        No related notes found based on tags
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground">Words</div>
                   </div>
                 </div>
               </div>
-            </ScrollArea>
 
-            {/* Add Tag Editor Dialog */}
-            <Dialog open={isEditingTags} onOpenChange={setIsEditingTags}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Manage Tags</DialogTitle>
-                  <DialogDescription>
-                    Add or remove tags from this note
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  <TagSelector
-                    selectedTags={selectedTags}
-                    onTagsChange={async (tags) => {
-                      try {
-                        await db.updateNoteTags(note.firebaseId!, tags);
-                        // Update local state immediately
-                        setLocalNote(prev => ({
-                          ...prev,
-                          tags: tags
-                        }));
-                        setSelectedTags(tags);
-                        toast({
-                          title: "Tags updated",
-                          description: "Note tags have been updated successfully"
-                        });
-                      } catch (error) {
-                        console.error('Error updating tags:', error);
-                        toast({
-                          title: "Error",
-                          description: "Failed to update tags",
-                          variant: "destructive"
-                        });
-                      }
-                    }}
-                    onCreateTag={async (tag) => {
-                      try {
-                        const newTag = await db.createTag(tag);
-                        return newTag;
-                      } catch (error) {
-                        console.error('Error creating tag:', error);
-                        toast({
-                          title: "Error",
-                          description: "Failed to create tag",
-                          variant: "destructive"
-                        });
-                        throw error;
-                      }
-                    }}
-                  />
+              {/* Timeline */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <ClockIcon className="h-4 w-4 text-primary" />
+                  Timeline
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary" />
+                    <span className="text-muted-foreground">Created</span>
+                    <span className="ml-auto">{formatTimeAgo(localNote.createdAt)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-primary" />
+                    <span className="text-muted-foreground">Last updated</span>
+                    <span className="ml-auto">{formatTimeAgo(localNote.updatedAt)}</span>
+                  </div>
                 </div>
-                <DialogFooter>
-                  <Button variant="secondary" onClick={() => setIsEditingTags(false)}>
-                    Done
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setIsSheetOpen(true)}
+                >
+                  View Details
+                </Button>
+                {hasEditAccess(note, user, shares) && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setIsEditingTags(true)}
+                  >
+                    Edit Tags
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </SheetContent>
-        </Sheet>
+                )}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Clickable area with enhanced layout */}
@@ -1078,7 +685,6 @@ export default function Notes() {
     }
     return 'grid';
   });
-  const [showViewOptions, setShowViewOptions] = useState(false);
   const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title'>(() => {
     const stored = localStorage.getItem('notes-preferences');
     if (stored) {
@@ -1475,113 +1081,360 @@ export default function Notes() {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
-      {/* Enhanced Header with better mobile optimization */}
-      <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-        {/* Top row with search and actions - Mobile optimized */}
-        <div className="flex items-center gap-2">
-          {/* Search with enhanced styling */}
-          <div className="flex-1 max-w-2xl">
-            <NoteSearch 
-              notes={notes} 
-              onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
-            />
-          </div>
-
-          {/* Mobile Actions */}
-          <div className="flex sm:hidden items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-full"
-              onClick={() => setShowViewOptions(!showViewOptions)}
-            >
-              {view === 'grid' ? 
-                <LayoutGridIcon className="h-4 w-4" /> : 
-                <LayoutListIcon className="h-4 w-4" />
-              }
-            </Button>
-            <Button
-              variant="default"
-              size="icon"
-              className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90"
-              onClick={() => navigate('/notes/new')}
-            >
-              <PlusIcon className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Desktop Actions */}
-          <div className="hidden sm:flex items-center gap-2">
-            <div className="flex items-center bg-muted/50 rounded-lg p-1">
-              <Button
-                variant="ghost"
-                size="icon"
+      {/* Streamlined Header */}
+      <div className="space-y-3 sm:space-y-4 mb-6">
+        {/* Top Bar with Tabs */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
+            className="hidden sm:block w-full sm:w-auto order-1 sm:order-none"
+          >
+            <TabsList className="h-9 bg-muted/50 rounded-full w-full sm:w-auto">
+              <TabsTrigger 
+                value="my-notes" 
                 className={cn(
-                  "h-8 w-8 rounded-md",
-                  view === 'grid' && "bg-background shadow-sm"
+                  "rounded-full px-4",
+                  activeTab === 'my-notes' && "bg-background shadow-sm"
                 )}
-                onClick={() => setView('grid')}
               >
-                <LayoutGridIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
+                My Notes ({myNotes.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="shared" 
                 className={cn(
-                  "h-8 w-8 rounded-md",
-                  view === 'list' && "bg-background shadow-sm"
+                  "rounded-full px-4",
+                  activeTab === 'shared' && "bg-background shadow-sm"
                 )}
-                onClick={() => setView('list')}
               >
-                <LayoutListIcon className="h-4 w-4" />
+                Shared ({sharedWithMe.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <div className="flex items-center gap-2 order-2 sm:order-none sm:ml-auto">
+            {/* Search */}
+            <div className="flex-1 sm:max-w-md">
+              <NoteSearch 
+                notes={notes} 
+                onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
+              />
+            </div>
+
+            {/* Mobile Actions */}
+            <div className="flex sm:hidden items-center gap-1.5">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-full"
+                  >
+                    <LayoutGridIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-56 p-1" 
+                  align="end"
+                  side="bottom"
+                >
+                  <div className="grid grid-cols-1 gap-1">
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start",
+                        view === 'grid' && "bg-muted"
+                      )}
+                      onClick={() => setView('grid')}
+                    >
+                      <LayoutGridIcon className="h-4 w-4 mr-2" />
+                      Grid View
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start",
+                        view === 'list' && "bg-muted"
+                      )}
+                      onClick={() => setView('list')}
+                    >
+                      <LayoutListIcon className="h-4 w-4 mr-2" />
+                      List View
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button
+                variant="default"
+                size="icon"
+                className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90"
+                onClick={() => navigate('/notes/new')}
+              >
+                <PlusIcon className="h-4 w-4" />
               </Button>
             </div>
-            <Button 
-              onClick={() => navigate('/notes/new')} 
-              className="bg-primary hover:bg-primary/90"
-            >
-              <PlusIcon className="mr-2 h-4 w-4" /> New Note
-            </Button>
+
+            {/* Desktop Actions */}
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="flex items-center bg-muted/50 rounded-full p-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8 rounded-full",
+                    view === 'grid' && "bg-background shadow-sm"
+                  )}
+                  onClick={() => setView('grid')}
+                >
+                  <LayoutGridIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8 rounded-full",
+                    view === 'list' && "bg-background shadow-sm"
+                  )}
+                  onClick={() => setView('list')}
+                >
+                  <LayoutListIcon className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button 
+                onClick={() => navigate('/notes/new')} 
+                className="bg-primary hover:bg-primary/90 rounded-full h-8"
+              >
+                <PlusIcon className="mr-2 h-4 w-4" /> New Note
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile View Options Dropdown */}
-        {showViewOptions && (
-          <div className="sm:hidden absolute right-4 mt-2 p-1.5 bg-popover border rounded-lg shadow-lg z-50">
-            <Button
-              variant="ghost"
-              className="w-full justify-start rounded-md"
-              onClick={() => {
-                setView('grid');
-                setShowViewOptions(false);
-              }}
-            >
-              <LayoutGridIcon className="h-4 w-4 mr-2" />
-              Grid View
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start rounded-md"
-              onClick={() => {
-                setView('list');
-                setShowViewOptions(false);
-              }}
-            >
-              <LayoutListIcon className="h-4 w-4 mr-2" />
-              List View
-            </Button>
-          </div>
-        )}
+        {/* Mobile Tabs and Filters */}
+        <div className="sm:hidden space-y-2">
+          {/* Tabs */}
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
+            className="w-full"
+          >
+            <TabsList className="h-9 p-1 bg-muted/50 rounded-full w-full grid grid-cols-2">
+              <TabsTrigger 
+                value="my-notes" 
+                className={cn(
+                  "text-xs rounded-full",
+                  activeTab === 'my-notes' && "bg-background shadow-sm"
+                )}
+              >
+                My Notes ({myNotes.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="shared" 
+                className={cn(
+                  "text-xs rounded-full",
+                  activeTab === 'shared' && "bg-background shadow-sm"
+                )}
+              >
+                Shared ({sharedWithMe.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        {/* Filters Row - Mobile Optimized */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
-            {/* Folder Selection - Mobile Optimized */}
+          {/* Mobile Filter Controls */}
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <Select
+                value={selectedFolderId || "root"}
+                onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
+              >
+                <SelectTrigger className="h-9 w-[120px] bg-background/50 rounded-full border-0 ring-1 ring-border">
+                  <SelectValue placeholder="All folders">
+                    <div className="flex items-center gap-2">
+                      <FolderIcon 
+                        className="h-4 w-4 flex-shrink-0" 
+                        style={{ 
+                          color: selectedFolderId ? 
+                            folders.find(f => f.id === selectedFolderId)?.color : 
+                            undefined 
+                        }}
+                      />
+                      <span className="truncate text-xs">
+                        {selectedFolderId 
+                          ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
+                          : "All folders"
+                        }
+                      </span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="root">
+                    <div className="flex items-center gap-2">
+                      <FolderIcon className="h-4 w-4" />
+                      All folders
+                    </div>
+                  </SelectItem>
+                  {folders.map(folder => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <FolderIcon 
+                            className="h-4 w-4" 
+                            style={{ color: folder.color }} 
+                          />
+                          {folder.name}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start mt-2 rounded-md"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsCreatingFolder(true);
+                    }}
+                  >
+                    <FolderPlusIcon className="h-4 w-4 mr-2" />
+                    New Folder
+                  </Button>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <SelectTrigger className="h-9 w-[100px] bg-background/50 rounded-full border-0 ring-1 ring-border">
+                  <SelectValue placeholder="Sort by">
+                    <span className="text-xs truncate">
+                      {sortBy === 'updated' ? 'Updated' : 
+                       sortBy === 'created' ? 'Created' : 'Title'}
+                    </span>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="updated">Updated</SelectItem>
+                  <SelectItem value="created">Created</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={dateFilter ? "default" : "outline"}
+                    size="icon"
+                    className={cn(
+                      "h-9 w-9 rounded-full",
+                      dateFilter && "bg-primary text-primary-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={dateFilter}
+                    onSelect={setDateFilter}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className={cn(
+                      "h-9 w-9 rounded-full relative",
+                      selectedTagFilters.length > 0 && "bg-primary text-primary-foreground"
+                    )}
+                  >
+                    <TagIcon className="h-4 w-4" />
+                    {selectedTagFilters.length > 0 && (
+                      <div className="absolute -top-1 -right-1">
+                        <Badge 
+                          variant="secondary" 
+                          className={cn(
+                            "h-4 w-4 p-0 flex items-center justify-center text-[10px]",
+                            "bg-primary-foreground/20 text-primary-foreground"
+                          )}
+                        >
+                          {selectedTagFilters.length}
+                        </Badge>
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0" align="end">
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="Search tags..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <ScrollArea className="h-52">
+                    <div className="p-2">
+                      {allTags
+                        .filter(tag => 
+                          tag.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map(tag => (
+                          <div
+                            key={tag.id}
+                            className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-md cursor-pointer"
+                            onClick={() => {
+                              setSelectedTagFilters(prev => {
+                                const isSelected = prev.some(t => t.id === tag.id);
+                                return isSelected
+                                  ? prev.filter(t => t.id !== tag.id)
+                                  : [...prev, tag];
+                              });
+                            }}
+                          >
+                            <Checkbox
+                              checked={selectedTagFilters.some(t => t.id === tag.id)}
+                            />
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span className="text-sm">{tag.name}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+
+              {/* Mobile clear filters button */}
+              {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated' || selectedFolderId) && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={clearFilters}
+                  className="h-9 w-9 rounded-full hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <XIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Filter Bar - hide on mobile */}
+        <div className="hidden sm:flex items-center gap-2 overflow-x-auto scrollbar-none pb-2">
+          {/* Compact Filter Controls */}
+          <div className="flex items-center gap-1.5 flex-none">
             <Select
               value={selectedFolderId || "root"}
               onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
             >
-              <SelectTrigger className="w-[140px] sm:w-[200px] h-9 bg-background">
+              <SelectTrigger className="h-9 w-[130px] sm:w-[160px] bg-background/50 rounded-full border-0 ring-1 ring-border">
                 <SelectValue placeholder="All folders">
                   <div className="flex items-center gap-2">
                     <FolderIcon 
@@ -1592,7 +1445,7 @@ export default function Notes() {
                           undefined 
                       }}
                     />
-                    <span className="truncate">
+                    <span className="truncate text-xs">
                       {selectedFolderId 
                         ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
                         : "All folders"
@@ -1635,10 +1488,14 @@ export default function Notes() {
               </SelectContent>
             </Select>
 
-            {/* Sort dropdown - Mobile Optimized */}
             <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-              <SelectTrigger className="w-[120px] h-9 bg-background">
-                <SelectValue placeholder="Sort by" />
+              <SelectTrigger className="h-9 w-[110px] bg-background/50 rounded-full border-0 ring-1 ring-border">
+                <SelectValue placeholder="Sort by">
+                  <span className="text-xs">
+                    {sortBy === 'updated' ? 'Last Updated' : 
+                     sortBy === 'created' ? 'Created Date' : 'Title'}
+                  </span>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="updated">Last Updated</SelectItem>
@@ -1647,26 +1504,21 @@ export default function Notes() {
               </SelectContent>
             </Select>
 
-            {/* Mobile Filter Actions */}
             <div className="flex items-center gap-1.5">
-              {/* Date Filter Button - Mobile Optimized */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={dateFilter ? "default" : "outline"}
                     size="icon"
                     className={cn(
-                      "h-9 w-9 sm:w-auto sm:px-3",
-                      dateFilter && "bg-primary text-primary-foreground hover:bg-primary/90"
+                      "h-9 w-9 rounded-full",
+                      dateFilter && "bg-primary text-primary-foreground"
                     )}
                   >
-                    <CalendarIcon className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">
-                      {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
-                    </span>
+                    <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0" align="end">
                   <Calendar
                     mode="single"
                     selected={dateFilter}
@@ -1676,26 +1528,24 @@ export default function Notes() {
                 </PopoverContent>
               </Popover>
 
-              {/* Tag Filter Button - Mobile Optimized */}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     size="icon"
                     className={cn(
-                      "h-9 w-9 sm:w-auto sm:px-3 relative",
-                      selectedTagFilters.length > 0 && "bg-primary text-primary-foreground hover:bg-primary/90"
+                      "h-9 w-9 rounded-full relative",
+                      selectedTagFilters.length > 0 && "bg-primary text-primary-foreground"
                     )}
                   >
-                    <TagIcon className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Tags</span>
+                    <TagIcon className="h-4 w-4" />
                     {selectedTagFilters.length > 0 && (
-                      <div className="absolute -top-1 -right-1 sm:static sm:ml-1">
+                      <div className="absolute -top-1 -right-1">
                         <Badge 
                           variant="secondary" 
                           className={cn(
-                            "h-4 w-4 sm:h-5 sm:w-auto sm:px-1.5 p-0 flex items-center justify-center",
-                            selectedTagFilters.length > 0 && "bg-primary-foreground/20 text-primary-foreground"
+                            "h-4 w-4 p-0 flex items-center justify-center text-[10px]",
+                            "bg-primary-foreground/20 text-primary-foreground"
                           )}
                         >
                           {selectedTagFilters.length}
@@ -1704,7 +1554,7 @@ export default function Notes() {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-0" align="start">
+                <PopoverContent className="w-64 p-0" align="end">
                   <div className="p-2 border-b">
                     <Input
                       placeholder="Search tags..."
@@ -1746,17 +1596,29 @@ export default function Notes() {
                   </ScrollArea>
                 </PopoverContent>
               </Popover>
+
+              {/* Desktop clear filters button */}
+              {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated' || selectedFolderId) && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={clearFilters}
+                  className="h-9 w-9 rounded-full hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <XIcon className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Active Filters - Mobile Optimized */}
+        {/* Active Filters - More Compact */}
         {(selectedTags.length > 0 || dateFilter || selectedFolderId || selectedTagFilters.length > 0) && (
-          <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
             {selectedFolderId && (
               <Badge
                 variant="secondary"
-                className="pl-2 pr-1 py-1 gap-1 hover:bg-secondary/80"
+                className="pl-2 pr-1 py-0.5 gap-1 rounded-full"
               >
                 <FolderIcon 
                   className="h-3 w-3 mr-1" 
@@ -1764,11 +1626,13 @@ export default function Notes() {
                     color: folders.find(f => f.id === selectedFolderId)?.color 
                   }} 
                 />
-                {folders.find(f => f.id === selectedFolderId)?.name}
+                <span className="truncate max-w-[100px]">
+                  {folders.find(f => f.id === selectedFolderId)?.name}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10"
+                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10 rounded-full"
                   onClick={() => setSelectedFolderId(undefined)}
                 >
                   <XIcon className="h-3 w-3" />
@@ -1779,7 +1643,7 @@ export default function Notes() {
               <Badge
                 key={tag.id}
                 variant="secondary"
-                className="pl-2 pr-1 py-1 gap-1 hover:bg-secondary/80"
+                className="pl-2 pr-1 py-0.5 gap-1 rounded-full"
                 style={{
                   backgroundColor: tag.color + '20',
                   color: tag.color
@@ -1789,7 +1653,7 @@ export default function Notes() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10"
+                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10 rounded-full"
                   onClick={() => setSelectedTagFilters(prev => prev.filter(t => t.id !== tag.id))}
                 >
                   <XIcon className="h-3 w-3" />
@@ -1799,13 +1663,13 @@ export default function Notes() {
             {dateFilter && (
               <Badge
                 variant="secondary"
-                className="pl-2 pr-1 py-1 gap-1 hover:bg-secondary/80"
+                className="pl-2 pr-1 py-0.5 gap-1 rounded-full"
               >
                 {format(dateFilter, 'MMM dd, yyyy')}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10"
+                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10 rounded-full"
                   onClick={() => setDateFilter(undefined)}
                 >
                   <XIcon className="h-3 w-3" />
@@ -1814,48 +1678,6 @@ export default function Notes() {
             )}
           </div>
         )}
-
-        {/* Tabs and Clear Filters - Mobile Optimized */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <Tabs 
-            value={activeTab} 
-            onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
-            className="flex-1"
-          >
-            <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-muted/50">
-              <TabsTrigger 
-                value="my-notes" 
-                className={cn(
-                  "text-sm rounded-md",
-                  activeTab === 'my-notes' && "bg-background shadow-sm"
-                )}
-              >
-                My Notes ({myNotes.length})
-              </TabsTrigger>
-              <TabsTrigger 
-                value="shared" 
-                className={cn(
-                  "text-sm rounded-md",
-                  activeTab === 'shared' && "bg-background shadow-sm"
-                )}
-              >
-                Shared ({sharedWithMe.length})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated') && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearFilters}
-              className="h-10 gap-2 whitespace-nowrap hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <XCircleIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Clear Filters</span>
-            </Button>
-          )}
-        </div>
       </div>
 
       {/* Notes Grid/List with improved mobile layout */}
