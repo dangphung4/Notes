@@ -56,47 +56,52 @@ const TimerSettingsModal = ({
   onLongBreakChange: (value: number) => void;
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
-        <DialogTitle>Timer Settings</DialogTitle>
-        <DialogDescription>
+    <DialogContent className="sm:max-w-[425px] p-6">
+      <DialogHeader className="space-y-3">
+        <DialogTitle className="text-2xl">Timer Settings</DialogTitle>
+        <DialogDescription className="text-base">
           Customize your Pomodoro timer durations
         </DialogDescription>
       </DialogHeader>
-      <div className="grid gap-4 py-4">
-        <div className="grid gap-2">
-          <Label htmlFor="workDuration">Work Duration (minutes)</Label>
+      <div className="grid gap-6 py-6">
+        <div className="grid gap-3">
+          <Label htmlFor="workDuration" className="text-base">Work Duration (minutes)</Label>
           <Input
             id="workDuration"
             type="number"
             value={workDuration}
             onChange={(e) => onWorkDurationChange(Number(e.target.value))}
             min={1}
+            className="h-11"
           />
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="shortBreak">Short Break (minutes)</Label>
+        <div className="grid gap-3">
+          <Label htmlFor="shortBreak" className="text-base">Short Break (minutes)</Label>
           <Input
             id="shortBreak"
             type="number"
             value={shortBreak}
             onChange={(e) => onShortBreakChange(Number(e.target.value))}
             min={1}
+            className="h-11"
           />
         </div>
-        <div className="grid gap-2">
-          <Label htmlFor="longBreak">Long Break (minutes)</Label>
+        <div className="grid gap-3">
+          <Label htmlFor="longBreak" className="text-base">Long Break (minutes)</Label>
           <Input
             id="longBreak"
             type="number"
             value={longBreak}
             onChange={(e) => onLongBreakChange(Number(e.target.value))}
             min={1}
+            className="h-11"
           />
         </div>
       </div>
       <DialogFooter>
-        <Button onClick={() => onOpenChange(false)}>Save Changes</Button>
+        <Button onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11">
+          Save Changes
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
@@ -499,34 +504,35 @@ export function ProductivityDashboard() {
   }, [notificationsEnabled, playNotificationSound]);
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold">Productivity Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+    <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Productivity Dashboard</h1>
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? "Disable sound" : "Enable sound"}
+              className="h-11 w-11"
             >
               {soundEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
             </Button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 flex-1 md:flex-none">
             <NewTaskDialog onTaskCreated={loadData} />
             <NewHabitDialog onHabitCreated={loadData} />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pomodoro Timer Card */}
-        <Card className="col-span-1">
-          <CardHeader className="space-y-2">
+        <Card className="col-span-1 border-2">
+          <CardHeader className="space-y-3 pb-6">
             <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <Timer className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <Timer className="h-6 w-6" />
                 Pomodoro Timer
               </CardTitle>
               <Button
@@ -534,15 +540,16 @@ export function ProductivityDashboard() {
                 size="icon"
                 onClick={() => setIsTimerModalOpen(true)}
                 title="Timer Settings"
+                className="h-10 w-10"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
-            <CardDescription>Focus on your work in timed sessions</CardDescription>
+            <CardDescription className="text-base">Focus on your work in timed sessions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-center space-y-6">
-              <div className="w-40 h-40 md:w-48 md:h-48">
+            <div className="flex flex-col items-center space-y-8">
+              <div className="w-48 h-48 md:w-56 md:h-56">
                 <CircularProgressbar
                   value={activePomodoro ? (timeLeft / (activePomodoro.duration * 60)) * 100 : 0}
                   text={activePomodoro ? formatTime(timeLeft) : '00:00'}
@@ -550,33 +557,33 @@ export function ProductivityDashboard() {
                     pathColor: pomodoroType === 'work' ? '#ef4444' : '#22c55e',
                     textColor: 'currentColor',
                     trailColor: 'rgba(0,0,0,0.1)',
-                    textSize: '16px',
+                    textSize: '20px',
                     pathTransitionDuration: 0.3,
                     strokeLinecap: 'round',
                   })}
                 />
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex flex-wrap justify-center gap-3 w-full">
                 {!activePomodoro ? (
                   <>
                     <Button 
                       onClick={() => startPomodoro('work')} 
                       variant="default"
-                      className="min-w-[120px]"
+                      className="flex-1 h-11 min-w-[130px] max-w-[200px]"
                     >
                       Work ({customWorkDuration}m)
                     </Button>
                     <Button 
                       onClick={() => startPomodoro('short-break')} 
                       variant="outline"
-                      className="min-w-[120px]"
+                      className="flex-1 h-11 min-w-[130px] max-w-[200px]"
                     >
                       Short ({customShortBreak}m)
                     </Button>
                     <Button 
                       onClick={() => startPomodoro('long-break')} 
                       variant="outline"
-                      className="min-w-[120px]"
+                      className="flex-1 h-11 min-w-[130px] max-w-[200px]"
                     >
                       Long ({customLongBreak}m)
                     </Button>
@@ -585,53 +592,58 @@ export function ProductivityDashboard() {
                   <Button 
                     onClick={completePomodoro} 
                     variant="destructive"
-                    className="min-w-[120px]"
+                    className="w-full h-11 max-w-[200px]"
                   >
                     Stop Timer
                   </Button>
                 )}
               </div>
               <div className="text-sm text-muted-foreground text-center">
-                <p className="mt-1">Press Space to start/stop timer</p>
+                <p>Press Space to start/stop timer</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Daily Progress Card */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-5 w-5" />
+        <Card className="col-span-1 border-2">
+          <CardHeader className="space-y-3 pb-6">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <BarChart2 className="h-6 w-6" />
               Today's Progress
             </CardTitle>
-            <CardDescription>Track your daily achievements</CardDescription>
+            <CardDescription className="text-base">Track your daily achievements</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <div className="flex justify-between mb-2">
-                  <span>Pomodoros</span>
+                <div className="flex justify-between mb-3">
+                  <span className="font-medium">Pomodoros</span>
                   <span>{dailyProgress?.pomodorosCompleted || 0}/8</span>
                 </div>
-                <Progress value={calculateProgress()} />
+                <Progress value={calculateProgress()} className="h-3" />
               </div>
               <div>
-                <div className="flex justify-between mb-2">
-                  <span>Tasks Completed</span>
-                  <span>{dailyProgress?.tasksCompleted || 0}</span>
+                <div className="flex justify-between mb-3">
+                  <span className="font-medium">Tasks Completed</span>
+                  <span className="text-muted-foreground">{dailyProgress?.tasksCompleted || 0}</span>
                 </div>
+                <Progress value={(dailyProgress?.tasksCompleted || 0) * 10} className="h-3" />
               </div>
               <div>
-                <div className="flex justify-between mb-2">
-                  <span>Habits Completed</span>
-                  <span>{dailyProgress?.habitsCompleted || 0}/{habits.length}</span>
+                <div className="flex justify-between mb-3">
+                  <span className="font-medium">Habits Completed</span>
+                  <span className="text-muted-foreground">{dailyProgress?.habitsCompleted || 0}/{habits.length}</span>
                 </div>
+                <Progress 
+                  value={habits.length > 0 ? ((dailyProgress?.habitsCompleted || 0) / habits.length) * 100 : 0} 
+                  className="h-3" 
+                />
               </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span>Total Focus Time</span>
-                  <span>{dailyProgress?.totalWorkMinutes || 0} minutes</span>
+              <div className="pt-3 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Total Focus Time</span>
+                  <span className="text-2xl font-semibold">{dailyProgress?.totalWorkMinutes || 0}m</span>
                 </div>
               </div>
             </div>
@@ -639,67 +651,71 @@ export function ProductivityDashboard() {
         </Card>
 
         {/* Calendar View Card */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
+        <Card className="col-span-1 border-2">
+          <CardHeader className="space-y-3 pb-6">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <CalendarIcon className="h-6 w-6" />
               Progress Calendar
             </CardTitle>
-            <CardDescription>View your productivity history</CardDescription>
+            <CardDescription className="text-base">View your productivity history</CardDescription>
           </CardHeader>
           <CardContent>
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border"
+              className="rounded-md border-2 p-3"
               disabled={{ after: new Date() }}
               initialFocus
             />
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-medium">Selected Date: {format(selectedDate, 'PPP')}</p>
+            <div className="mt-6 space-y-3 bg-muted p-4 rounded-lg">
+              <p className="text-base font-medium">{format(selectedDate, 'PPPP')}</p>
               {dailyProgress && (
-                <>
-                  <div className="text-sm">
-                    <span className="font-medium">Pomodoros:</span> {dailyProgress.pomodorosCompleted}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Pomodoros</p>
+                    <p className="text-2xl font-semibold">{dailyProgress.pomodorosCompleted}</p>
                   </div>
-                  <div className="text-sm">
-                    <span className="font-medium">Tasks:</span> {dailyProgress.tasksCompleted}
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Tasks</p>
+                    <p className="text-2xl font-semibold">{dailyProgress.tasksCompleted}</p>
                   </div>
-                  <div className="text-sm">
-                    <span className="font-medium">Habits:</span> {dailyProgress.habitsCompleted}
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Habits</p>
+                    <p className="text-2xl font-semibold">{dailyProgress.habitsCompleted}</p>
                   </div>
-                  <div className="text-sm">
-                    <span className="font-medium">Focus Time:</span> {dailyProgress.totalWorkMinutes} minutes
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Focus Time</p>
+                    <p className="text-2xl font-semibold">{dailyProgress.totalWorkMinutes}m</p>
                   </div>
-                </>
+                </div>
               )}
             </div>
           </CardContent>
         </Card>
 
         {/* Enhanced Tasks and Habits Card */}
-        <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-          <CardHeader>
-            <div className="flex justify-between items-center">
+        <Card className="col-span-1 lg:col-span-3 border-2">
+          <CardHeader className="space-y-3 pb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <CardTitle>Tasks & Habits</CardTitle>
-                <CardDescription>Manage your daily tasks and habits</CardDescription>
+                <CardTitle className="text-xl">Tasks & Habits</CardTitle>
+                <CardDescription className="text-base">Manage your daily tasks and habits</CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <Input
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-[200px]"
+                  className="flex-1 sm:w-[250px] h-11"
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <Filter className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="h-11 w-11">
+                      <Filter className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent align="end" className="w-[200px]">
                     <DropdownMenuLabel>Filter Tasks</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setTaskFilter('all')}>
@@ -725,84 +741,111 @@ export function ProductivityDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="tasks">
-              <TabsList>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
-                <TabsTrigger value="habits">Habits</TabsTrigger>
+            <Tabs defaultValue="tasks" className="w-full">
+              <TabsList className="w-full sm:w-auto mb-6">
+                <TabsTrigger value="tasks" className="flex-1 sm:flex-none">Tasks</TabsTrigger>
+                <TabsTrigger value="habits" className="flex-1 sm:flex-none">Habits</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tasks">
-                <ScrollArea className="h-[300px]">
+                <ScrollArea className="h-[400px] pr-4">
                   <div className="space-y-4">
                     {filteredTasks.map((task) => (
                       <div 
                         key={task.id} 
                         className={cn(
-                          "flex items-center gap-4 p-2 rounded-lg hover:bg-muted",
+                          "flex items-start gap-4 p-4 rounded-lg border-2 hover:bg-muted/50 transition-colors",
                           task.status === 'completed' && "opacity-60"
                         )}
                       >
                         <Switch
                           checked={task.status === 'completed'}
                           onCheckedChange={() => task.id && handleTaskComplete(task.id)}
+                          className="mt-1"
                         />
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h4 className={cn(
-                            "font-medium",
+                            "font-medium text-base",
                             task.status === 'completed' && "line-through"
                           )}>
                             {task.title}
                           </h4>
-                          <p className="text-sm text-muted-foreground">{task.description}</p>
-                          {task.dueDate && (
-                            <p className="text-sm text-muted-foreground">
-                              Due: {format(new Date(task.dueDate), "PPP")}
+                          {task.description && (
+                            <p className="text-sm text-muted-foreground mt-1 break-words">
+                              {task.description}
                             </p>
                           )}
-                          {task.completedAt && (
-                            <p className="text-sm text-muted-foreground">
-                              Completed: {format(new Date(task.completedAt), "PPP")}
-                            </p>
-                          )}
+                          <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+                            {task.dueDate && (
+                              <p className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4" />
+                                {format(new Date(task.dueDate), "PPP")}
+                              </p>
+                            )}
+                            {task.completedAt && (
+                              <p className="flex items-center gap-2">
+                                <Timer className="h-4 w-4" />
+                                {format(new Date(task.completedAt), "PPP")}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge 
+                            variant={task.priority === 'high' ? 'destructive' : 'outline'}
+                            className="capitalize"
+                          >
+                            {task.priority}
+                          </Badge>
                           {task.pomodoroEstimate && (
-                            <p className="text-sm text-muted-foreground">
-                              Estimated: {task.pomodoroEstimate} pomodoros
-                            </p>
+                            <Badge variant="secondary" className="whitespace-nowrap">
+                              {task.pomodoroEstimate} pomodoros
+                            </Badge>
                           )}
                         </div>
-                        <Badge variant={task.priority === 'high' ? 'destructive' : 'outline'}>
-                          {task.priority}
-                        </Badge>
                       </div>
                     ))}
+                    {filteredTasks.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No tasks found
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
               </TabsContent>
 
               <TabsContent value="habits">
-                <ScrollArea className="h-[300px]">
+                <ScrollArea className="h-[400px] pr-4">
                   <div className="space-y-4">
                     {habits.map((habit) => (
-                      <div key={habit.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted">
+                      <div 
+                        key={habit.id} 
+                        className="flex items-center gap-4 p-4 rounded-lg border-2 hover:bg-muted/50 transition-colors"
+                      >
                         <Switch
                           checked={isHabitCompletedOnDate(habit, selectedDate)}
                           onCheckedChange={() => habit.id && handleHabitComplete(habit.id)}
                           disabled={selectedDate.toDateString() !== new Date().toDateString()}
                         />
-                        <div className="flex-1">
-                          <h4 className="font-medium">{habit.habitName}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Streak: {habit.currentStreak} days | Best: {habit.longestStreak} days
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-base">{habit.habitName}</h4>
+                          <div className="flex items-center gap-4 mt-2">
+                            <p className="text-sm text-muted-foreground">
+                              Current Streak: <span className="font-semibold text-foreground">{habit.currentStreak}</span>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Best Streak: <span className="font-semibold text-foreground">{habit.longestStreak}</span>
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary" className="capitalize">
                             {habit.frequency}
                           </Badge>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => habit.id && handleDeleteHabit(habit.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -810,6 +853,11 @@ export function ProductivityDashboard() {
                         </div>
                       </div>
                     ))}
+                    {habits.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No habits found
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
               </TabsContent>
@@ -819,13 +867,20 @@ export function ProductivityDashboard() {
       </div>
 
       {/* Keyboard Shortcuts Help */}
-      <div className="mt-4 text-sm text-muted-foreground">
-        <p>Keyboard shortcuts:</p>
-        <ul className="list-disc list-inside">
-          <li>Space - Start Pomodoro</li>
-          <li>P - Stop current Pomodoro</li>
-        </ul>
+      <div className="mt-8 p-4 bg-muted rounded-lg">
+        <p className="font-medium mb-2">Keyboard shortcuts:</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="flex items-center gap-2">
+            <kbd className="px-2 py-1 bg-background rounded border">Space</kbd>
+            <span className="text-sm text-muted-foreground">Start Pomodoro</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <kbd className="px-2 py-1 bg-background rounded border">P</kbd>
+            <span className="text-sm text-muted-foreground">Stop current Pomodoro</span>
+          </div>
+        </div>
       </div>
+
       <TimerSettingsModal
         open={isTimerModalOpen}
         onOpenChange={setIsTimerModalOpen}
