@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { Timer, BarChart2, Calendar as CalendarIcon, Filter, Bell, BellOff, Settings, Trash2, Play, Pause, X } from 'lucide-react';
+import { Timer, BarChart2, Calendar as CalendarIcon, Filter, Bell, BellOff, Settings, Trash2, Play, Pause, X, Pencil } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { NewTaskDialog } from '../Components/Productivity/NewTaskDialog';
 import { NewHabitDialog } from '../Components/Productivity/NewHabitDialog';
@@ -39,6 +39,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Zap, Target, TrendingUp, Coffee, Battery } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
 interface DayWithActivity {
   date: Date;
@@ -157,6 +170,337 @@ const StatCard = ({ icon: Icon, label, value, total, color, className, labelClas
   </div>
 );
 
+const TaskDetailDialog = ({
+  task,
+  onClose,
+  onDelete,
+  onUpdate,
+}: {
+  task: Task;
+  onClose: () => void;
+  onDelete: () => Promise<void>;
+  onUpdate: (updates: Partial<Task>) => Promise<void>;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || '');
+  const [priority, setPriority] = useState(task.priority);
+  const [dueDate, setDueDate] = useState<Date | undefined>(task.dueDate ? new Date(task.dueDate) : undefined);
+  const [pomodoroEstimate, setPomodoroEstimate] = useState(task.pomodoroEstimate || 1);
+
+  const handleSave = async () => {
+    const updates: Partial<Task> = {
+      title,
+      description: description || undefined,
+      priority,
+      pomodoroEstimate,
+      dueDate: dueDate || undefined
+    };
+    
+    await onUpdate(updates);
+    setIsEditing(false);
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <div className="flex justify-between items-start">
+            <DialogTitle className="text-xl">
+              {isEditing ? 'Edit Task' : 'Task Details'}
+            </DialogTitle>
+            <div className="flex gap-2">
+              {!isEditing && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={onDelete}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          {isEditing ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Task title"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Task description"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Priority</Label>
+                  <Select 
+                    value={priority} 
+                    onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Pomodoros</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={pomodoroEstimate}
+                    onChange={(e) => setPomodoroEstimate(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Due Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left">
+                      {dueDate ? format(dueDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={dueDate}
+                      onSelect={setDueDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground">Title</h4>
+                <p className="mt-1">{task.title}</p>
+              </div>
+              {task.description && (
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Description</h4>
+                  <p className="mt-1">{task.description}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Priority</h4>
+                  <Badge 
+                    variant={task.priority === 'high' ? 'destructive' : 'outline'}
+                    className="mt-1 capitalize"
+                  >
+                    {task.priority}
+                  </Badge>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Pomodoros</h4>
+                  <p className="mt-1">{task.pomodoroEstimate || 1}</p>
+                </div>
+              </div>
+              {task.dueDate && (
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Due Date</h4>
+                  <p className="mt-1">{format(new Date(task.dueDate), 'PPP')}</p>
+                </div>
+              )}
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground">Status</h4>
+                <Badge variant={task.status === 'completed' ? 'secondary' : 'default'} className="mt-1">
+                  {task.status === 'completed' ? 'Completed' : 'In Progress'}
+                </Badge>
+              </div>
+              {task.completedAt && (
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Completed On</h4>
+                  <p className="mt-1">{format(new Date(task.completedAt), 'PPP')}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          {isEditing ? (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const HabitDetailDialog = ({
+  habit,
+  onClose,
+  onDelete,
+  onUpdate,
+}: {
+  habit: HabitTracker;
+  onClose: () => void;
+  onDelete: () => Promise<void>;
+  onUpdate: (updates: Partial<HabitTracker>) => Promise<void>;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [habitName, setHabitName] = useState(habit.habitName);
+  const [frequency, setFrequency] = useState(habit.frequency);
+
+  const handleSave = async () => {
+    await onUpdate({
+      habitName,
+      frequency
+    });
+    setIsEditing(false);
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <div className="flex justify-between items-start">
+            <DialogTitle className="text-xl">
+              {isEditing ? 'Edit Habit' : 'Habit Details'}
+            </DialogTitle>
+            <div className="flex gap-2">
+              {!isEditing && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={onDelete}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          {isEditing ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  value={habitName}
+                  onChange={(e) => setHabitName(e.target.value)}
+                  placeholder="Habit name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <Select 
+                  value={frequency} 
+                  onValueChange={(value: "daily" | "weekly" | "monthly") => setFrequency(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground">Name</h4>
+                <p className="mt-1">{habit.habitName}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground">Frequency</h4>
+                <Badge variant="secondary" className="mt-1 capitalize">
+                  {habit.frequency}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Current Streak</h4>
+                  <p className="mt-1 text-xl font-semibold">{habit.currentStreak} days</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground">Best Streak</h4>
+                  <p className="mt-1 text-xl font-semibold">{habit.longestStreak} days</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-muted-foreground">Completion History</h4>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {habit.completedDates.slice(-10).map((date) => (
+                    <Badge key={date.toString()} variant="outline">
+                      {format(new Date(date), 'MMM d')}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          {isEditing ? (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>
+                Save Changes
+              </Button>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export function ProductivityDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -179,6 +523,8 @@ export function ProductivityDashboard() {
   const [daysWithActivity, setDaysWithActivity] = useState<DayWithActivity[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [pausedTimeLeft, setPausedTimeLeft] = useState<number | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedHabit, setSelectedHabit] = useState<HabitTracker | null>(null);
 
   const togglePause = useCallback(() => {
     if (isPaused) {
@@ -437,8 +783,12 @@ export function ProductivityDashboard() {
 
   const calculateProgress = (): number => {
     if (!dailyProgress) return 0;
-    const targetPomodoros = 8; // Example target
-    return Math.min(100, (dailyProgress.pomodorosCompleted / targetPomodoros) * 100);
+    
+    // Calculate target minutes based on custom work duration
+    const targetMinutes = customWorkDuration * 8; // Target is 8 pomodoros worth of work
+    const actualMinutes = dailyProgress.totalWorkMinutes;
+    
+    return Math.min(100, (actualMinutes / targetMinutes) * 100);
   };
 
   const handleTaskComplete = async (taskId: number) => {
@@ -678,6 +1028,81 @@ export function ProductivityDashboard() {
     );
   };
 
+  const handleTaskUpdate = async (taskId: number, updates: Partial<Task>) => {
+    try {
+      // Create a clean updates object without undefined values
+      const cleanUpdates: Partial<{
+        title: string;
+        description: string;
+        priority: "low" | "medium" | "high";
+        pomodoroEstimate: number;
+        dueDate: Date;
+        status: "completed" | "todo" | "in-progress";
+        completedAt: Date;
+      }> = {};
+      
+      // Only include defined values
+      if (updates.title !== undefined) cleanUpdates.title = updates.title;
+      if (updates.description !== undefined) cleanUpdates.description = updates.description;
+      if (updates.priority !== undefined) cleanUpdates.priority = updates.priority;
+      if (updates.pomodoroEstimate !== undefined) cleanUpdates.pomodoroEstimate = updates.pomodoroEstimate;
+      if (updates.dueDate !== undefined) cleanUpdates.dueDate = updates.dueDate;
+      if (updates.status !== undefined) cleanUpdates.status = updates.status;
+      if (updates.completedAt !== undefined) cleanUpdates.completedAt = updates.completedAt;
+      
+      await db.updateTask(taskId, cleanUpdates);
+      await loadData();
+      toast({
+        title: "Task Updated",
+        description: "Task has been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update task",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTaskDelete = async (taskId: number) => {
+    try {
+      await db.tasks.delete(taskId);
+      await loadData();
+      setSelectedTask(null);
+      toast({
+        title: "Task Deleted",
+        description: "Task has been removed successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete task",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleHabitUpdate = async (habitId: number, updates: Partial<HabitTracker>) => {
+    try {
+      await db.habitTrackers.update(habitId, updates);
+      await loadData();
+      toast({
+        title: "Habit Updated",
+        description: "Habit has been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating habit:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update habit",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -713,7 +1138,8 @@ export function ProductivityDashboard() {
         <StatCard 
           icon={Timer} 
           label="Focus Time Today" 
-          value={dailyProgress?.totalWorkMinutes || 0} 
+          value={dailyProgress?.totalWorkMinutes || 0}
+          total={customWorkDuration * 8}
           color="blue"
           className="p-3 sm:p-4"
           labelClassName="text-xs sm:text-sm"
@@ -959,11 +1385,15 @@ export function ProductivityDashboard() {
               <div className="pt-3 border-t">
                 <div className="flex justify-between items-center">
                   <span className="font-medium flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    Total Focus Time
+                    <Timer className="h-4 w-4" />
+                    Focus Time
                   </span>
-                  <span className="text-2xl font-semibold">{dailyProgress?.totalWorkMinutes || 0}m</span>
+                  <span>{dailyProgress?.totalWorkMinutes || 0}/{customWorkDuration * 8}m</span>
                 </div>
+                <Progress 
+                  value={calculateProgress()} 
+                  className="h-3 transition-all" 
+                />
               </div>
             </div>
           </CardContent>
@@ -1178,9 +1608,14 @@ export function ProductivityDashboard() {
                       <div 
                         key={task.id} 
                         className={cn(
-                          "flex items-start gap-4 p-4 rounded-lg border-2 hover:bg-muted/50 transition-colors",
+                          "flex items-start gap-4 p-4 rounded-lg border-2 hover:bg-muted/50 transition-colors cursor-pointer",
                           task.status === 'completed' && "opacity-60"
                         )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedTask(task);
+                        }}
                       >
                         <Switch
                           checked={task.status === 'completed'}
@@ -1244,7 +1679,12 @@ export function ProductivityDashboard() {
                     {habits.map((habit) => (
                       <div 
                         key={habit.id} 
-                        className="flex items-center gap-4 p-4 rounded-lg border-2 hover:bg-muted/50 transition-colors"
+                        className="flex items-center gap-4 p-4 rounded-lg border-2 hover:bg-muted/50 transition-colors cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedHabit(habit);
+                        }}
                       >
                         <Switch
                           checked={isHabitCompletedOnDate(habit, selectedDate)}
@@ -1270,7 +1710,13 @@ export function ProductivityDashboard() {
                             variant="ghost"
                             size="icon"
                             className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => habit.id && handleDeleteHabit(habit.id)}
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (habit.id) {
+                                await handleDeleteHabit(habit.id);
+                              }
+                            }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -1315,6 +1761,40 @@ export function ProductivityDashboard() {
         onShortBreakChange={setCustomShortBreak}
         onLongBreakChange={setCustomLongBreak}
       />
+
+      {selectedTask && (
+        <TaskDetailDialog
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onDelete={async () => {
+            if (selectedTask?.id) {
+              await handleTaskDelete(selectedTask.id);
+            }
+          }}
+          onUpdate={async (updates) => {
+            if (selectedTask?.id) {
+              await handleTaskUpdate(selectedTask.id, updates);
+            }
+          }}
+        />
+      )}
+
+      {selectedHabit && (
+        <HabitDetailDialog
+          habit={selectedHabit}
+          onClose={() => setSelectedHabit(null)}
+          onDelete={async () => {
+            if (selectedHabit?.id) {
+              await handleDeleteHabit(selectedHabit.id);
+            }
+          }}
+          onUpdate={async (updates) => {
+            if (selectedHabit?.id) {
+              await handleHabitUpdate(selectedHabit.id, updates);
+            }
+          }}
+        />
+      )}
     </motion.div>
   );
 } 
