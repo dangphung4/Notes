@@ -149,6 +149,35 @@ const getBlockNoteContent = (jsonString: string) => {
   }
 };
 
+/**
+ * A functional component that represents a note card in the application.
+ * It displays note details, allows for interaction such as pinning, editing tags,
+ * and sharing options.
+ *
+ * @param {Object} props - The properties for the NoteCard component.
+ * @param {Note} props.note - The note object containing details such as title, content, and tags.
+ * @param {any} props.user - The current user object to determine ownership and permissions.
+ * @param {"grid" | "list"} props.view - The view mode for displaying the note card.
+ * @param {Function} props.onClick - Callback function to handle click events on the card.
+ * @param {Note[]} props.allNotes - An array of all notes for related notes functionality.
+ * @param {Function} props.navigate - Function to navigate to different routes in the application.
+ * @param {Folder[]} props.folders - An array of folder objects for categorizing notes.
+ *
+ * @returns {JSX.Element} The rendered NoteCard component.
+ *
+ * @throws {Error} Throws an error if there is an issue loading shares or updating tags/folders.
+ *
+ * @example
+ * <NoteCard
+ *   note={note}
+ *   user={currentUser}
+ *   view="grid"
+ *   onClick={handleNoteClick}
+ *   allNotes={notes}
+ *   navigate={navigateTo}
+ *   folders={userFolders}
+ * />
+ */
 const NoteCard = ({
   note,
   user,
@@ -1194,7 +1223,17 @@ const NoteSearch = ({
 };
 
 /**
+ * A functional component that manages and displays notes for the user.
+ * It handles loading notes, shares, folders, and tags, as well as providing
+ * filtering and sorting functionalities.
  *
+ * @returns {JSX.Element} The rendered component.
+ *
+ * @throws {Error} Throws an error if there is an issue loading initial data or creating a folder.
+ *
+ * @example
+ * // Usage in a parent component
+ * <Notes />
  */
 export default function Notes() {
   const navigate = useNavigate();
