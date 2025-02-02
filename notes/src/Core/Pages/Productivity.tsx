@@ -35,6 +35,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Zap, Target, TrendingUp } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 const TimerSettingsModal = ({
   open,
@@ -105,6 +108,32 @@ const TimerSettingsModal = ({
       </DialogFooter>
     </DialogContent>
   </Dialog>
+);
+
+const StatCard = ({ icon: Icon, label, value, total, color }: { 
+  icon: LucideIcon, 
+  label: string, 
+  value: number, 
+  total?: number,
+  color: string 
+}) => (
+  <div className="relative overflow-hidden rounded-xl border bg-background p-4 hover:bg-muted/50 transition-colors">
+    <div className="flex items-center gap-4">
+      <div className={cn(
+        "rounded-full p-2.5",
+        `bg-${color}-500/10 text-${color}-500`
+      )}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <div className="flex items-baseline gap-2">
+          <p className="text-2xl font-bold">{value}</p>
+          {total && <p className="text-sm text-muted-foreground">/ {total}</p>}
+        </div>
+      </div>
+    </div>
+  </div>
 );
 
 export function ProductivityDashboard() {
@@ -504,9 +533,16 @@ export function ProductivityDashboard() {
   }, [notificationsEnabled, playNotificationSound]);
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="container mx-auto px-4 py-6 md:py-8 max-w-7xl"
+    >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Productivity Dashboard</h1>
+        <div className="space-y-1">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Productivity Dashboard</h1>
+          <p className="text-muted-foreground">Track your progress and build better habits</p>
+        </div>
         <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
           <div className="flex items-center gap-3">
             <Button
@@ -514,7 +550,7 @@ export function ProductivityDashboard() {
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? "Disable sound" : "Enable sound"}
-              className="h-11 w-11"
+              className="h-11 w-11 transition-transform hover:scale-105"
             >
               {soundEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
             </Button>
@@ -526,11 +562,44 @@ export function ProductivityDashboard() {
         </div>
       </div>
 
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard 
+          icon={Timer} 
+          label="Focus Time Today" 
+          value={dailyProgress?.totalWorkMinutes || 0} 
+          color="blue"
+        />
+        <StatCard 
+          icon={Target} 
+          label="Tasks Completed" 
+          value={dailyProgress?.tasksCompleted || 0} 
+          color="green"
+        />
+        <StatCard 
+          icon={Sparkles} 
+          label="Habits Streak" 
+          value={Math.max(...habits.map(h => h.currentStreak), 0)}
+          color="purple"
+        />
+        <StatCard 
+          icon={TrendingUp} 
+          label="Pomodoros" 
+          value={dailyProgress?.pomodorosCompleted || 0} 
+          total={8}
+          color="orange"
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pomodoro Timer Card */}
-        <Card className="col-span-1 border-2">
+        <Card className="col-span-1 border-2 hover:border-primary/50 transition-colors">
           <CardHeader className="space-y-3 pb-6">
-            <div className="flex justify-between items-center">
+            <motion.div 
+              className="flex justify-between items-center"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
               <CardTitle className="flex items-center gap-3 text-xl">
                 <Timer className="h-6 w-6" />
                 Pomodoro Timer
@@ -540,16 +609,20 @@ export function ProductivityDashboard() {
                 size="icon"
                 onClick={() => setIsTimerModalOpen(true)}
                 title="Timer Settings"
-                className="h-10 w-10"
+                className="h-10 w-10 transition-transform hover:scale-110"
               >
                 <Settings className="h-5 w-5" />
               </Button>
-            </div>
+            </motion.div>
             <CardDescription className="text-base">Focus on your work in timed sessions</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center space-y-8">
-              <div className="w-48 h-48 md:w-56 md:h-56">
+              <motion.div 
+                className="w-48 h-48 md:w-56 md:h-56"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              >
                 <CircularProgressbar
                   value={activePomodoro ? (timeLeft / (activePomodoro.duration * 60)) * 100 : 0}
                   text={activePomodoro ? formatTime(timeLeft) : '00:00'}
@@ -562,51 +635,59 @@ export function ProductivityDashboard() {
                     strokeLinecap: 'round',
                   })}
                 />
-              </div>
-              <div className="flex flex-wrap justify-center gap-3 w-full">
-                {!activePomodoro ? (
-                  <>
+              </motion.div>
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  className="flex flex-wrap justify-center gap-3 w-full"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  {!activePomodoro ? (
+                    <>
+                      <Button 
+                        onClick={() => startPomodoro('work')} 
+                        variant="default"
+                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105"
+                      >
+                        <Zap className="mr-2 h-4 w-4" />
+                        Work ({customWorkDuration}m)
+                      </Button>
+                      <Button 
+                        onClick={() => startPomodoro('short-break')} 
+                        variant="outline"
+                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105"
+                      >
+                        Short ({customShortBreak}m)
+                      </Button>
+                      <Button 
+                        onClick={() => startPomodoro('long-break')} 
+                        variant="outline"
+                        className="flex-1 h-11 min-w-[130px] max-w-[200px] transition-transform hover:scale-105"
+                      >
+                        Long ({customLongBreak}m)
+                      </Button>
+                    </>
+                  ) : (
                     <Button 
-                      onClick={() => startPomodoro('work')} 
-                      variant="default"
-                      className="flex-1 h-11 min-w-[130px] max-w-[200px]"
+                      onClick={completePomodoro} 
+                      variant="destructive"
+                      className="w-full h-11 max-w-[200px] transition-transform hover:scale-105"
                     >
-                      Work ({customWorkDuration}m)
+                      Stop Timer
                     </Button>
-                    <Button 
-                      onClick={() => startPomodoro('short-break')} 
-                      variant="outline"
-                      className="flex-1 h-11 min-w-[130px] max-w-[200px]"
-                    >
-                      Short ({customShortBreak}m)
-                    </Button>
-                    <Button 
-                      onClick={() => startPomodoro('long-break')} 
-                      variant="outline"
-                      className="flex-1 h-11 min-w-[130px] max-w-[200px]"
-                    >
-                      Long ({customLongBreak}m)
-                    </Button>
-                  </>
-                ) : (
-                  <Button 
-                    onClick={completePomodoro} 
-                    variant="destructive"
-                    className="w-full h-11 max-w-[200px]"
-                  >
-                    Stop Timer
-                  </Button>
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground text-center">
-                <p>Press Space to start/stop timer</p>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+              <div className="text-sm text-muted-foreground text-center bg-muted/50 px-4 py-2 rounded-lg">
+                <p>Press <kbd className="px-2 py-0.5 bg-background rounded border mx-1">Space</kbd> to start/stop timer</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Daily Progress Card */}
-        <Card className="col-span-1 border-2">
+        <Card className="col-span-1 border-2 hover:border-primary/50 transition-colors">
           <CardHeader className="space-y-3 pb-6">
             <CardTitle className="flex items-center gap-3 text-xl">
               <BarChart2 className="h-6 w-6" />
@@ -616,33 +697,60 @@ export function ProductivityDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div>
-                <div className="flex justify-between mb-3">
-                  <span className="font-medium">Pomodoros</span>
-                  <span>{dailyProgress?.pomodorosCompleted || 0}/8</span>
+              <motion.div 
+                className="space-y-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.1 }}
+              >
+                <div>
+                  <div className="flex justify-between mb-3">
+                    <span className="font-medium flex items-center gap-2">
+                      <Timer className="h-4 w-4" />
+                      Pomodoros
+                    </span>
+                    <span>{dailyProgress?.pomodorosCompleted || 0}/8</span>
+                  </div>
+                  <Progress 
+                    value={calculateProgress()} 
+                    className="h-3 transition-all" 
+                  />
                 </div>
-                <Progress value={calculateProgress()} className="h-3" />
-              </div>
-              <div>
-                <div className="flex justify-between mb-3">
-                  <span className="font-medium">Tasks Completed</span>
-                  <span className="text-muted-foreground">{dailyProgress?.tasksCompleted || 0}</span>
+                <div>
+                  <div className="flex justify-between mb-3">
+                    <span className="font-medium flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      Tasks
+                    </span>
+                    <span className="text-muted-foreground">{dailyProgress?.tasksCompleted || 0}</span>
+                  </div>
+                  <Progress 
+                    value={(dailyProgress?.tasksCompleted || 0) * 10} 
+                    className="h-3 transition-all" 
+                  />
                 </div>
-                <Progress value={(dailyProgress?.tasksCompleted || 0) * 10} className="h-3" />
-              </div>
-              <div>
-                <div className="flex justify-between mb-3">
-                  <span className="font-medium">Habits Completed</span>
-                  <span className="text-muted-foreground">{dailyProgress?.habitsCompleted || 0}/{habits.length}</span>
+                <div>
+                  <div className="flex justify-between mb-3">
+                    <span className="font-medium flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      Habits
+                    </span>
+                    <span className="text-muted-foreground">
+                      {dailyProgress?.habitsCompleted || 0}/{habits.length}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={habits.length > 0 ? ((dailyProgress?.habitsCompleted || 0) / habits.length) * 100 : 0} 
+                    className="h-3 transition-all" 
+                  />
                 </div>
-                <Progress 
-                  value={habits.length > 0 ? ((dailyProgress?.habitsCompleted || 0) / habits.length) * 100 : 0} 
-                  className="h-3" 
-                />
-              </div>
+              </motion.div>
               <div className="pt-3 border-t">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Total Focus Time</span>
+                  <span className="font-medium flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Total Focus Time
+                  </span>
                   <span className="text-2xl font-semibold">{dailyProgress?.totalWorkMinutes || 0}m</span>
                 </div>
               </div>
@@ -891,6 +999,6 @@ export function ProductivityDashboard() {
         onShortBreakChange={setCustomShortBreak}
         onLongBreakChange={setCustomLongBreak}
       />
-    </div>
+    </motion.div>
   );
 } 
