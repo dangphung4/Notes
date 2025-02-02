@@ -987,8 +987,8 @@ export default function Notes() {
           return false;
         }
         
-        // Folder filter
-        if (selectedFolderId !== undefined) {
+        // Folder filter - only apply to personal notes
+        if (selectedFolderId !== undefined && activeTab === 'my-notes') {
           if (note.folderId !== selectedFolderId) {
             return false;
           }
