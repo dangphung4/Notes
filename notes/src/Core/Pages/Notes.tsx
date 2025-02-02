@@ -12,7 +12,7 @@ import { db as firestore } from '../Auth/firebase';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPreviewText, formatTimeAgo } from '../utils/noteUtils';
 import type { Note, Tags } from '../Database/db';
-import { LayoutGridIcon, LayoutListIcon, FolderIcon, FolderPlusIcon } from 'lucide-react';
+import { LayoutGridIcon, LayoutListIcon, FolderIcon, FolderPlusIcon, MenuIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -52,37 +52,120 @@ const getBlockNoteContent = (jsonString: string) => {
     let text = '';
     
     const extractText = (block: any) => {
-      // Check if block has content array
+      // Handle different block types
+      switch (block.type) {
+        case 'heading':
+          // Add heading style based on level
+          const level = block.props?.level || 1;
+          const fontSize = {
+            1: 'text-2xl font-bold',
+            2: 'text-xl font-bold',
+            3: 'text-lg font-bold',
+            4: 'text-base font-bold',
+            5: 'text-sm font-bold',
+            6: 'text-xs font-bold'
+          }[level] || 'text-2xl font-bold';
+          text += `<div class="${fontSize}">`;
+          break;
+          
+        case 'table':
+          if (Array.isArray(block.content)) {
+            text += '<div class="table">';
+            block.content.forEach((row: any) => {
+              if (Array.isArray(row.content)) {
+                const cellTexts = row.content.map((cell: any) => {
+                  if (Array.isArray(cell.content)) {
+                    return cell.content
+                      .filter((item: any) => item.type === 'text')
+                      .map((item: any) => item.text || '')
+                      .join('');
+                  }
+                  return '';
+                });
+                text += `<div class="table-row">${cellTexts.map(cell => `<div class="table-cell px-2">${cell}</div>`).join('')}</div>`;
+              }
+            });
+            text += '</div>';
+          }
+          return;
+          
+        case 'bulletListItem':
+          text += '<div class="flex gap-2">• ';
+          break;
+          
+        case 'numberedListItem':
+          text += '<div class="flex gap-2">1. ';
+          break;
+          
+        case 'checkListItem':
+          const checkbox = block.props?.checked ? '☒' : '☐';
+          text += `<div class="flex gap-2">${checkbox} `;
+          break;
+          
+        case 'quote':
+          text += '<div class="pl-4 border-l-4 border-gray-300 italic">';
+          break;
+          
+        default:
+          text += '<div>';
+      }
+      
+      // Process block content
       if (Array.isArray(block.content)) {
         block.content.forEach((item: any) => {
           if (item.type === 'text') {
-            text += item.text || '';
+            let itemText = item.text || '';
+            
+            // Apply text styling
+            if (item.styles) {
+              if (item.styles.includes('bold')) {
+                itemText = `<strong>${itemText}</strong>`;
+              }
+              if (item.styles.includes('italic')) {
+                itemText = `<em>${itemText}</em>`;
+              }
+              if (item.styles.includes('underline')) {
+                itemText = `<u>${itemText}</u>`;
+              }
+              if (item.styles.includes('strike')) {
+                itemText = `<del>${itemText}</del>`;
+              }
+              if (item.styles.includes('code')) {
+                itemText = `<code class="bg-gray-100 px-1 rounded">${itemText}</code>`;
+              }
+            }
+            text += itemText;
           }
         });
       } else if (block.text) {
-        // Some blocks might have direct text property
         text += block.text;
       }
       
-      // Add newline after certain block types
-      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem'].includes(block.type)) {
+      // Close div tags
+      text += '</div>';
+      
+      // Add appropriate spacing after blocks
+      if (['paragraph', 'bulletListItem', 'numberedListItem', 'checkListItem', 'heading', 'quote'].includes(block.type)) {
         text += '\n';
       }
-
+      
       // Process children recursively
       if (Array.isArray(block.children)) {
         block.children.forEach(extractText);
       }
     };
-
+    
     // Handle if blocks is not an array (single block)
     if (!Array.isArray(blocks)) {
       extractText(blocks);
     } else {
       blocks.forEach(extractText);
     }
-
-    return text.trim();
+    
+    // Clean up extra newlines and trim
+    return text
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   } catch (error) {
     console.error('Error parsing BlockNote content:', error);
     return '';
@@ -1474,28 +1557,60 @@ export default function Notes() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* Enhanced Header */}
-      <div className="space-y-6 mb-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+      {/* Enhanced Header with better mobile layout */}
+      <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
         {/* Top row with search and actions */}
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-          {/* Search with enhanced styling */}
-          <div className="relative flex-1 max-w-md">
-            <NoteSearch 
-              notes={notes} 
-              onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
-            />
+        <div className="flex items-center gap-2">
+          {/* Mobile Menu Button - New! */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 sm:hidden rounded-xl hover:bg-muted"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </Button>
+
+          {/* Search with enhanced mobile styling */}
+          <div className="relative flex-1">
+            <div className="sm:max-w-md">
+              <NoteSearch 
+                notes={notes} 
+                onNoteSelect={(note) => navigate(`/notes/${note.firebaseId}`)} 
+              />
+            </div>
           </div>
 
-          {/* View Toggle and New Note with updated styling */}
-          <div className="flex gap-2">
-            {/* Desktop View Toggle */}
-            <div className="hidden sm:flex items-center bg-muted/50 rounded-lg p-1">
+          {/* Mobile Actions */}
+          <div className="flex sm:hidden items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-xl hover:bg-muted"
+              onClick={() => setShowViewOptions(!showViewOptions)}
+            >
+              {view === 'grid' ? 
+                <LayoutGridIcon className="h-5 w-5" /> : 
+                <LayoutListIcon className="h-5 w-5" />
+              }
+            </Button>
+            <Button
+              size="icon"
+              className="h-10 w-10 rounded-xl bg-primary hover:bg-primary/90"
+              onClick={() => navigate('/notes/new')}
+            >
+              <PlusIcon className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden sm:flex items-center gap-2">
+            <div className="flex items-center bg-muted/50 rounded-xl p-1">
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-8 w-8 rounded-md",
+                  "h-9 w-9 rounded-lg",
                   view === 'grid' && "bg-background shadow-sm"
                 )}
                 onClick={() => setView('grid')}
@@ -1506,7 +1621,7 @@ export default function Notes() {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-8 w-8 rounded-md",
+                  "h-9 w-9 rounded-lg",
                   view === 'list' && "bg-background shadow-sm"
                 )}
                 onClick={() => setView('list')}
@@ -1515,64 +1630,51 @@ export default function Notes() {
               </Button>
             </div>
 
-            {/* Mobile View Toggle */}
-            <div className="sm:hidden">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setShowViewOptions(!showViewOptions)}
-              >
-                {view === 'grid' ? 
-                  <LayoutGridIcon className="h-4 w-4" /> : 
-                  <LayoutListIcon className="h-4 w-4" />
-                }
-              </Button>
-              {showViewOptions && (
-                <div className="absolute right-4 mt-2 p-1.5 bg-popover border rounded-lg shadow-lg">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start rounded-md"
-                    onClick={() => {
-                      setView('grid');
-                      setShowViewOptions(false);
-                    }}
-                  >
-                    <LayoutGridIcon className="h-4 w-4 mr-2" />
-                    Grid View
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start rounded-md"
-                    onClick={() => {
-                      setView('list');
-                      setShowViewOptions(false);
-                    }}
-                  >
-                    <LayoutListIcon className="h-4 w-4 mr-2" />
-                    List View
-                  </Button>
-                </div>
-              )}
-            </div>
-
             <Button 
               onClick={() => navigate('/notes/new')} 
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 h-10 px-4 rounded-xl"
             >
               <PlusIcon className="mr-2 h-4 w-4" /> New Note
             </Button>
           </div>
         </div>
 
-        {/* Enhanced Filters Row */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Folder Selection with updated styling */}
+        {/* Mobile View Options Dropdown */}
+        {showViewOptions && (
+          <div className="absolute right-2 top-16 p-1.5 bg-popover border rounded-xl shadow-lg z-50 sm:hidden">
+            <Button
+              variant="ghost"
+              className="w-full justify-start rounded-lg"
+              onClick={() => {
+                setView('grid');
+                setShowViewOptions(false);
+              }}
+            >
+              <LayoutGridIcon className="h-4 w-4 mr-2" />
+              Grid View
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start rounded-lg"
+              onClick={() => {
+                setView('list');
+                setShowViewOptions(false);
+              }}
+            >
+              <LayoutListIcon className="h-4 w-4 mr-2" />
+              List View
+            </Button>
+          </div>
+        )}
+
+        {/* Enhanced Mobile Filters */}
+        <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
+          {/* Folder Selection with updated mobile styling */}
           <Select
             value={selectedFolderId || "root"}
             onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
           >
-            <SelectTrigger className="w-[200px] h-9 bg-background">
+            <SelectTrigger className="min-w-[140px] sm:w-[200px] h-10 bg-background rounded-xl">
               <SelectValue placeholder="All folders">
                 <div className="flex items-center gap-2">
                   <FolderIcon 
@@ -1583,14 +1685,16 @@ export default function Notes() {
                         undefined 
                     }}
                   />
-                  {selectedFolderId 
-                    ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
-                    : "All folders"
-                  }
+                  <span className="truncate">
+                    {selectedFolderId 
+                      ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
+                      : "All folders"
+                    }
+                  </span>
                 </div>
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="root">
                 <div className="flex items-center gap-2">
                   <FolderIcon className="h-4 w-4" />
@@ -1624,60 +1728,63 @@ export default function Notes() {
             </SelectContent>
           </Select>
 
-          {/* Sort dropdown with updated styling */}
+          {/* Sort dropdown with mobile styling */}
           <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-            <SelectTrigger className="w-[140px] h-9 bg-background">
+            <SelectTrigger className="min-w-[120px] h-10 bg-background rounded-xl">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="updated">Last Updated</SelectItem>
               <SelectItem value="created">Created Date</SelectItem>
               <SelectItem value="title">Title</SelectItem>
             </SelectContent>
           </Select>
 
-          {/* Date Filter with updated styling */}
+          {/* Date Filter with mobile styling */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={dateFilter ? "default" : "outline"}
                 className={cn(
-                  "h-9 gap-2",
+                  "h-10 rounded-xl whitespace-nowrap",
                   dateFilter && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
               >
-                <CalendarIcon className="h-4 w-4" />
-                {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
+                <CalendarIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">
+                  {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
+                </span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 rounded-xl" align="start">
               <Calendar
                 mode="single"
                 selected={dateFilter}
                 onSelect={setDateFilter}
                 initialFocus
+                className="rounded-xl"
               />
             </PopoverContent>
           </Popover>
 
-          {/* Tag filter with updated styling */}
+          {/* Tag filter with mobile styling */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
-                  "h-9 gap-2",
+                  "h-10 rounded-xl whitespace-nowrap",
                   selectedTagFilters.length > 0 && "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
               >
-                <TagIcon className="h-4 w-4" />
-                Tags
+                <TagIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Tags</span>
                 {selectedTagFilters.length > 0 && (
                   <Badge 
                     variant="secondary" 
                     className={cn(
                       "ml-1 h-5 px-1.5",
-                      selectedTagFilters.length > 0 && "bg-primary-foreground/20 text-primary-foreground"
+                      "bg-primary-foreground/20 text-primary-foreground"
                     )}
                   >
                     {selectedTagFilters.length}
@@ -1685,7 +1792,7 @@ export default function Notes() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="start">
+            <PopoverContent className="w-64 p-0 rounded-xl" align="start">
               <div className="p-2 border-b">
                 <Input
                   placeholder="Search tags..."
@@ -1729,9 +1836,9 @@ export default function Notes() {
           </Popover>
         </div>
 
-        {/* Active Filters Display with enhanced styling */}
+        {/* Active Filters Display with mobile optimization */}
         {(selectedTags.length > 0 || dateFilter || selectedFolderId || selectedTagFilters.length > 0) && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
             {selectedFolderId && (
               <Badge
                 variant="secondary"
@@ -1794,18 +1901,18 @@ export default function Notes() {
           </div>
         )}
 
-        {/* Tabs with improved styling */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        {/* Tabs with mobile optimization */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 -mx-2 sm:mx-0">
           <Tabs 
             value={activeTab} 
             onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
             className="flex-1"
           >
-            <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-muted/50">
+            <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-muted/50 rounded-xl">
               <TabsTrigger 
                 value="my-notes" 
                 className={cn(
-                  "text-sm rounded-md",
+                  "text-sm rounded-lg",
                   activeTab === 'my-notes' && "bg-background shadow-sm"
                 )}
               >
@@ -1814,7 +1921,7 @@ export default function Notes() {
               <TabsTrigger 
                 value="shared" 
                 className={cn(
-                  "text-sm rounded-md",
+                  "text-sm rounded-lg",
                   activeTab === 'shared' && "bg-background shadow-sm"
                 )}
               >
@@ -1823,13 +1930,13 @@ export default function Notes() {
             </TabsList>
           </Tabs>
 
-          {/* Clear Filters Button with updated styling */}
+          {/* Clear Filters Button */}
           {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated') && (
             <Button
               variant="outline"
               size="sm"
               onClick={clearFilters}
-              className="h-10 gap-2 whitespace-nowrap hover:bg-destructive hover:text-destructive-foreground"
+              className="h-11 gap-2 whitespace-nowrap rounded-xl hover:bg-destructive hover:text-destructive-foreground hidden sm:flex"
             >
               <XCircleIcon className="h-4 w-4" />
               Clear Filters
@@ -1838,35 +1945,37 @@ export default function Notes() {
         </div>
       </div>
 
-      {/* Notes Grid/List with updated spacing */}
-      {Object.entries(groupNotesByDate(filteredNotes)).map(([date, dateNotes]) => (
-        <div key={date} className="mb-10">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4 px-1">{date}</h3>
-          <div className={cn(
-            view === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
-              : "flex flex-col gap-4"
-          )}>
-            {dateNotes.map((note) => (
-              <NoteCard 
-                key={note.firebaseId} 
-                note={note} 
-                shares={shares} 
-                user={user} 
-                view={view}
-                onClick={() => navigate(`/notes/${note.firebaseId}`)}
-                allNotes={notes}
-                navigate={navigate}
-                folders={folders}
-              />
-            ))}
+      {/* Notes Grid/List with improved mobile layout */}
+      <div className="px-0 sm:px-1">
+        {Object.entries(groupNotesByDate(filteredNotes)).map(([date, dateNotes]) => (
+          <div key={date} className="mb-8 sm:mb-10">
+            <h3 className="text-sm font-medium text-muted-foreground mb-4 px-1">{date}</h3>
+            <div className={cn(
+              view === 'grid' 
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6"
+                : "flex flex-col gap-3 sm:gap-4"
+            )}>
+              {dateNotes.map((note) => (
+                <NoteCard 
+                  key={note.firebaseId} 
+                  note={note} 
+                  shares={shares} 
+                  user={user} 
+                  view={view}
+                  onClick={() => navigate(`/notes/${note.firebaseId}`)}
+                  allNotes={notes}
+                  navigate={navigate}
+                  folders={folders}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      {/* Empty State with enhanced styling */}
+      {/* Empty and Loading states with mobile optimization */}
       {filteredNotes.length === 0 && !isLoading && (
-        <div className="text-center py-16">
+        <div className="text-center py-12 sm:py-16 px-4">
           <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
             <FileTextIcon className="h-8 w-8 text-muted-foreground" />
           </div>
@@ -1877,7 +1986,7 @@ export default function Notes() {
           {searchQuery && (
             <Button
               variant="outline"
-              className="mt-6"
+              className="mt-6 rounded-xl"
               onClick={clearFilters}
             >
               Clear all filters
@@ -1886,9 +1995,8 @@ export default function Notes() {
         </div>
       )}
 
-      {/* Loading State with enhanced styling */}
       {isLoading && (
-        <div className="flex justify-center items-center h-[400px]">
+        <div className="flex justify-center items-center h-[300px] sm:h-[400px]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
             <p className="text-sm text-muted-foreground">Loading your notes...</p>
