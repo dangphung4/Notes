@@ -206,25 +206,41 @@ const NoteCard = ({
   };
 
   return (
-    <Card className={`group hover:shadow-lg transition-all relative
-      ${localNote.isPinned && note.ownerUserId === user?.uid ? 'border-primary/50' : ''}`}
+    <Card 
+      className={cn(
+        "group transition-all duration-200 relative overflow-hidden",
+        "hover:shadow-lg hover:border-primary/20",
+        "bg-gradient-to-br from-background to-background/50",
+        localNote.isPinned && note.ownerUserId === user?.uid && "border-primary/30",
+        view === 'grid' ? "h-[280px]" : "h-auto"
+      )}
     >
-      {/* Action buttons - position absolute */}
-      <div className="absolute right-2 top-2 z-10 flex gap-2">
-        {/* Only show pin button if user is the owner */}
+      {/* Folder indicator - New! */}
+      {localNote.folderId && (
+        <div 
+          className="absolute top-0 left-0 w-full h-1 opacity-80"
+          style={{ backgroundColor: folders.find(f => f.id === localNote.folderId)?.color }}
+        />
+      )}
+
+      {/* Action buttons with updated styling */}
+      <div className="absolute right-2 top-2 z-10 flex gap-1.5">
         {note.ownerUserId === user?.uid && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className={cn(
+              "h-8 w-8 rounded-full",
+              "opacity-0 group-hover:opacity-100 transition-opacity",
+              "hover:bg-background/80 backdrop-blur-sm",
+              localNote.isPinned && "opacity-100 text-primary"
+            )}
             onClick={(e) => {
               e.stopPropagation();
               handlePinClick(e);
             }}
           >
-            <PinIcon 
-              className={`h-4 w-4 ${localNote.isPinned ? 'text-primary' : 'text-muted-foreground'}`}
-            />
+            <PinIcon className="h-4 w-4" />
           </Button>
         )}
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -232,7 +248,11 @@ const NoteCard = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className={cn(
+                "h-8 w-8 rounded-full",
+                "opacity-0 group-hover:opacity-100 transition-opacity",
+                "hover:bg-background/80 backdrop-blur-sm"
+              )}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsSheetOpen(true);
@@ -712,80 +732,121 @@ const NoteCard = ({
         </Sheet>
       </div>
 
-      {/* Clickable area */}
-      <div className="cursor-pointer" onClick={onClick}>
-        <CardContent className={`p-4 ${view === 'list' ? 'flex gap-4' : 'flex flex-col'} h-full`}>
-          {/* Left Section: Title, Owner, Preview */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                {localNote.title || 'Untitled'}
-              </h3>
-              {hasShares && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                  <Share2Icon className="h-3 w-3" />
-                  <span>
-                    {isOwner 
-                      ? `${noteShares.length} ${noteShares.length === 1 ? 'person' : 'people'}`
-                      : 'Shared with you'
-                    }
+      {/* Clickable area with enhanced layout */}
+      <div 
+        className={cn(
+          "cursor-pointer h-full",
+          "transition-transform duration-200",
+          "hover:scale-[0.995]"
+        )} 
+        onClick={onClick}
+      >
+        <CardContent 
+          className={cn(
+            "p-4 h-full",
+            view === 'list' ? "flex gap-4" : "flex flex-col"
+          )}
+        >
+          {/* Content wrapper */}
+          <div className="flex-1 min-w-0 flex flex-col h-full">
+            {/* Header section */}
+            <div className="space-y-3 mb-3">
+              {/* Title and folder */}
+              <div className="space-y-1">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className={cn(
+                    "font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2",
+                    view === 'list' ? "text-base" : "text-lg"
+                  )}>
+                    {localNote.title || 'Untitled'}
+                  </h3>
+                </div>
+                
+                {/* Folder name if exists */}
+                {localNote.folderId && (
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <FolderIcon 
+                      className="h-3.5 w-3.5" 
+                      style={{ 
+                        color: folders.find(f => f.id === localNote.folderId)?.color 
+                      }} 
+                    />
+                    <span className="truncate">
+                      {folders.find(f => f.id === localNote.folderId)?.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Owner and share info */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {localNote.ownerPhotoURL ? (
+                    <img 
+                      src={localNote.ownerPhotoURL} 
+                      alt={localNote.ownerDisplayName}
+                      className="w-5 h-5 rounded-full ring-1 ring-border"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center ring-1 ring-border">
+                      <UserIcon className="h-3 w-3" />
+                    </div>
+                  )}
+                  <span className="text-xs text-muted-foreground truncate">
+                    {isOwner ? 'You' : localNote.ownerDisplayName}
                   </span>
                 </div>
-              )}
-            </div>
-
-            {/* Owner Info - Updated layout */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                {localNote.ownerPhotoURL ? (
-                  <img 
-                    src={localNote.ownerPhotoURL} 
-                    alt={localNote.ownerDisplayName}
-                    className="w-6 h-6 rounded-full"
-                  />
-                ) : (
-                  <AvatarIcon className="w-5 h-5" />
+                {hasShares && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Share2Icon className="h-3 w-3" />
+                    <span className="truncate">
+                      {isOwner 
+                        ? `${noteShares.length} ${noteShares.length === 1 ? 'person' : 'people'}`
+                        : 'Shared'
+                      }
+                    </span>
+                  </div>
                 )}
-                <span className="text-sm text-muted-foreground">
-                  {isOwner ? 'You' : localNote.ownerDisplayName}
-                </span>
               </div>
             </div>
 
-            {/* Preview - Different styling for list view */}
-            {view === 'list' ? (
-              <div className="text-sm text-muted-foreground line-clamp-1">
-                {getPreviewText(localNote.content, 100).split('\n')[0]}
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground space-y-1 line-clamp-4">
-                {getPreviewText(localNote.content, 150).split('\n').map((line, i) => (
+            {/* Preview with enhanced typography */}
+            <div className={cn(
+              "text-sm text-muted-foreground/90 space-y-1",
+              view === 'list' ? "line-clamp-1" : "line-clamp-3"
+            )}>
+              {getPreviewText(localNote.content, view === 'list' ? 100 : 150)
+                .split('\n')
+                .map((line, i) => (
                   line && (
                     <div 
                       key={i} 
-                      className={`
-                        ${line.startsWith('#') ? 'font-bold text-base' : ''}
-                        ${line.startsWith('•') ? 'pl-4' : ''}
-                        ${line.startsWith('1.') ? 'pl-4' : ''}
-                        ${line.startsWith('☐') ? 'pl-4' : ''}
-                      `}
+                      className={cn(
+                        line.startsWith('#') && "font-medium text-foreground",
+                        line.startsWith('•') && "pl-4",
+                        line.startsWith('1.') && "pl-4",
+                        line.startsWith('☐') && "pl-4"
+                      )}
                     >
                       {line}
                     </div>
                   )
                 ))}
-              </div>
-            )}
+            </div>
 
-            {/* Add tags display */}
+            {/* Tags with updated styling */}
             {localNote.tags && localNote.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
+              <div className="flex flex-wrap gap-1.5 mt-3">
                 {localNote.tags.map(tag => (
                   <div
                     key={tag.id}
-                    className="px-2 py-0.5 rounded-full text-xs"
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-medium",
+                      "transition-colors duration-200",
+                      "hover:saturate-150"
+                    )}
                     style={{
-                      backgroundColor: tag.color + '20',
+                      backgroundColor: tag.color + '15',
                       color: tag.color
                     }}
                   >
@@ -794,33 +855,12 @@ const NoteCard = ({
                 ))}
               </div>
             )}
-          </div>
 
-          {/* Right Section for List View - Updated layout */}
-          {view === 'list' && (
-            <div className="flex flex-col justify-between items-end min-w-[120px] ml-4">
-              <div className="text-xs text-muted-foreground">
-                {/* commented because its overlapped with the pin and info icon */}
-                {/* Created {formatTimeAgo(note.createdAt)} */}
-              </div>
-              {localNote.lastEditedByUserId && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span>Edited {formatTimeAgo(localNote.lastEditedAt || localNote.updatedAt)}</span>
-                  {localNote.lastEditedByPhotoURL && (
-                    <img 
-                      src={localNote.lastEditedByPhotoURL} 
-                      alt={localNote.lastEditedByDisplayName}
-                      className="w-4 h-4 rounded-full"
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Footer for Grid View */}
-          {view === 'grid' && (
-            <div className="mt-auto pt-3 border-t flex items-center justify-between text-xs text-muted-foreground">
+            {/* Footer with metadata */}
+            <div className={cn(
+              "mt-auto pt-3 flex items-center justify-between",
+              "text-xs text-muted-foreground/75"
+            )}>
               <div className="flex items-center gap-2">
                 <span>Created {formatTimeAgo(localNote.createdAt)}</span>
               </div>
@@ -830,7 +870,7 @@ const NoteCard = ({
                     <img 
                       src={localNote.lastEditedByPhotoURL} 
                       alt={localNote.lastEditedByDisplayName}
-                      className="w-5 h-5 rounded-full"
+                      className="w-4 h-4 rounded-full ring-1 ring-border"
                     />
                   )}
                   <span>
@@ -839,7 +879,7 @@ const NoteCard = ({
                 </div>
               )}
             </div>
-          )}
+          </div>
         </CardContent>
       </div>
     </Card>
@@ -1435,10 +1475,11 @@ export default function Notes() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 mb-6">
+      {/* Enhanced Header */}
+      <div className="space-y-6 mb-8">
+        {/* Top row with search and actions */}
         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-          {/* Search */}
+          {/* Search with enhanced styling */}
           <div className="relative flex-1 max-w-md">
             <NoteSearch 
               notes={notes} 
@@ -1446,20 +1487,28 @@ export default function Notes() {
             />
           </div>
 
-          {/* View Toggle and New Note */}
+          {/* View Toggle and New Note with updated styling */}
           <div className="flex gap-2">
             {/* Desktop View Toggle */}
-            <div className="hidden sm:flex gap-2">
+            <div className="hidden sm:flex items-center bg-muted/50 rounded-lg p-1">
               <Button
-                variant={view === 'grid' ? 'default' : 'outline'}
+                variant="ghost"
                 size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-md",
+                  view === 'grid' && "bg-background shadow-sm"
+                )}
                 onClick={() => setView('grid')}
               >
                 <LayoutGridIcon className="h-4 w-4" />
               </Button>
               <Button
-                variant={view === 'list' ? 'default' : 'outline'}
+                variant="ghost"
                 size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-md",
+                  view === 'list' && "bg-background shadow-sm"
+                )}
                 onClick={() => setView('list')}
               >
                 <LayoutListIcon className="h-4 w-4" />
@@ -1471,15 +1520,19 @@ export default function Notes() {
               <Button
                 variant="outline"
                 size="icon"
+                className="h-9 w-9"
                 onClick={() => setShowViewOptions(!showViewOptions)}
               >
-                {view === 'grid' ? <LayoutGridIcon className="h-4 w-4" /> : <LayoutListIcon className="h-4 w-4" />}
+                {view === 'grid' ? 
+                  <LayoutGridIcon className="h-4 w-4" /> : 
+                  <LayoutListIcon className="h-4 w-4" />
+                }
               </Button>
               {showViewOptions && (
-                <div className="absolute right-4 mt-2 p-2 bg-popover border rounded-md shadow-lg">
+                <div className="absolute right-4 mt-2 p-1.5 bg-popover border rounded-lg shadow-lg">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start rounded-md"
                     onClick={() => {
                       setView('grid');
                       setShowViewOptions(false);
@@ -1490,7 +1543,7 @@ export default function Notes() {
                   </Button>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start rounded-md"
                     onClick={() => {
                       setView('list');
                       setShowViewOptions(false);
@@ -1503,23 +1556,33 @@ export default function Notes() {
               )}
             </div>
 
-            <Button onClick={() => navigate('/notes/new')} className="w-full sm:w-auto">
+            <Button 
+              onClick={() => navigate('/notes/new')} 
+              className="bg-primary hover:bg-primary/90"
+            >
               <PlusIcon className="mr-2 h-4 w-4" /> New Note
             </Button>
           </div>
         </div>
 
-        {/* Filters Row */}
+        {/* Enhanced Filters Row */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Folder Selection */}
+          {/* Folder Selection with updated styling */}
           <Select
             value={selectedFolderId || "root"}
             onValueChange={(value) => setSelectedFolderId(value === "root" ? undefined : value)}
           >
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[200px] h-9 bg-background">
               <SelectValue placeholder="All folders">
                 <div className="flex items-center gap-2">
-                  <FolderIcon className="h-4 w-4" />
+                  <FolderIcon 
+                    className="h-4 w-4" 
+                    style={{ 
+                      color: selectedFolderId ? 
+                        folders.find(f => f.id === selectedFolderId)?.color : 
+                        undefined 
+                    }}
+                  />
                   {selectedFolderId 
                     ? folders.find(f => f.id === selectedFolderId)?.name || "All folders"
                     : "All folders"
@@ -1538,7 +1601,10 @@ export default function Notes() {
                 <SelectItem key={folder.id} value={folder.id}>
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
-                      <FolderIcon className="h-4 w-4" style={{ color: folder.color }} />
+                      <FolderIcon 
+                        className="h-4 w-4" 
+                        style={{ color: folder.color }} 
+                      />
                       {folder.name}
                     </div>
                   </div>
@@ -1546,7 +1612,7 @@ export default function Notes() {
               ))}
               <Button
                 variant="ghost"
-                className="w-full justify-start mt-2"
+                className="w-full justify-start mt-2 rounded-md"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsCreatingFolder(true);
@@ -1558,9 +1624,9 @@ export default function Notes() {
             </SelectContent>
           </Select>
 
-          {/* Sort dropdown */}
+          {/* Sort dropdown with updated styling */}
           <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] h-9 bg-background">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -1570,12 +1636,15 @@ export default function Notes() {
             </SelectContent>
           </Select>
 
-          {/* Date Filter */}
+          {/* Date Filter with updated styling */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={dateFilter ? "default" : "outline"}
-                className="gap-2"
+                className={cn(
+                  "h-9 gap-2",
+                  dateFilter && "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
               >
                 <CalendarIcon className="h-4 w-4" />
                 {dateFilter ? format(dateFilter, 'MMM dd, yyyy') : 'Filter by date'}
@@ -1591,20 +1660,25 @@ export default function Notes() {
             </PopoverContent>
           </Popover>
 
-          {/* Add tag filter button and dropdown */}
+          {/* Tag filter with updated styling */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                size="sm"
-                className="gap-2"
+                className={cn(
+                  "h-9 gap-2",
+                  selectedTagFilters.length > 0 && "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
               >
                 <TagIcon className="h-4 w-4" />
                 Tags
                 {selectedTagFilters.length > 0 && (
                   <Badge 
                     variant="secondary" 
-                    className="ml-1 h-5 px-1"
+                    className={cn(
+                      "ml-1 h-5 px-1.5",
+                      selectedTagFilters.length > 0 && "bg-primary-foreground/20 text-primary-foreground"
+                    )}
                   >
                     {selectedTagFilters.length}
                   </Badge>
@@ -1629,7 +1703,7 @@ export default function Notes() {
                     .map(tag => (
                       <div
                         key={tag.id}
-                        className="flex items-center gap-2 p-1 hover:bg-muted rounded-sm cursor-pointer"
+                        className="flex items-center gap-2 p-1.5 hover:bg-muted rounded-md cursor-pointer"
                         onClick={() => {
                           setSelectedTagFilters(prev => {
                             const isSelected = prev.some(t => t.id === tag.id);
@@ -1655,94 +1729,124 @@ export default function Notes() {
           </Popover>
         </div>
 
-        {/* Active Filters Display */}
-        {(selectedTags.length > 0 || dateFilter || selectedFolderId) && (
-          <div className="flex flex-wrap gap-2">
+        {/* Active Filters Display with enhanced styling */}
+        {(selectedTags.length > 0 || dateFilter || selectedFolderId || selectedTagFilters.length > 0) && (
+          <div className="flex flex-wrap items-center gap-2">
             {selectedFolderId && (
               <Badge
                 variant="secondary"
-                className="gap-1"
+                className="pl-2 pr-1 py-1 gap-1 hover:bg-secondary/80"
               >
-                <FolderIcon className="h-3 w-3 mr-1" style={{ 
-                  color: folders.find(f => f.id === selectedFolderId)?.color 
-                }} />
-                {folders.find(f => f.id === selectedFolderId)?.name}
-                <XIcon
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => setSelectedFolderId(undefined)}
+                <FolderIcon 
+                  className="h-3 w-3 mr-1" 
+                  style={{ 
+                    color: folders.find(f => f.id === selectedFolderId)?.color 
+                  }} 
                 />
+                {folders.find(f => f.id === selectedFolderId)?.name}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10"
+                  onClick={() => setSelectedFolderId(undefined)}
+                >
+                  <XIcon className="h-3 w-3" />
+                </Button>
               </Badge>
             )}
-            {selectedTags.map(tag => (
+            {selectedTagFilters.map(tag => (
               <Badge
-                key={tag}
+                key={tag.id}
                 variant="secondary"
-                className="gap-1"
+                className="pl-2 pr-1 py-1 gap-1 hover:bg-secondary/80"
+                style={{
+                  backgroundColor: tag.color + '20',
+                  color: tag.color
+                }}
               >
-                {tag}
-                <XIcon
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => setSelectedTags(prev => prev.filter(t => t !== tag))}
-                />
+                {tag.name}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10"
+                  onClick={() => setSelectedTagFilters(prev => prev.filter(t => t.id !== tag.id))}
+                >
+                  <XIcon className="h-3 w-3" />
+                </Button>
               </Badge>
             ))}
             {dateFilter && (
               <Badge
                 variant="secondary"
-                className="gap-1"
+                className="pl-2 pr-1 py-1 gap-1 hover:bg-secondary/80"
               >
                 {format(dateFilter, 'MMM dd, yyyy')}
-                <XIcon
-                  className="h-3 w-3 cursor-pointer"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 ml-1 hover:bg-secondary-foreground/10"
                   onClick={() => setDateFilter(undefined)}
-                />
+                >
+                  <XIcon className="h-3 w-3" />
+                </Button>
               </Badge>
             )}
           </div>
         )}
-      </div>
-      
 
-      {/* Tabs with improved mobile layout */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-6">
-        <Tabs 
-          value={activeTab} 
-          onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
-          className="flex-1"
-        >
-          <TabsList className="grid w-full grid-cols-2 h-9">
-            <TabsTrigger value="my-notes" className="text-sm">
-              My Notes ({myNotes.length})
-            </TabsTrigger>
-            <TabsTrigger value="shared" className="text-sm">
-              Shared ({sharedWithMe.length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Clear Filters Button - only show if there are active filters */}
-        {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated') && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearFilters}
-            className="h-9 gap-2 whitespace-nowrap"
+        {/* Tabs with improved styling */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(value) => setActiveTab(value as 'my-notes' | 'shared')} 
+            className="flex-1"
           >
-            <XCircleIcon className="h-4 w-4" />
-            Clear Filters
-          </Button>
-        )}
+            <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-muted/50">
+              <TabsTrigger 
+                value="my-notes" 
+                className={cn(
+                  "text-sm rounded-md",
+                  activeTab === 'my-notes' && "bg-background shadow-sm"
+                )}
+              >
+                My Notes ({myNotes.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="shared" 
+                className={cn(
+                  "text-sm rounded-md",
+                  activeTab === 'shared' && "bg-background shadow-sm"
+                )}
+              >
+                Shared ({sharedWithMe.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Clear Filters Button with updated styling */}
+          {(selectedTags.length > 0 || dateFilter || searchQuery || selectedTagFilters.length > 0 || sortBy !== 'updated') && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="h-10 gap-2 whitespace-nowrap hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <XCircleIcon className="h-4 w-4" />
+              Clear Filters
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Notes Grid/List */}
+      {/* Notes Grid/List with updated spacing */}
       {Object.entries(groupNotesByDate(filteredNotes)).map(([date, dateNotes]) => (
-        <div key={date} className="mb-8">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">{date}</h3>
-          <div className={
+        <div key={date} className="mb-10">
+          <h3 className="text-sm font-medium text-muted-foreground mb-4 px-1">{date}</h3>
+          <div className={cn(
             view === 'grid' 
               ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
               : "flex flex-col gap-4"
-          }>
+          )}>
             {dateNotes.map((note) => (
               <NoteCard 
                 key={note.firebaseId} 
@@ -1760,19 +1864,35 @@ export default function Notes() {
         </div>
       ))}
 
-      {/* Empty State */}
+      {/* Empty State with enhanced styling */}
       {filteredNotes.length === 0 && !isLoading && (
-        <div className="text-center text-muted-foreground mt-8">
-          <FileTextIcon className="mx-auto h-12 w-12 mb-4" />
-          <h3 className="font-semibold mb-2">No notes found</h3>
-          <p>{searchQuery ? 'Try a different search term' : 'Create your first note!'}</p>
+        <div className="text-center py-16">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center">
+            <FileTextIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">No notes found</h3>
+          <p className="text-muted-foreground">
+            {searchQuery ? 'Try a different search term' : 'Create your first note to get started!'}
+          </p>
+          {searchQuery && (
+            <Button
+              variant="outline"
+              className="mt-6"
+              onClick={clearFilters}
+            >
+              Clear all filters
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Loading State */}
+      {/* Loading State with enhanced styling */}
       {isLoading && (
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="flex justify-center items-center h-[400px]">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-10 h-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
+            <p className="text-sm text-muted-foreground">Loading your notes...</p>
+          </div>
         </div>
       )}
 
