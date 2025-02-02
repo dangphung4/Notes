@@ -31,7 +31,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -250,8 +250,9 @@ const NoteCard = ({
             <PinIcon className="h-4 w-4" />
           </Button>
         )}
-        <Popover>
-          <PopoverTrigger asChild>
+        
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
@@ -264,13 +265,12 @@ const NoteCard = ({
             >
               <InfoIcon className="h-4 w-4" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent 
-            className="w-80 p-4" 
-            align="end"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="space-y-4">
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Note Details</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-6 mt-6">
               {/* Note Stats */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium flex items-center gap-2">
@@ -313,30 +313,100 @@ const NoteCard = ({
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => setIsSheetOpen(true)}
-                >
-                  View Details
-                </Button>
-                {hasEditAccess(note, user, shares) && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => setIsEditingTags(true)}
-                  >
-                    Edit Tags
-                  </Button>
+              {/* Tags Section */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <TagIcon className="h-4 w-4 text-primary" />
+                  Tags
+                </h4>
+                {isEditingTags ? (
+                  <div className="space-y-4">
+                    <TagSelector
+                      selectedTags={selectedTags}
+                      onChange={setSelectedTags}
+                      onClose={() => setIsEditingTags(false)}
+                      onSave={async (tags) => {
+                        try {
+                          await db.updateNoteTags(note.firebaseId!, tags);
+                          setIsEditingTags(false);
+                          toast({
+                            title: "Tags updated",
+                            description: "Your note's tags have been updated successfully"
+                          });
+                        } catch (error) {
+                          console.error('Error updating tags:', error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to update tags",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {localNote.tags?.map(tag => (
+                      <div
+                        key={tag.id}
+                        className="px-2 py-0.5 rounded-full text-xs"
+                        style={{
+                          backgroundColor: tag.color + '20',
+                          color: tag.color
+                        }}
+                      >
+                        {tag.name}
+                      </div>
+                    ))}
+                    {hasEditAccess(note, user, shares) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-6"
+                        onClick={() => setIsEditingTags(true)}
+                      >
+                        Edit Tags
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
+
+              {/* Sharing Section */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <Share2Icon className="h-4 w-4 text-primary" />
+                  Sharing
+                </h4>
+                <div className="space-y-2">
+                  {noteShares.map(share => (
+                    <div key={share.id} className="flex items-center gap-2">
+                      {share.photoURL ? (
+                        <img 
+                          src={share.photoURL} 
+                          alt={share.displayName || share.email}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                          <UserIcon className="h-4 w-4" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">
+                          {share.displayName || share.email}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {share.access === 'edit' ? 'Can edit' : 'Can view'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </PopoverContent>
-        </Popover>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Clickable area with enhanced layout */}
