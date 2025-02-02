@@ -1107,25 +1107,23 @@ export function ProductivityDashboard() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="container mx-auto px-4 py-6 md:py-8 max-w-7xl"
+      className="container mx-auto px-4 py-6 md:py-8 max-w-[1600px]"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 mb-6 md:mb-8">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Productivity Dashboard</h1>
           <p className="text-muted-foreground">Track your progress and build better habits</p>
         </div>
-        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              title={soundEnabled ? "Disable sound" : "Enable sound"}
-              className="h-11 w-11 transition-transform hover:scale-105"
-            >
-              {soundEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title={soundEnabled ? "Disable sound" : "Enable sound"}
+            className="h-11 w-11 transition-transform hover:scale-105"
+          >
+            {soundEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+          </Button>
           <div className="flex gap-3 flex-1 md:flex-none">
             <NewTaskDialog onTaskCreated={loadData} />
             <NewHabitDialog onHabitCreated={loadData} />
@@ -1133,35 +1131,34 @@ export function ProductivityDashboard() {
         </div>
       </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         <StatCard 
           icon={Timer} 
           label="Focus Time Today" 
           value={dailyProgress?.totalWorkMinutes || 0}
           total={customWorkDuration * 8}
           color="blue"
-          className="p-3 sm:p-4"
-          labelClassName="text-xs sm:text-sm"
-          valueClassName="text-lg sm:text-2xl"
+          className="p-4 md:p-5"
+          labelClassName="text-sm"
+          valueClassName="text-xl md:text-2xl"
         />
         <StatCard 
           icon={Target} 
           label="Tasks Completed" 
           value={dailyProgress?.tasksCompleted || 0} 
           color="green"
-          className="p-3 sm:p-4"
-          labelClassName="text-xs sm:text-sm"
-          valueClassName="text-lg sm:text-2xl"
+          className="p-4 md:p-5"
+          labelClassName="text-sm"
+          valueClassName="text-xl md:text-2xl"
         />
         <StatCard 
           icon={Sparkles} 
           label="Habits Streak" 
           value={Math.max(...habits.map(h => h.currentStreak), 0)}
           color="purple"
-          className="p-3 sm:p-4"
-          labelClassName="text-xs sm:text-sm"
-          valueClassName="text-lg sm:text-2xl"
+          className="p-4 md:p-5"
+          labelClassName="text-sm"
+          valueClassName="text-xl md:text-2xl"
         />
         <StatCard 
           icon={TrendingUp} 
@@ -1169,15 +1166,14 @@ export function ProductivityDashboard() {
           value={dailyProgress?.pomodorosCompleted || 0} 
           total={8}
           color="orange"
-          className="p-3 sm:p-4"
-          labelClassName="text-xs sm:text-sm"
-          valueClassName="text-lg sm:text-2xl"
+          className="p-4 md:p-5"
+          labelClassName="text-sm"
+          valueClassName="text-xl md:text-2xl"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pomodoro Timer Card */}
-        <Card className="col-span-1 border-2 hover:border-primary/50 transition-colors">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <Card className="xl:col-span-4 border-2 hover:border-primary/50 transition-colors">
           <CardHeader className="space-y-3 pb-6">
             <motion.div 
               className="flex justify-between items-center"
@@ -1323,8 +1319,7 @@ export function ProductivityDashboard() {
           </CardContent>
         </Card>
 
-        {/* Daily Progress Card */}
-        <Card className="col-span-1 border-2 hover:border-primary/50 transition-colors">
+        <Card className="xl:col-span-4 border-2 hover:border-primary/50 transition-colors">
           <CardHeader className="space-y-3 pb-6">
             <CardTitle className="flex items-center gap-3 text-xl">
               <BarChart2 className="h-6 w-6" />
@@ -1399,8 +1394,7 @@ export function ProductivityDashboard() {
           </CardContent>
         </Card>
 
-        {/* Calendar View Card */}
-        <Card className="col-span-1 border-2 hover:border-primary/50 transition-colors">
+        <Card className="xl:col-span-4 border-2 hover:border-primary/50 transition-colors">
           <CardHeader className="space-y-3 pb-6">
             <CardTitle className="flex items-center gap-3 text-xl">
               <CalendarIcon className="h-6 w-6" />
@@ -1548,25 +1542,24 @@ export function ProductivityDashboard() {
           </CardContent>
         </Card>
 
-        {/* Enhanced Tasks and Habits Card */}
-        <Card className="col-span-1 lg:col-span-3 border-2">
-          <CardHeader className="space-y-3 pb-4 sm:pb-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <Card className="xl:col-span-12 border-2">
+          <CardHeader className="space-y-3 pb-4 md:pb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
               <div>
-                <CardTitle className="text-lg sm:text-xl">Tasks & Habits</CardTitle>
-                <CardDescription className="text-sm sm:text-base">Manage your daily tasks and habits</CardDescription>
+                <CardTitle className="text-lg md:text-xl">Tasks & Habits</CardTitle>
+                <CardDescription className="text-sm md:text-base">Manage your daily tasks and habits</CardDescription>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-3 w-full md:w-auto">
                 <Input
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 sm:w-[250px] h-9 sm:h-11 text-sm"
+                  className="flex-1 md:w-[300px] h-10"
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-9 w-9 sm:h-11 sm:w-11">
-                      <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <Button variant="outline" size="icon" className="h-10 w-10">
+                      <Filter className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-[200px]">
@@ -1596,13 +1589,13 @@ export function ProductivityDashboard() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="tasks" className="w-full">
-              <TabsList className="w-full sm:w-auto mb-4 sm:mb-6 h-9 sm:h-10">
-                <TabsTrigger value="tasks" className="text-sm sm:text-base">Tasks</TabsTrigger>
-                <TabsTrigger value="habits" className="text-sm sm:text-base">Habits</TabsTrigger>
+              <TabsList className="w-full md:w-auto mb-4 md:mb-6 h-10">
+                <TabsTrigger value="tasks" className="text-sm md:text-base">Tasks</TabsTrigger>
+                <TabsTrigger value="habits" className="text-sm md:text-base">Habits</TabsTrigger>
               </TabsList>
 
               <TabsContent value="tasks">
-                <ScrollArea className="h-[400px] pr-4">
+                <ScrollArea className="h-[500px] md:h-[600px] pr-4">
                   <div className="space-y-4">
                     {filteredTasks.map((task) => (
                       <div 
@@ -1674,7 +1667,7 @@ export function ProductivityDashboard() {
               </TabsContent>
 
               <TabsContent value="habits">
-                <ScrollArea className="h-[400px] pr-4">
+                <ScrollArea className="h-[500px] md:h-[600px] pr-4">
                   <div className="space-y-4">
                     {habits.map((habit) => (
                       <div 
